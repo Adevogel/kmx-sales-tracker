@@ -420,8 +420,8 @@ function syncNow(){
         value:r[5]?parseFloat(r[5]):null,
         estLow:r[6]?parseFloat(r[6]):null,
         estHigh:r[7]?parseFloat(r[7]):null,
-        last:r[8]||"", note:r[9]||"",
-        renewal:r[10]||"", deadline:r[11]||""
+        last:normaliseDate(r[8]), note:r[9]||"",
+        renewal:normaliseDate(r[10]), deadline:normaliseDate(r[11])
       }));
       renderTable();
       setSyncState("ok","Synced "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}));
@@ -454,14 +454,45 @@ function fmtRange(r){
   const hi=r.estHigh?"$"+Math.round(r.estHigh/1000)+"k":"";
   return (lo&&hi)?lo+"–"+hi:lo||hi;
 }
+// Normalise any date format from Google Sheets into YYYY-MM-DD
+function normaliseDate(d){
+  if(!d) return "";
+  const s = String(d).trim();
+  if(!s || s==="0" || s==="") return "";
+  // Already YYYY-MM-DD
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  // DD/MM/YYYY or DD-MM-YYYY
+  const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if(dmy) return `${dmy[3]}-${dmy[2].padStart(2,"0")}-${dmy[1].padStart(2,"0")}`;
+  // MM/DD/YYYY
+  const mdy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if(mdy) return `${mdy[3]}-${mdy[1].padStart(2,"0")}-${mdy[2].padStart(2,"0")}`;
+  // Google Sheets serial number (days since 30 Dec 1899)
+  if(/^\d+$/.test(s)){
+    const serial = parseInt(s);
+    if(serial > 1000){ // plausible date serial
+      const ms = (serial - 25569) * 86400000; // convert to Unix ms
+      const dt = new Date(ms);
+      if(!isNaN(dt)){
+        return dt.toISOString().split("T")[0];
+      }
+    }
+  }
+  // Try native parse as last resort
+  const dt = new Date(s);
+  if(!isNaN(dt)) return dt.toISOString().split("T")[0];
+  return "";
+}
 function fmtDate(d){
-  if(!d) return "—";
-  return new Date(d+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"});
+  const n = normaliseDate(d);
+  if(!n) return "—";
+  return new Date(n+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"});
 }
 function stg(k){return STAGES.find(s=>s.k===k)||STAGES[0];}
 function daysSince(d){
-  if(!d) return null;
-  return Math.round((Date.now()-new Date(d+"T00:00:00"))/86400000);
+  const n = normaliseDate(d);
+  if(!n) return null;
+  return Math.round((Date.now()-new Date(n+"T00:00:00"))/86400000);
 }
 function toRow(r){
   return[r.name,r.owner,r.stage,r.health,r.tbd?"TRUE":"FALSE",r.value||"",r.estLow||"",r.estHigh||"",r.last,r.note,r.renewal||"",r.deadline||""];
@@ -469,12 +500,13 @@ function toRow(r){
 
 // Returns {label, cls} for a date: null=none, amber=60days, danger=30days, overdue=past
 function dateAlert(d){
-  if(!d) return null;
-  const days = Math.round((new Date(d+"T00:00:00") - Date.now()) / 86400000);
+  const n = normaliseDate(d);
+  if(!n) return null;
+  const days = Math.round((new Date(n+"T00:00:00") - Date.now()) / 86400000);
   if(days < 0)  return {label:"Overdue "+Math.abs(days)+"d", cls:"overdue"};
   if(days <= 30) return {label:days+"d left", cls:"danger"};
   if(days <= 60) return {label:days+"d left", cls:"amber"};
-  return {label:fmtDate(d), cls:"ok"};
+  return {label:fmtDate(n), cls:"ok"};
 }
 
 // ── Selects ───────────────────────────────────
