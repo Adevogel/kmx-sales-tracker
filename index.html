@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KMX Technologies — Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090e;
+  --bg2:#111118;
+  --bg3:#18181f;
+  --bg4:#1e1e28;
+  --border:#252530;
+  --border2:#323240;
+  --text:#f0f0f5;
+  --text2:#9090a8;
+  --text3:#50506a;
+  --accent:#c8f060;
+  --accent2:#a0d030;
+  --accent-dim:rgba(200,240,96,0.08);
+  --accent-dim2:rgba(200,240,96,0.15);
+  --blue:#5090ff;
+  --blue-dim:rgba(80,144,255,0.1);
+  --green:#30d090;
+  --green-dim:rgba(48,208,144,0.1);
+  --yellow:#f0b030;
+  --yellow-dim:rgba(240,176,48,0.1);
+  --red:#f05060;
+  --red-dim:rgba(240,80,96,0.1);
+  --purple:#a070f0;
+  --purple-dim:rgba(160,112,240,0.1);
+  --pink:#f070b0;
+  --pink-dim:rgba(240,112,176,0.1);
+  --teal:#30d0d0;
+  --teal-dim:rgba(48,208,208,0.1);
+  --r:8px;
+  --r2:12px;
+  --r3:16px;
+}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;border-bottom:1px solid var(--border);background:rgba(9,9,14,0.85);backdrop-filter:blur(12px);display:flex;align-items:center;padding:0 28px;gap:0;justify-content:space-between}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-logo{width:28px;height:28px;border-radius:7px;background:var(--accent);display:flex;align-items:center;justify-content:center}
+.nav-logo svg{width:15px;height:15px;fill:none;stroke:#09090e;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.nav-name{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;letter-spacing:-0.02em;color:var(--text)}
+.nav-tabs{display:flex;gap:2px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:3px}
+.nav-tab{padding:5px 16px;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:500;border-radius:7px;border:none;background:none;color:var(--text2);cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:6px}
+.nav-tab.active{background:var(--bg4);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.4)}
+.nav-tab i{font-size:15px}
+.nav-right{display:flex;align-items:center;gap:10px}
+.date-tag{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);padding:4px 10px;border:1px solid var(--border);border-radius:6px}
+
+/* PAGES */
+.page{display:none;min-height:calc(100vh - 56px);margin-top:56px;padding:32px 28px 60px}
+.page.active{display:block}
+
+/* ═══ INPUT PAGE ═══ */
+.input-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+.input-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:700;letter-spacing:-0.03em;color:var(--text)}
+.input-sub{font-size:13px;color:var(--text3);margin-top:3px}
+
+/* Toolbar */
+.toolbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:200px;max-width:280px}
+.search-wrap i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px;pointer-events:none}
+.toolbar input[type=text]{width:100%;padding:8px 10px 8px 34px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.12s}
+.toolbar input[type=text]:focus{border-color:var(--border2)}
+.toolbar input[type=text]::placeholder{color:var(--text3)}
+.toolbar select{padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer}
+.toolbar select option{background:var(--bg3)}
+
+/* Buttons */
+.btn{height:36px;padding:0 16px;font-size:13px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all 0.12s;font-weight:500}
+.btn:hover{background:var(--bg4);border-color:var(--border2)}
+.btn.accent{background:var(--accent);color:#09090e;border-color:transparent;font-weight:600}
+.btn.accent:hover{background:var(--accent2)}
+.btn.ghost{background:none;border-color:transparent;color:var(--text2)}
+.btn.ghost:hover{background:var(--bg3);color:var(--text)}
+
+/* Table card */
+.tbl-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+thead th{padding:10px 14px;text-align:left;font-size:11px;font-weight:500;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg3);cursor:pointer;user-select:none;white-space:nowrap}
+thead th:hover{color:var(--text2)}
+thead th.sorted{color:var(--accent)}
+.sort-icon{font-size:10px;opacity:0.35;margin-left:3px}
+thead th.sorted .sort-icon{opacity:1}
+tbody tr{border-bottom:1px solid var(--border);transition:background 0.08s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--bg3)}
+td{padding:12px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.col-name{width:20%}
+.col-owner{width:12%}
+.col-stage{width:15%}
+.col-health{width:10%}
+.col-value{width:11%}
+.col-est{width:11%}
+.col-last{width:11%}
+.col-note{width:6%}
+.col-act{width:4%;text-align:right}
+
+.cname{font-weight:500;color:var(--text)}
+
+/* Stage pills */
+.sp{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 9px 3px 7px;border-radius:20px;font-weight:500;white-space:nowrap;border:1px solid transparent}
+.sp::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.sp.prospect{background:rgba(144,144,168,0.1);color:#9090a8;border-color:rgba(144,144,168,0.15)}
+.sp.scoping{background:var(--blue-dim);color:#80b0ff;border-color:rgba(80,144,255,0.2)}
+.sp.proposal{background:var(--purple-dim);color:#c0a0ff;border-color:rgba(160,112,240,0.2)}
+.sp.lab{background:var(--yellow-dim);color:#f0c060;border-color:rgba(240,176,48,0.2)}
+.sp.demo{background:var(--pink-dim);color:#f0a0c8;border-color:rgba(240,112,176,0.2)}
+.sp.negotiation{background:var(--teal-dim);color:#60d8d8;border-color:rgba(48,208,208,0.2)}
+.sp.won{background:rgba(200,240,96,0.08);color:var(--accent);border-color:rgba(200,240,96,0.2)}
+.sp.lost{background:var(--red-dim);color:#f08090;border-color:rgba(240,80,96,0.2)}
+
+/* Health */
+.hb{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)}
+.hdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.hdot.green{background:var(--green);box-shadow:0 0 7px rgba(48,208,144,0.6)}
+.hdot.yellow{background:var(--yellow);box-shadow:0 0 7px rgba(240,176,48,0.6)}
+.hdot.red{background:var(--red);box-shadow:0 0 7px rgba(240,80,96,0.6)}
+
+.vtbd{color:var(--text3);font-style:italic;font-size:12px}
+.vknown{font-family:'DM Mono',monospace;font-size:12px;color:var(--text)}
+.vrange{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3)}
+.note-txt{font-size:12px;color:var(--text3)}
+
+.row-actions{display:flex;gap:2px;justify-content:flex-end}
+.ibtn{background:none;border:none;cursor:pointer;color:var(--text3);padding:5px;border-radius:6px;font-size:15px;display:inline-flex;align-items:center;transition:all 0.1s}
+.ibtn:hover{color:var(--text);background:var(--bg4)}
+.ibtn.d:hover{color:var(--red);background:var(--red-dim)}
+
+.empty{text-align:center;padding:4rem;color:var(--text3);font-size:13px}
+.empty i{font-size:32px;display:block;margin-bottom:10px;opacity:0.2}
+
+/* ═══ DASHBOARD PAGE ═══ */
+.dash-header{margin-bottom:32px}
+.dash-title{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-0.04em;color:var(--text);line-height:1}
+.dash-sub{font-size:13px;color:var(--text3);margin-top:6px}
+
+.dash-grid{display:grid;gap:12px}
+.row-4{grid-template-columns:repeat(4,1fr)}
+.row-3{grid-template-columns:repeat(3,1fr)}
+.row-2{grid-template-columns:repeat(2,1fr)}
+
+/* KPI cards */
+.kcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:22px 22px 18px;position:relative;overflow:hidden;transition:border-color 0.2s,transform 0.2s}
+.kcard:hover{border-color:var(--border2);transform:translateY(-1px)}
+.kcard-accent{border-top:2px solid var(--accent)}
+.kcard-blue{border-top:2px solid var(--blue)}
+.kcard-green{border-top:2px solid var(--green)}
+.kcard-yellow{border-top:2px solid var(--yellow)}
+.kcard-red{border-top:2px solid var(--red)}
+.kcard-purple{border-top:2px solid var(--purple)}
+.kcard-teal{border-top:2px solid var(--teal)}
+.kcard-glow-accent::after{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:var(--accent);opacity:0.04;pointer-events:none}
+.kcard-glow-green::after{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:var(--green);opacity:0.05;pointer-events:none}
+.kcard-glow-red::after{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:var(--red);opacity:0.05;pointer-events:none}
+.kcard-label{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.kcard-label i{font-size:14px}
+.kcard-val{font-family:'Syne',sans-serif;font-size:38px;font-weight:800;letter-spacing:-0.04em;line-height:1;color:var(--text)}
+.kcard-val.accent{color:var(--accent)}
+.kcard-val.green{color:var(--green)}
+.kcard-val.yellow{color:var(--yellow)}
+.kcard-val.red{color:var(--red)}
+.kcard-val.blue{color:var(--blue)}
+.kcard-val.sm{font-size:26px}
+.kcard-sub{font-size:12px;color:var(--text3);margin-top:8px}
+.kcard-sub strong{color:var(--text2);font-weight:500}
+
+/* Stage breakdown card */
+.stage-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:22px}
+.stage-card-title{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:18px}
+.stage-rows{display:flex;flex-direction:column;gap:10px}
+.stage-row{display:flex;align-items:center;gap:10px}
+.stage-row-name{font-size:12px;color:var(--text2);width:110px;flex-shrink:0;display:flex;align-items:center;gap:6px}
+.stage-row-name::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.stage-bar-wrap{flex:1;background:var(--bg4);border-radius:4px;height:6px;overflow:hidden}
+.stage-bar{height:100%;border-radius:4px;transition:width 0.6s cubic-bezier(.22,1,.36,1)}
+.stage-count{font-family:'DM Mono',monospace;font-size:12px;color:var(--text3);width:24px;text-align:right;flex-shrink:0}
+
+/* At-risk list */
+.risk-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:22px}
+.risk-card-title{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.risk-badge{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--red-dim);color:var(--red);font-weight:500}
+.risk-rows{display:flex;flex-direction:column;gap:1px}
+.risk-row{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border-radius:var(--r);transition:background 0.08s}
+.risk-row:hover{background:var(--bg3)}
+.risk-name{font-size:13px;font-weight:500;color:var(--text)}
+.risk-detail{font-size:12px;color:var(--text3);margin-top:1px}
+.risk-stage{font-size:11px;padding:2px 8px;border-radius:20px}
+
+/* Highlights strip */
+.highlights{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:0}
+.hl-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:20px 22px;display:flex;align-items:center;gap:14px}
+.hl-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.hl-icon.accent{background:var(--accent-dim2);color:var(--accent)}
+.hl-icon.green{background:var(--green-dim);color:var(--green)}
+.hl-icon.blue{background:var(--blue-dim);color:var(--blue)}
+.hl-icon.yellow{background:var(--yellow-dim);color:var(--yellow)}
+.hl-icon.red{background:var(--red-dim);color:var(--red)}
+.hl-label{font-size:12px;color:var(--text3);margin-bottom:3px}
+.hl-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;letter-spacing:-0.03em;color:var(--text)}
+.hl-val.accent{color:var(--accent)}
+.hl-val.green{color:var(--green)}
+.hl-val.red{color:var(--red)}
+
+.no-data{text-align:center;padding:3rem;color:var(--text3);font-size:13px;opacity:0.6}
+.section-gap{margin-top:12px}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:28px;width:480px;max-width:96vw;max-height:92vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,0.7),0 0 0 1px rgba(200,240,96,0.05)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.modal-header h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;letter-spacing:-0.02em;color:var(--text)}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px}
+.mgrid .full{grid-column:1/-1}
+.field label{display:block;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px;font-weight:500}
+.field input,.field select,.field textarea{width:100%;font-size:13px;padding:9px 11px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text);outline:none;font-family:'DM Sans',sans-serif;transition:border-color 0.12s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--border2)}
+.field input::placeholder,.field textarea::placeholder{color:var(--text3)}
+.field textarea{resize:vertical;min-height:72px}
+.field select option{background:var(--bg3)}
+.vmode-row{display:flex;gap:6px;margin-bottom:10px}
+.vmode-btn{flex:1;padding:8px;font-size:12px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--text3);cursor:pointer;text-align:center;transition:all 0.12s;font-family:'DM Sans',sans-serif;font-weight:500}
+.vmode-btn.active{border-color:var(--accent);background:var(--accent-dim2);color:var(--accent)}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+
+@media(max-width:768px){
+  .row-4,.row-3{grid-template-columns:1fr 1fr}
+  .row-2,.highlights{grid-template-columns:1fr}
+  nav{padding:0 16px}
+  .page{padding:20px 16px 40px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    </div>
+    <span class="nav-name">KMX Technologies</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('input')" id="tab-input">
+      <i class="ti ti-table"></i> Projects
+    </button>
+    <button class="nav-tab" onclick="showPage('dash')" id="tab-dash">
+      <i class="ti ti-chart-bar"></i> Dashboard
+    </button>
+  </div>
+  <div class="nav-right">
+    <span class="date-tag" id="date-tag"></span>
+  </div>
+</nav>
+
+<!-- ═══ INPUT PAGE ═══ -->
+<div class="page active" id="page-input">
+  <div class="input-header">
+    <div>
+      <div class="input-title">Project Pipeline</div>
+      <div class="input-sub">Manage and track all active infrastructure engagements</div>
+    </div>
+    <button class="btn accent" onclick="openModal()"><i class="ti ti-plus"></i> New project</button>
+  </div>
+  <div class="toolbar">
+    <div class="search-wrap">
+      <i class="ti ti-search"></i>
+      <input type="text" id="search" placeholder="Search company or owner…" oninput="renderTable()">
+    </div>
+    <select id="flt-health" onchange="renderTable()">
+      <option value="">All health</option>
+      <option value="green">🟢 Green</option>
+      <option value="yellow">🟡 Yellow</option>
+      <option value="red">🔴 Red</option>
+    </select>
+    <select id="flt-stage" onchange="renderTable()">
+      <option value="">All stages</option>
+    </select>
+  </div>
+  <div class="tbl-card">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-name" onclick="sort('name')">Company <span class="sort-icon" id="si-name">↕</span></th>
+          <th class="col-owner" onclick="sort('owner')">Owner <span class="sort-icon" id="si-owner">↕</span></th>
+          <th class="col-stage" onclick="sort('stage')">Stage <span class="sort-icon" id="si-stage">↕</span></th>
+          <th class="col-health" onclick="sort('health')">Health <span class="sort-icon" id="si-health">↕</span></th>
+          <th class="col-value" onclick="sort('value')">Contract <span class="sort-icon" id="si-value">↕</span></th>
+          <th class="col-est">Est. range</th>
+          <th class="col-last" onclick="sort('last')">Last contact <span class="sort-icon" id="si-last">↕</span></th>
+          <th class="col-note">Notes</th>
+          <th class="col-act"></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ DASHBOARD PAGE ═══ -->
+<div class="page" id="page-dash">
+  <div class="dash-header">
+    <div class="dash-title">Pipeline Dashboard</div>
+    <div class="dash-sub" id="dash-sub"></div>
+  </div>
+  <div id="dash-content"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal-bg" onclick="bgClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">New project</h3>
+      <button class="ibtn" onclick="closeModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="mgrid">
+      <div class="field full"><label>Company name</label><input id="f-name" type="text" placeholder="e.g. Northgate Rail"></div>
+      <div class="field"><label>Account owner</label><input id="f-owner" type="text" placeholder="Your name"></div>
+      <div class="field"><label>Deal stage</label><select id="f-stage"></select></div>
+      <div class="field"><label>Health</label>
+        <select id="f-health">
+          <option value="green">🟢 Green</option>
+          <option value="yellow">🟡 Yellow</option>
+          <option value="red">🔴 Red</option>
+        </select>
+      </div>
+      <div class="field"><label>Last contact</label><input id="f-last" type="date"></div>
+      <div class="field full">
+        <label>Contract value</label>
+        <div class="vmode-row">
+          <div class="vmode-btn active" id="vm-tbd" onclick="setVMode('tbd')">TBD / Estimating</div>
+          <div class="vmode-btn" id="vm-known" onclick="setVMode('known')">Known value</div>
+        </div>
+        <div id="vf-tbd">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="field"><label>Est. low ($)</label><input id="f-est-low" type="number" min="0" placeholder="50000"></div>
+            <div class="field"><label>Est. high ($)</label><input id="f-est-high" type="number" min="0" placeholder="150000"></div>
+          </div>
+        </div>
+        <div id="vf-known" style="display:none">
+          <div class="field"><label>Contract value ($)</label><input id="f-value" type="number" min="0" placeholder="120000"></div>
+        </div>
+      </div>
+      <div class="field full"><label>Project notes</label><textarea id="f-note" placeholder="Infrastructure type, requirements, key contacts…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn accent" onclick="save()">Save project</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STAGES=[
+  {key:"prospect",label:"Prospect",color:"#9090a8"},
+  {key:"scoping",label:"Scoping",color:"#5090ff"},
+  {key:"proposal",label:"Proposal",color:"#a070f0"},
+  {key:"lab",label:"Lab Testing",color:"#f0b030"},
+  {key:"demo",label:"Demonstration",color:"#f070b0"},
+  {key:"negotiation",label:"Negotiation",color:"#30d0d0"},
+  {key:"won",label:"Closed Won",color:"#c8f060"},
+  {key:"lost",label:"Closed Lost",color:"#f05060"},
+];
+const STAGE_ORDER=STAGES.map(s=>s.key);
+
+document.getElementById("date-tag").textContent=new Date().toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",year:"numeric"});
+
+let customers=[
+  {id:1,name:"Northgate Rail Authority",owner:"A. Chen",stage:"negotiation",health:"green",valueTbd:false,value:420000,estLow:null,estHigh:null,last:"2026-05-19",note:"Signalling upgrade across 12 stations"},
+  {id:2,name:"Solus Energy Group",owner:"M. Patel",stage:"proposal",health:"yellow",valueTbd:true,value:null,estLow:80000,estHigh:200000,last:"2026-05-12",note:"Data centre power infrastructure"},
+  {id:3,name:"Crestview Municipal",owner:"A. Chen",stage:"scoping",health:"green",valueTbd:true,value:null,estLow:50000,estHigh:120000,last:"2026-05-20",note:"Fibre backbone for 3 districts"},
+  {id:4,name:"Halcyon Logistics",owner:"R. Torres",stage:"lab",health:"yellow",valueTbd:false,value:95000,estLow:null,estHigh:null,last:"2026-04-28",note:"Testing edge compute nodes"},
+  {id:5,name:"Meridian Ports Ltd",owner:"M. Patel",stage:"prospect",health:"green",valueTbd:true,value:null,estLow:null,estHigh:null,last:"2026-05-05",note:"Initial discussions — port automation"},
+  {id:6,name:"Arcline Water",owner:"R. Torres",stage:"lost",health:"red",valueTbd:false,value:310000,estLow:null,estHigh:null,last:"2026-03-10",note:"Went with competitor on price"},
+  {id:7,name:"Vektor Infrastructure",owner:"A. Chen",stage:"won",health:"green",valueTbd:false,value:185000,estLow:null,estHigh:null,last:"2026-04-15",note:"Signed — data hall expansion"},
+];
+let nextId=8;
+let editId=null;
+let sortKey="name";
+let sortDir=1;
+let vMode="tbd";
+
+function fmtMoney(v,short=false){
+  if(!v&&v!==0) return null;
+  if(short) return v>=1000000?"$"+(v/1000000).toFixed(1)+"M":v>=1000?"$"+Math.round(v/1000)+"k":"$"+v;
+  return "$"+Number(v).toLocaleString();
+}
+function fmtRange(c){
+  if(!c.valueTbd) return null;
+  if(!c.estLow&&!c.estHigh) return "TBD";
+  const lo=c.estLow?"$"+Math.round(c.estLow/1000)+"k":"";
+  const hi=c.estHigh?"$"+Math.round(c.estHigh/1000)+"k":"";
+  return (lo&&hi)?lo+" – "+hi:(lo||hi);
+}
+function fmtDate(d){
+  if(!d) return "—";
+  return new Date(d+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"});
+}
+function stageObj(key){return STAGES.find(s=>s.key===key)||STAGES[0]}
+function daysSince(d){
+  if(!d) return null;
+  return Math.round((new Date()-new Date(d+"T00:00:00"))/(1000*60*60*24));
+}
+
+// ── Build selects ─────────────────────────────────────
+function buildSelects(){
+  const fs=document.getElementById("f-stage");
+  fs.innerHTML=STAGES.map(s=>`<option value="${s.key}">${s.label}</option>`).join("");
+  const ft=document.getElementById("flt-stage");
+  ft.innerHTML=`<option value="">All stages</option>`+STAGES.map(s=>`<option value="${s.key}">${s.label}</option>`).join("");
+  ft.onchange=renderTable;
+}
+
+// ── Page switching ─────────────────────────────────────
+function showPage(p){
+  document.querySelectorAll(".page").forEach(el=>el.classList.remove("active"));
+  document.querySelectorAll(".nav-tab").forEach(el=>el.classList.remove("active"));
+  document.getElementById("page-"+p).classList.add("active");
+  document.getElementById("tab-"+p).classList.add("active");
+  if(p==="dash") renderDash();
+}
+
+// ── Table ──────────────────────────────────────────────
+function filtered(){
+  const q=document.getElementById("search").value.toLowerCase();
+  const fh=document.getElementById("flt-health").value;
+  const fs=document.getElementById("flt-stage").value;
+  return customers.filter(c=>{
+    return (!q||c.name.toLowerCase().includes(q)||(c.owner||"").toLowerCase().includes(q))
+      &&(!fh||c.health===fh)&&(!fs||c.stage===fs);
+  }).sort((a,b)=>{
+    let av=a[sortKey]??"",bv=b[sortKey]??"";
+    if(sortKey==="stage"){av=STAGE_ORDER.indexOf(a.stage);bv=STAGE_ORDER.indexOf(b.stage)}
+    if(sortKey==="value"){av=a.valueTbd?-1:(a.value||0);bv=b.valueTbd?-1:(b.value||0)}
+    return av<bv?-sortDir:av>bv?sortDir:0;
+  });
+}
+
+function sort(k){if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=1;}renderTable();}
+
+function renderTable(){
+  ["name","owner","stage","health","value","last"].forEach(k=>{
+    const el=document.getElementById("si-"+k);
+    if(!el) return;
+    el.textContent=sortKey===k?(sortDir===1?"↑":"↓"):"↕";
+    el.closest("th").classList.toggle("sorted",sortKey===k);
+  });
+  const rows=filtered();
+  const tbody=document.getElementById("tbody");
+  if(!rows.length){
+    tbody.innerHTML=`<tr><td colspan="9"><div class="empty"><i class="ti ti-building-factory-2"></i>No projects match your filters.</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML=rows.map(c=>{
+    const st=stageObj(c.stage);
+    const valStr=c.valueTbd?null:fmtMoney(c.value);
+    const rangeStr=fmtRange(c);
+    const notePreview=c.note?(c.note.length>24?c.note.slice(0,24)+"…":c.note):"—";
+    return `<tr>
+      <td class="col-name"><span class="cname">${c.name}</span></td>
+      <td class="col-owner" style="color:var(--text2)">${c.owner||"—"}</td>
+      <td class="col-stage"><span class="sp ${c.stage}">${st.label}</span></td>
+      <td class="col-health"><span class="hb"><span class="hdot ${c.health}"></span>${c.health.charAt(0).toUpperCase()+c.health.slice(1)}</span></td>
+      <td class="col-value">${valStr?`<span class="vknown">${valStr}</span>`:`<span class="vtbd">TBD</span>`}</td>
+      <td class="col-est"><span class="vrange">${c.valueTbd?(rangeStr||"—"):"—"}</span></td>
+      <td class="col-last" style="color:var(--text2);font-size:12px">${fmtDate(c.last)}</td>
+      <td class="col-note note-txt" title="${c.note||""}">${notePreview}</td>
+      <td class="col-act"><div class="row-actions">
+        <button class="ibtn" onclick="openModal(${c.id})" title="Edit"><i class="ti ti-edit"></i></button>
+        <button class="ibtn d" onclick="del(${c.id})" title="Delete"><i class="ti ti-trash"></i></button>
+      </div></td>
+    </tr>`;
+  }).join("");
+}
+
+// ── Dashboard ──────────────────────────────────────────
+function renderDash(){
+  const active=customers.filter(c=>c.stage!=="won"&&c.stage!=="lost");
+  const won=customers.filter(c=>c.stage==="won");
+  const lost=customers.filter(c=>c.stage==="lost");
+  const greens=active.filter(c=>c.health==="green").length;
+  const yellows=active.filter(c=>c.health==="yellow").length;
+  const reds=active.filter(c=>c.health==="red").length;
+  const confirmedPipe=active.filter(c=>!c.valueTbd&&c.value).reduce((s,c)=>s+c.value,0);
+  const wonVal=won.filter(c=>!c.valueTbd&&c.value).reduce((s,c)=>s+c.value,0);
+  const estMidPipe=active.filter(c=>c.valueTbd&&(c.estLow||c.estHigh)).reduce((s,c)=>{
+    const mid=((c.estLow||0)+(c.estHigh||0))/2;
+    return s+mid;
+  },0);
+  const winRate=won.length+lost.length>0?Math.round(won.length/(won.length+lost.length)*100):null;
+  const atRisk=active.filter(c=>c.health==="red");
+  const staleDays=30;
+  const stale=active.filter(c=>{const d=daysSince(c.last);return d!==null&&d>staleDays});
+  const closeToClosing=active.filter(c=>c.stage==="negotiation");
+  const maxStageCount=Math.max(...STAGES.map(s=>customers.filter(c=>c.stage===s.key).length),1);
+
+  document.getElementById("dash-sub").textContent=`Last updated ${new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})} · ${customers.length} total project${customers.length!==1?"s":""}`;
+
+  document.getElementById("dash-content").innerHTML=`
+    <!-- Row 1: top KPIs -->
+    <div class="dash-grid row-4">
+      <div class="kcard kcard-accent kcard-glow-accent">
+        <div class="kcard-label"><i class="ti ti-briefcase"></i> Active projects</div>
+        <div class="kcard-val accent">${active.length}</div>
+        <div class="kcard-sub"><strong>${customers.length}</strong> total incl. closed</div>
+      </div>
+      <div class="kcard kcard-blue">
+        <div class="kcard-label"><i class="ti ti-currency-dollar"></i> Confirmed pipeline</div>
+        <div class="kcard-val blue sm">${confirmedPipe?fmtMoney(confirmedPipe,true):"—"}</div>
+        <div class="kcard-sub">Known contract value only</div>
+      </div>
+      <div class="kcard kcard-green kcard-glow-green">
+        <div class="kcard-label"><i class="ti ti-trophy"></i> Closed won</div>
+        <div class="kcard-val green">${won.length}</div>
+        <div class="kcard-sub">${wonVal?`<strong>${fmtMoney(wonVal,true)}</strong> total value`:"No value recorded"}</div>
+      </div>
+      <div class="kcard ${reds>0?"kcard-red kcard-glow-red":"kcard-green"}">
+        <div class="kcard-label"><i class="ti ti-alert-triangle"></i> At risk</div>
+        <div class="kcard-val ${reds>0?"red":"green"}">${reds}</div>
+        <div class="kcard-sub">${reds>0?`${reds} project${reds!==1?"s":""} need attention`:"All active projects healthy"}</div>
+      </div>
+    </div>
+
+    <!-- Row 2: secondary KPIs -->
+    <div class="dash-grid row-4 section-gap">
+      <div class="kcard kcard-green">
+        <div class="kcard-label"><i class="ti ti-circle-check"></i> Green health</div>
+        <div class="kcard-val green">${greens}</div>
+        <div class="kcard-sub">of ${active.length} active projects</div>
+      </div>
+      <div class="kcard kcard-yellow">
+        <div class="kcard-label"><i class="ti ti-circle-dot"></i> Yellow health</div>
+        <div class="kcard-val yellow">${yellows}</div>
+        <div class="kcard-sub">${yellows>0?"Monitor closely":"None flagged"}</div>
+      </div>
+      <div class="kcard kcard-purple">
+        <div class="kcard-label"><i class="ti ti-target"></i> Win rate</div>
+        <div class="kcard-val sm" style="color:var(--purple)">${winRate!==null?winRate+"%":"—"}</div>
+        <div class="kcard-sub">${won.length} won · ${lost.length} lost</div>
+      </div>
+      <div class="kcard kcard-teal">
+        <div class="kcard-label"><i class="ti ti-flame"></i> Near closing</div>
+        <div class="kcard-val sm" style="color:var(--teal)">${closeToClosing.length}</div>
+        <div class="kcard-sub">${closeToClosing.length>0?closeToClosing.map(c=>c.name.split(" ")[0]).join(", "):"No projects in negotiation"}</div>
+      </div>
+    </div>
+
+    <!-- Row 3: stage breakdown + at-risk -->
+    <div class="dash-grid row-2 section-gap">
+      <div class="stage-card">
+        <div class="stage-card-title">Projects by stage</div>
+        <div class="stage-rows">
+          ${STAGES.map(s=>{
+            const cnt=customers.filter(c=>c.stage===s.key).length;
+            const pct=Math.round(cnt/Math.max(maxStageCount,1)*100);
+            return `<div class="stage-row">
+              <div class="stage-row-name" style="color:${s.color}">${s.label}</div>
+              <div class="stage-bar-wrap"><div class="stage-bar" style="width:${pct}%;background:${s.color}22;border-right:2px solid ${s.color}"></div></div>
+              <div class="stage-count">${cnt}</div>
+            </div>`;
+          }).join("")}
+        </div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-card-title">
+          <span>Needs attention</span>
+          ${atRisk.length+stale.length>0?`<span class="risk-badge">${atRisk.length+stale.length} flagged</span>`:""}
+        </div>
+        ${atRisk.length===0&&stale.length===0
+          ?`<div class="no-data"><i class="ti ti-circle-check" style="font-size:28px;display:block;margin-bottom:8px;color:var(--green);opacity:0.5"></i>No projects need attention right now</div>`
+          :`<div class="risk-rows">
+            ${atRisk.map(c=>`<div class="risk-row">
+              <div>
+                <div class="risk-name">${c.name}</div>
+                <div class="risk-detail"><span class="hdot red" style="display:inline-block;margin-right:4px;vertical-align:middle"></span>Red health · ${stageObj(c.stage).label}</div>
+              </div>
+              <span class="sp ${c.stage}" style="flex-shrink:0">${stageObj(c.stage).label}</span>
+            </div>`).join("")}
+            ${stale.filter(c=>c.health!=="red").map(c=>`<div class="risk-row">
+              <div>
+                <div class="risk-name">${c.name}</div>
+                <div class="risk-detail" style="color:var(--yellow)"><i class="ti ti-clock" style="font-size:11px;margin-right:3px"></i>No contact for ${daysSince(c.last)} days</div>
+              </div>
+              <span class="sp ${c.stage}" style="flex-shrink:0">${stageObj(c.stage).label}</span>
+            </div>`).join("")}
+          </div>`
+        }
+      </div>
+    </div>
+
+    <!-- Row 4: highlights -->
+    <div class="highlights section-gap">
+      <div class="hl-card">
+        <div class="hl-icon accent"><i class="ti ti-chart-line"></i></div>
+        <div>
+          <div class="hl-label">Est. upside (mid-range)</div>
+          <div class="hl-val accent">${estMidPipe?fmtMoney(estMidPipe,true):"—"}</div>
+        </div>
+      </div>
+      <div class="hl-card">
+        <div class="hl-icon green"><i class="ti ti-users"></i></div>
+        <div>
+          <div class="hl-label">Most active owner</div>
+          <div class="hl-val">${(()=>{
+            const counts={};
+            active.forEach(c=>{if(c.owner)counts[c.owner]=(counts[c.owner]||0)+1});
+            const top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+            return top?top[0]+" ("+top[1]+")":"—";
+          })()}</div>
+        </div>
+      </div>
+      <div class="hl-card">
+        <div class="hl-icon ${stale.length>0?"yellow":"green"}"><i class="ti ti-clock"></i></div>
+        <div>
+          <div class="hl-label">Stale (30+ days)</div>
+          <div class="hl-val ${stale.length>0?"red":"green"}">${stale.length} project${stale.length!==1?"s":""}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ── Modal ──────────────────────────────────────────────
+function setVMode(m){
+  vMode=m;
+  document.getElementById("vm-tbd").classList.toggle("active",m==="tbd");
+  document.getElementById("vm-known").classList.toggle("active",m==="known");
+  document.getElementById("vf-tbd").style.display=m==="tbd"?"block":"none";
+  document.getElementById("vf-known").style.display=m==="known"?"block":"none";
+}
+function openModal(id=null){
+  editId=id;
+  document.getElementById("modal-title").textContent=id?"Edit project":"New project";
+  const c=id?customers.find(x=>x.id===id):{};
+  document.getElementById("f-name").value=c.name||"";
+  document.getElementById("f-owner").value=c.owner||"";
+  document.getElementById("f-stage").value=c.stage||"prospect";
+  document.getElementById("f-health").value=c.health||"green";
+  document.getElementById("f-last").value=c.last||"";
+  document.getElementById("f-note").value=c.note||"";
+  const tbd=c.valueTbd!==false;
+  setVMode(tbd?"tbd":"known");
+  document.getElementById("f-est-low").value=c.estLow||"";
+  document.getElementById("f-est-high").value=c.estHigh||"";
+  document.getElementById("f-value").value=c.value||"";
+  document.getElementById("modal-bg").classList.add("open");
+}
+function closeModal(){document.getElementById("modal-bg").classList.remove("open");editId=null;}
+function bgClick(e){if(e.target===document.getElementById("modal-bg"))closeModal();}
+function save(){
+  const name=document.getElementById("f-name").value.trim();
+  if(!name) return;
+  const tbd=vMode==="tbd";
+  const data={name,owner:document.getElementById("f-owner").value.trim(),stage:document.getElementById("f-stage").value,health:document.getElementById("f-health").value,last:document.getElementById("f-last").value,note:document.getElementById("f-note").value.trim(),valueTbd:tbd,value:tbd?null:(parseFloat(document.getElementById("f-value").value)||null),estLow:tbd?(parseFloat(document.getElementById("f-est-low").value)||null):null,estHigh:tbd?(parseFloat(document.getElementById("f-est-high").value)||null):null};
+  if(editId){const i=customers.findIndex(c=>c.id===editId);customers[i]={...customers[i],...data};}
+  else customers.push({id:nextId++,...data});
+  closeModal();renderTable();
+}
+function del(id){if(confirm("Remove this project?"))customers=customers.filter(c=>c.id!==id);renderTable();}
+
+buildSelects();
+renderTable();
+</script>
+</body>
+</html>
