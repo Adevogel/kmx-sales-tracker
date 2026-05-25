@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KMX Technologies — Pipeline</title>
 <script>
+// ═══════════════════════════════════════════════════════
+//  STEP 1: Paste your Google Apps Script Web App URL here
+//  after completing the setup instructions.
+// ═══════════════════════════════════════════════════════
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOqC86DR1vG4VK2a8ZgG_qBnYBEfXtl-BR8fyBdLsmwFejo-ZiklD_-sudbx4YU4X6/exec";
+// ═══════════════════════════════════════════════════════
+
 (function(){
   const PASS="KMXTechnologies";
   const KEY="kmx_auth";
@@ -21,6 +28,7 @@
       sessionStorage.setItem(KEY,"1");
       document.getElementById("lock-screen").style.display="none";
       document.getElementById("app-root").style.display="block";
+      initApp();
     } else {
       const err=document.getElementById("lock-error");
       const inp=document.getElementById("lock-input");
@@ -40,36 +48,19 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#09090e;
-  --bg2:#111118;
-  --bg3:#18181f;
-  --bg4:#1e1e28;
-  --border:#252530;
-  --border2:#323240;
-  --text:#f0f0f5;
-  --text2:#9090a8;
-  --text3:#50506a;
-  --accent:#c8f060;
-  --accent2:#a0d030;
-  --accent-dim:rgba(200,240,96,0.08);
-  --accent-dim2:rgba(200,240,96,0.15);
-  --blue:#5090ff;
-  --blue-dim:rgba(80,144,255,0.1);
-  --green:#30d090;
-  --green-dim:rgba(48,208,144,0.1);
-  --yellow:#f0b030;
-  --yellow-dim:rgba(240,176,48,0.1);
-  --red:#f05060;
-  --red-dim:rgba(240,80,96,0.1);
-  --purple:#a070f0;
-  --purple-dim:rgba(160,112,240,0.1);
-  --pink:#f070b0;
-  --pink-dim:rgba(240,112,176,0.1);
-  --teal:#30d0d0;
-  --teal-dim:rgba(48,208,208,0.1);
-  --r:8px;
-  --r2:12px;
-  --r3:16px;
+  --bg:#09090e;--bg2:#111118;--bg3:#18181f;--bg4:#1e1e28;
+  --border:#252530;--border2:#323240;
+  --text:#f0f0f5;--text2:#9090a8;--text3:#50506a;
+  --accent:#c8f060;--accent2:#a0d030;
+  --accent-dim:rgba(200,240,96,0.08);--accent-dim2:rgba(200,240,96,0.15);
+  --blue:#5090ff;--blue-dim:rgba(80,144,255,0.1);
+  --green:#30d090;--green-dim:rgba(48,208,144,0.1);
+  --yellow:#f0b030;--yellow-dim:rgba(240,176,48,0.1);
+  --red:#f05060;--red-dim:rgba(240,80,96,0.1);
+  --purple:#a070f0;--purple-dim:rgba(160,112,240,0.1);
+  --pink:#f070b0;--pink-dim:rgba(240,112,176,0.1);
+  --teal:#30d0d0;--teal-dim:rgba(48,208,208,0.1);
+  --r:8px;--r2:12px;--r3:16px;
 }
 html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;overflow-x:hidden}
 
@@ -85,13 +76,26 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;border-bottom:1p
 .nav-tab i{font-size:15px}
 .nav-right{display:flex;align-items:center;gap:10px}
 .date-tag{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);padding:4px 10px;border:1px solid var(--border);border-radius:6px}
+.sync-btn{height:28px;padding:0 10px;font-size:12px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:'DM Sans',sans-serif;transition:all 0.12s}
+.sync-btn:hover{background:var(--bg4);color:var(--text)}
+.sync-btn i{font-size:13px}
+.sync-btn.syncing i{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* PAGES */
 .page{display:none;min-height:calc(100vh - 56px);margin-top:56px;padding:32px 28px 60px}
 .page.active{display:block}
 
-/* ═══ INPUT PAGE ═══ */
-.input-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+/* Status banner */
+.status-bar{display:none;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--r);margin-bottom:16px;font-size:13px}
+.status-bar.show{display:flex}
+.status-bar.loading{background:var(--blue-dim);border:1px solid rgba(80,144,255,0.2);color:#80b0ff}
+.status-bar.success{background:var(--green-dim);border:1px solid rgba(48,208,144,0.2);color:var(--green)}
+.status-bar.error{background:var(--red-dim);border:1px solid rgba(240,80,96,0.2);color:#f08090}
+.status-bar i{font-size:16px;flex-shrink:0}
+
+/* INPUT PAGE */
+.input-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
 .input-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:700;letter-spacing:-0.03em;color:var(--text)}
 .input-sub{font-size:13px;color:var(--text3);margin-top:3px}
 
@@ -113,7 +117,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;border-bottom:1p
 .btn.ghost{background:none;border-color:transparent;color:var(--text2)}
 .btn.ghost:hover{background:var(--bg3);color:var(--text)}
 
-/* Table card */
+/* Table */
 .tbl-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden}
 table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
 thead th{padding:10px 14px;text-align:left;font-size:11px;font-weight:500;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg3);cursor:pointer;user-select:none;white-space:nowrap}
@@ -125,16 +129,8 @@ tbody tr{border-bottom:1px solid var(--border);transition:background 0.08s}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:var(--bg3)}
 td{padding:12px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.col-name{width:20%}
-.col-owner{width:12%}
-.col-stage{width:15%}
-.col-health{width:10%}
-.col-value{width:11%}
-.col-est{width:11%}
-.col-last{width:11%}
-.col-note{width:6%}
-.col-act{width:4%;text-align:right}
-
+.col-name{width:20%}.col-owner{width:12%}.col-stage{width:15%}.col-health{width:10%}
+.col-value{width:11%}.col-est{width:11%}.col-last{width:11%}.col-note{width:6%}.col-act{width:4%;text-align:right}
 .cname{font-weight:500;color:var(--text)}
 
 /* Stage pills */
@@ -160,53 +156,40 @@ td{padding:12px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vknown{font-family:'DM Mono',monospace;font-size:12px;color:var(--text)}
 .vrange{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3)}
 .note-txt{font-size:12px;color:var(--text3)}
-
 .row-actions{display:flex;gap:2px;justify-content:flex-end}
 .ibtn{background:none;border:none;cursor:pointer;color:var(--text3);padding:5px;border-radius:6px;font-size:15px;display:inline-flex;align-items:center;transition:all 0.1s}
 .ibtn:hover{color:var(--text);background:var(--bg4)}
 .ibtn.d:hover{color:var(--red);background:var(--red-dim)}
-
 .empty{text-align:center;padding:4rem;color:var(--text3);font-size:13px}
 .empty i{font-size:32px;display:block;margin-bottom:10px;opacity:0.2}
 
-/* ═══ DASHBOARD PAGE ═══ */
+/* DASHBOARD */
 .dash-header{margin-bottom:32px}
 .dash-title{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-0.04em;color:var(--text);line-height:1}
 .dash-sub{font-size:13px;color:var(--text3);margin-top:6px}
-
 .dash-grid{display:grid;gap:12px}
 .row-4{grid-template-columns:repeat(4,1fr)}
 .row-3{grid-template-columns:repeat(3,1fr)}
 .row-2{grid-template-columns:repeat(2,1fr)}
-
-/* KPI cards */
 .kcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:22px 22px 18px;position:relative;overflow:hidden;transition:border-color 0.2s,transform 0.2s}
 .kcard:hover{border-color:var(--border2);transform:translateY(-1px)}
-.kcard-accent{border-top:2px solid var(--accent)}
-.kcard-blue{border-top:2px solid var(--blue)}
-.kcard-green{border-top:2px solid var(--green)}
-.kcard-yellow{border-top:2px solid var(--yellow)}
-.kcard-red{border-top:2px solid var(--red)}
-.kcard-purple{border-top:2px solid var(--purple)}
+.kcard-accent{border-top:2px solid var(--accent)}.kcard-blue{border-top:2px solid var(--blue)}
+.kcard-green{border-top:2px solid var(--green)}.kcard-yellow{border-top:2px solid var(--yellow)}
+.kcard-red{border-top:2px solid var(--red)}.kcard-purple{border-top:2px solid var(--purple)}
 .kcard-teal{border-top:2px solid var(--teal)}
-.kcard-glow-accent::after{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:var(--accent);opacity:0.04;pointer-events:none}
-.kcard-glow-green::after{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:var(--green);opacity:0.05;pointer-events:none}
-.kcard-glow-red::after{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:var(--red);opacity:0.05;pointer-events:none}
+.kcard-glow-accent::after,.kcard-glow-green::after,.kcard-glow-red::after{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;opacity:0.05;pointer-events:none}
+.kcard-glow-accent::after{background:var(--accent);opacity:0.04}
+.kcard-glow-green::after{background:var(--green)}
+.kcard-glow-red::after{background:var(--red)}
 .kcard-label{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
 .kcard-label i{font-size:14px}
 .kcard-val{font-family:'Syne',sans-serif;font-size:38px;font-weight:800;letter-spacing:-0.04em;line-height:1;color:var(--text)}
-.kcard-val.accent{color:var(--accent)}
-.kcard-val.green{color:var(--green)}
-.kcard-val.yellow{color:var(--yellow)}
-.kcard-val.red{color:var(--red)}
-.kcard-val.blue{color:var(--blue)}
-.kcard-val.sm{font-size:26px}
+.kcard-val.accent{color:var(--accent)}.kcard-val.green{color:var(--green)}.kcard-val.yellow{color:var(--yellow)}
+.kcard-val.red{color:var(--red)}.kcard-val.blue{color:var(--blue)}.kcard-val.sm{font-size:26px}
 .kcard-sub{font-size:12px;color:var(--text3);margin-top:8px}
 .kcard-sub strong{color:var(--text2);font-weight:500}
-
-/* Stage breakdown card */
-.stage-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:22px}
-.stage-card-title{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:18px}
+.stage-card,.risk-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:22px}
+.stage-card-title,.risk-card-title{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between}
 .stage-rows{display:flex;flex-direction:column;gap:10px}
 .stage-row{display:flex;align-items:center;gap:10px}
 .stage-row-name{font-size:12px;color:var(--text2);width:110px;flex-shrink:0;display:flex;align-items:center;gap:6px}
@@ -214,33 +197,21 @@ td{padding:12px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .stage-bar-wrap{flex:1;background:var(--bg4);border-radius:4px;height:6px;overflow:hidden}
 .stage-bar{height:100%;border-radius:4px;transition:width 0.6s cubic-bezier(.22,1,.36,1)}
 .stage-count{font-family:'DM Mono',monospace;font-size:12px;color:var(--text3);width:24px;text-align:right;flex-shrink:0}
-
-/* At-risk list */
-.risk-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:22px}
-.risk-card-title{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
 .risk-badge{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--red-dim);color:var(--red);font-weight:500}
 .risk-rows{display:flex;flex-direction:column;gap:1px}
 .risk-row{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border-radius:var(--r);transition:background 0.08s}
 .risk-row:hover{background:var(--bg3)}
 .risk-name{font-size:13px;font-weight:500;color:var(--text)}
 .risk-detail{font-size:12px;color:var(--text3);margin-top:1px}
-.risk-stage{font-size:11px;padding:2px 8px;border-radius:20px}
-
-/* Highlights strip */
 .highlights{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:0}
 .hl-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:20px 22px;display:flex;align-items:center;gap:14px}
 .hl-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-.hl-icon.accent{background:var(--accent-dim2);color:var(--accent)}
-.hl-icon.green{background:var(--green-dim);color:var(--green)}
-.hl-icon.blue{background:var(--blue-dim);color:var(--blue)}
-.hl-icon.yellow{background:var(--yellow-dim);color:var(--yellow)}
+.hl-icon.accent{background:var(--accent-dim2);color:var(--accent)}.hl-icon.green{background:var(--green-dim);color:var(--green)}
+.hl-icon.blue{background:var(--blue-dim);color:var(--blue)}.hl-icon.yellow{background:var(--yellow-dim);color:var(--yellow)}
 .hl-icon.red{background:var(--red-dim);color:var(--red)}
 .hl-label{font-size:12px;color:var(--text3);margin-bottom:3px}
 .hl-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;letter-spacing:-0.03em;color:var(--text)}
-.hl-val.accent{color:var(--accent)}
-.hl-val.green{color:var(--green)}
-.hl-val.red{color:var(--red)}
-
+.hl-val.accent{color:var(--accent)}.hl-val.green{color:var(--green)}.hl-val.red{color:var(--red)}
 .no-data{text-align:center;padding:3rem;color:var(--text3);font-size:13px;opacity:0.6}
 .section-gap{margin-top:12px}
 
@@ -262,18 +233,12 @@ td{padding:12px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vmode-btn{flex:1;padding:8px;font-size:12px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--text3);cursor:pointer;text-align:center;transition:all 0.12s;font-family:'DM Sans',sans-serif;font-weight:500}
 .vmode-btn.active{border-color:var(--accent);background:var(--accent-dim2);color:var(--accent)}
 .modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.save-spinner{display:none;width:14px;height:14px;border:2px solid rgba(9,9,14,0.3);border-top-color:#09090e;border-radius:50%;animation:spin 0.7s linear infinite}
 
-@media(max-width:768px){
-  .row-4,.row-3{grid-template-columns:1fr 1fr}
-  .row-2,.highlights{grid-template-columns:1fr}
-  nav{padding:0 16px}
-  .page{padding:20px 16px 40px}
-}
-
-/* Lock screen */
+/* LOCK */
 #lock-screen{display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);align-items:center;justify-content:center;flex-direction:column}
 #lock-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,rgba(200,240,96,0.05) 0%,transparent 65%);pointer-events:none}
-.lock-box{width:360px;max-width:92vw;display:flex;flex-direction:column;align-items:center;gap:0}
+.lock-box{width:360px;max-width:92vw;display:flex;flex-direction:column;align-items:center}
 .lock-logo{width:52px;height:52px;border-radius:14px;background:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:24px;box-shadow:0 0 40px rgba(200,240,96,0.25)}
 .lock-logo svg{width:26px;height:26px;fill:none;stroke:#09090e;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 .lock-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.03em;color:var(--text);margin-bottom:6px;text-align:center}
@@ -285,8 +250,14 @@ td{padding:12px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #lock-input::placeholder{color:var(--text3);letter-spacing:0}
 .lock-btn{width:100%;height:46px;background:var(--accent);color:#09090e;border:none;border-radius:var(--r2);font-size:14px;font-weight:700;font-family:'Syne',sans-serif;letter-spacing:0.02em;cursor:pointer;transition:all 0.15s;margin-top:2px}
 .lock-btn:hover{background:var(--accent2);transform:translateY(-1px)}
-.lock-btn:active{transform:translateY(0)}
 #lock-error{font-size:12px;color:var(--red);text-align:center;margin-top:8px;opacity:0;transition:opacity 0.2s;height:16px}
+
+@media(max-width:768px){
+  .row-4,.row-3{grid-template-columns:1fr 1fr}
+  .row-2,.highlights{grid-template-columns:1fr}
+  nav{padding:0 16px}
+  .page{padding:20px 16px 40px}
+}
 </style>
 </head>
 <body>
@@ -312,25 +283,20 @@ td{padding:12px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 <div id="app-root">
 <nav>
   <div class="nav-brand">
-    <div class="nav-logo">
-      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    </div>
+    <div class="nav-logo"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
     <span class="nav-name">KMX Technologies</span>
   </div>
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="showPage('input')" id="tab-input">
-      <i class="ti ti-table"></i> Projects
-    </button>
-    <button class="nav-tab" onclick="showPage('dash')" id="tab-dash">
-      <i class="ti ti-chart-bar"></i> Dashboard
-    </button>
+    <button class="nav-tab active" onclick="showPage('input')" id="tab-input"><i class="ti ti-table"></i> Projects</button>
+    <button class="nav-tab" onclick="showPage('dash')" id="tab-dash"><i class="ti ti-chart-bar"></i> Dashboard</button>
   </div>
   <div class="nav-right">
+    <button class="sync-btn" onclick="loadFromSheets()" id="sync-btn" title="Sync with Google Sheets"><i class="ti ti-refresh" id="sync-icon"></i> Sync</button>
     <span class="date-tag" id="date-tag"></span>
   </div>
 </nav>
 
-<!-- ═══ INPUT PAGE ═══ -->
+<!-- INPUT PAGE -->
 <div class="page active" id="page-input">
   <div class="input-header">
     <div>
@@ -338,6 +304,10 @@ td{padding:12px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       <div class="input-sub">Manage and track all active infrastructure engagements</div>
     </div>
     <button class="btn accent" onclick="openModal()"><i class="ti ti-plus"></i> New project</button>
+  </div>
+  <div id="status-bar" class="status-bar">
+    <i class="ti ti-info-circle" id="status-icon"></i>
+    <span id="status-msg"></span>
   </div>
   <div class="toolbar">
     <div class="search-wrap">
@@ -374,7 +344,7 @@ td{padding:12px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   </div>
 </div>
 
-<!-- ═══ DASHBOARD PAGE ═══ -->
+<!-- DASHBOARD PAGE -->
 <div class="page" id="page-dash">
   <div class="dash-header">
     <div class="dash-title">Pipeline Dashboard</div>
@@ -382,6 +352,7 @@ td{padding:12px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   </div>
   <div id="dash-content"></div>
 </div>
+</div><!-- /app-root -->
 
 <!-- MODAL -->
 <div class="modal-bg" id="modal-bg" onclick="bgClick(event)">
@@ -422,7 +393,10 @@ td{padding:12px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     </div>
     <div class="modal-footer">
       <button class="btn ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn accent" onclick="save()">Save project</button>
+      <button class="btn accent" onclick="save()" id="save-btn">
+        <div class="save-spinner" id="save-spinner"></div>
+        <span id="save-label">Save project</span>
+      </button>
     </div>
   </div>
 </div>
@@ -440,23 +414,88 @@ const STAGES=[
 ];
 const STAGE_ORDER=STAGES.map(s=>s.key);
 
-document.getElementById("date-tag").textContent=new Date().toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",year:"numeric"});
-
-let customers=[
-  {id:1,name:"Northgate Rail Authority",owner:"A. Chen",stage:"negotiation",health:"green",valueTbd:false,value:420000,estLow:null,estHigh:null,last:"2026-05-19",note:"Signalling upgrade across 12 stations"},
-  {id:2,name:"Solus Energy Group",owner:"M. Patel",stage:"proposal",health:"yellow",valueTbd:true,value:null,estLow:80000,estHigh:200000,last:"2026-05-12",note:"Data centre power infrastructure"},
-  {id:3,name:"Crestview Municipal",owner:"A. Chen",stage:"scoping",health:"green",valueTbd:true,value:null,estLow:50000,estHigh:120000,last:"2026-05-20",note:"Fibre backbone for 3 districts"},
-  {id:4,name:"Halcyon Logistics",owner:"R. Torres",stage:"lab",health:"yellow",valueTbd:false,value:95000,estLow:null,estHigh:null,last:"2026-04-28",note:"Testing edge compute nodes"},
-  {id:5,name:"Meridian Ports Ltd",owner:"M. Patel",stage:"prospect",health:"green",valueTbd:true,value:null,estLow:null,estHigh:null,last:"2026-05-05",note:"Initial discussions — port automation"},
-  {id:6,name:"Arcline Water",owner:"R. Torres",stage:"lost",health:"red",valueTbd:false,value:310000,estLow:null,estHigh:null,last:"2026-03-10",note:"Went with competitor on price"},
-  {id:7,name:"Vektor Infrastructure",owner:"A. Chen",stage:"won",health:"green",valueTbd:false,value:185000,estLow:null,estHigh:null,last:"2026-04-15",note:"Signed — data hall expansion"},
-];
-let nextId=8;
+let customers=[];
+let nextId=1;
 let editId=null;
 let sortKey="name";
 let sortDir=1;
 let vMode="tbd";
 
+document.getElementById("date-tag").textContent=new Date().toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",year:"numeric"});
+
+// ── Sheets API ─────────────────────────────────────────
+function isConfigured(){
+  return SCRIPT_URL && SCRIPT_URL !== "PASTE_YOUR_SCRIPT_URL_HERE";
+}
+
+function setStatus(type,msg){
+  const bar=document.getElementById("status-bar");
+  const icon=document.getElementById("status-icon");
+  const txt=document.getElementById("status-msg");
+  const icons={loading:"ti-loader-2",success:"ti-circle-check",error:"ti-alert-circle"};
+  bar.className="status-bar show "+type;
+  icon.className="ti "+icons[type];
+  txt.textContent=msg;
+  if(type==="success"||type==="error") setTimeout(()=>bar.classList.remove("show"),3500);
+}
+
+async function loadFromSheets(){
+  if(!isConfigured()){
+    setStatus("error","Google Sheets not connected yet. Paste your Script URL in the code first.");
+    return;
+  }
+  const btn=document.getElementById("sync-btn");
+  const icon=document.getElementById("sync-icon");
+  btn.disabled=true;
+  icon.className="ti ti-refresh syncing";
+  setStatus("loading","Loading projects from Google Sheets…");
+  try{
+    const res=await fetch(SCRIPT_URL+"?action=get");
+    const data=await res.json();
+    if(data.error) throw new Error(data.error);
+    customers=data.rows.map((r,i)=>({
+      id:i+1,
+      name:r[0]||"",owner:r[1]||"",stage:r[2]||"prospect",health:r[3]||"green",
+      valueTbd:r[4]==="TRUE"||r[4]===true,
+      value:r[5]?parseFloat(r[5]):null,
+      estLow:r[6]?parseFloat(r[6]):null,
+      estHigh:r[7]?parseFloat(r[7]):null,
+      last:r[8]||"",note:r[9]||""
+    }));
+    nextId=customers.length+1;
+    setStatus("success","Synced successfully — "+customers.length+" project"+(customers.length!==1?"s":"")+" loaded.");
+    renderTable();
+  } catch(e){
+    setStatus("error","Could not connect to Google Sheets. Check your Script URL.");
+  }
+  btn.disabled=false;
+  icon.className="ti ti-refresh";
+}
+
+async function saveToSheets(action, rowData, rowIndex){
+  if(!isConfigured()) return true; // no sheets, just save locally
+  try{
+    const body={action, rowData, rowIndex};
+    await fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify(body)});
+    return true;
+  } catch(e){
+    setStatus("error","Saved locally but could not sync to Google Sheets.");
+    return false;
+  }
+}
+
+// ── App init ───────────────────────────────────────────
+function initApp(){
+  buildSelects();
+  if(isConfigured()){
+    loadFromSheets();
+  } else {
+    renderTable();
+    setStatus("error","Google Sheets not connected. Add your Script URL to save data across devices.");
+  }
+}
+
+// ── Helpers ────────────────────────────────────────────
 function fmtMoney(v,short=false){
   if(!v&&v!==0) return null;
   if(short) return v>=1000000?"$"+(v/1000000).toFixed(1)+"M":v>=1000?"$"+Math.round(v/1000)+"k":"$"+v;
@@ -478,17 +517,19 @@ function daysSince(d){
   if(!d) return null;
   return Math.round((new Date()-new Date(d+"T00:00:00"))/(1000*60*60*24));
 }
+function customerToRow(c){
+  return [c.name,c.owner,c.stage,c.health,c.valueTbd?"TRUE":"FALSE",c.value||"",c.estLow||"",c.estHigh||"",c.last,c.note];
+}
 
-// ── Build selects ─────────────────────────────────────
+// ── Selects ────────────────────────────────────────────
 function buildSelects(){
-  const fs=document.getElementById("f-stage");
-  fs.innerHTML=STAGES.map(s=>`<option value="${s.key}">${s.label}</option>`).join("");
+  document.getElementById("f-stage").innerHTML=STAGES.map(s=>`<option value="${s.key}">${s.label}</option>`).join("");
   const ft=document.getElementById("flt-stage");
   ft.innerHTML=`<option value="">All stages</option>`+STAGES.map(s=>`<option value="${s.key}">${s.label}</option>`).join("");
   ft.onchange=renderTable;
 }
 
-// ── Page switching ─────────────────────────────────────
+// ── Pages ──────────────────────────────────────────────
 function showPage(p){
   document.querySelectorAll(".page").forEach(el=>el.classList.remove("active"));
   document.querySelectorAll(".nav-tab").forEach(el=>el.classList.remove("active"));
@@ -525,7 +566,7 @@ function renderTable(){
   const rows=filtered();
   const tbody=document.getElementById("tbody");
   if(!rows.length){
-    tbody.innerHTML=`<tr><td colspan="9"><div class="empty"><i class="ti ti-building-factory-2"></i>No projects match your filters.</div></td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="9"><div class="empty"><i class="ti ti-building-factory-2"></i>${customers.length===0?"No projects yet. Click \"New project\" to add your first.":"No projects match your filters."}</div></td></tr>`;
     return;
   }
   tbody.innerHTML=rows.map(c=>{
@@ -560,21 +601,14 @@ function renderDash(){
   const reds=active.filter(c=>c.health==="red").length;
   const confirmedPipe=active.filter(c=>!c.valueTbd&&c.value).reduce((s,c)=>s+c.value,0);
   const wonVal=won.filter(c=>!c.valueTbd&&c.value).reduce((s,c)=>s+c.value,0);
-  const estMidPipe=active.filter(c=>c.valueTbd&&(c.estLow||c.estHigh)).reduce((s,c)=>{
-    const mid=((c.estLow||0)+(c.estHigh||0))/2;
-    return s+mid;
-  },0);
+  const estMidPipe=active.filter(c=>c.valueTbd&&(c.estLow||c.estHigh)).reduce((s,c)=>s+((c.estLow||0)+(c.estHigh||0))/2,0);
   const winRate=won.length+lost.length>0?Math.round(won.length/(won.length+lost.length)*100):null;
   const atRisk=active.filter(c=>c.health==="red");
-  const staleDays=30;
-  const stale=active.filter(c=>{const d=daysSince(c.last);return d!==null&&d>staleDays});
+  const stale=active.filter(c=>{const d=daysSince(c.last);return d!==null&&d>30});
   const closeToClosing=active.filter(c=>c.stage==="negotiation");
   const maxStageCount=Math.max(...STAGES.map(s=>customers.filter(c=>c.stage===s.key).length),1);
-
-  document.getElementById("dash-sub").textContent=`Last updated ${new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})} · ${customers.length} total project${customers.length!==1?"s":""}`;
-
+  document.getElementById("dash-sub").textContent=`${new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})} · ${customers.length} total project${customers.length!==1?"s":""}`;
   document.getElementById("dash-content").innerHTML=`
-    <!-- Row 1: top KPIs -->
     <div class="dash-grid row-4">
       <div class="kcard kcard-accent kcard-glow-accent">
         <div class="kcard-label"><i class="ti ti-briefcase"></i> Active projects</div>
@@ -597,8 +631,6 @@ function renderDash(){
         <div class="kcard-sub">${reds>0?`${reds} project${reds!==1?"s":""} need attention`:"All active projects healthy"}</div>
       </div>
     </div>
-
-    <!-- Row 2: secondary KPIs -->
     <div class="dash-grid row-4 section-gap">
       <div class="kcard kcard-green">
         <div class="kcard-label"><i class="ti ti-circle-check"></i> Green health</div>
@@ -621,15 +653,13 @@ function renderDash(){
         <div class="kcard-sub">${closeToClosing.length>0?closeToClosing.map(c=>c.name.split(" ")[0]).join(", "):"No projects in negotiation"}</div>
       </div>
     </div>
-
-    <!-- Row 3: stage breakdown + at-risk -->
     <div class="dash-grid row-2 section-gap">
       <div class="stage-card">
         <div class="stage-card-title">Projects by stage</div>
         <div class="stage-rows">
           ${STAGES.map(s=>{
             const cnt=customers.filter(c=>c.stage===s.key).length;
-            const pct=Math.round(cnt/Math.max(maxStageCount,1)*100);
+            const pct=Math.round(cnt/maxStageCount*100);
             return `<div class="stage-row">
               <div class="stage-row-name" style="color:${s.color}">${s.label}</div>
               <div class="stage-bar-wrap"><div class="stage-bar" style="width:${pct}%;background:${s.color}22;border-right:2px solid ${s.color}"></div></div>
@@ -646,55 +676,26 @@ function renderDash(){
         ${atRisk.length===0&&stale.length===0
           ?`<div class="no-data"><i class="ti ti-circle-check" style="font-size:28px;display:block;margin-bottom:8px;color:var(--green);opacity:0.5"></i>No projects need attention right now</div>`
           :`<div class="risk-rows">
-            ${atRisk.map(c=>`<div class="risk-row">
-              <div>
-                <div class="risk-name">${c.name}</div>
-                <div class="risk-detail"><span class="hdot red" style="display:inline-block;margin-right:4px;vertical-align:middle"></span>Red health · ${stageObj(c.stage).label}</div>
-              </div>
-              <span class="sp ${c.stage}" style="flex-shrink:0">${stageObj(c.stage).label}</span>
-            </div>`).join("")}
-            ${stale.filter(c=>c.health!=="red").map(c=>`<div class="risk-row">
-              <div>
-                <div class="risk-name">${c.name}</div>
-                <div class="risk-detail" style="color:var(--yellow)"><i class="ti ti-clock" style="font-size:11px;margin-right:3px"></i>No contact for ${daysSince(c.last)} days</div>
-              </div>
-              <span class="sp ${c.stage}" style="flex-shrink:0">${stageObj(c.stage).label}</span>
-            </div>`).join("")}
+            ${atRisk.map(c=>`<div class="risk-row"><div><div class="risk-name">${c.name}</div><div class="risk-detail"><span class="hdot red" style="display:inline-block;margin-right:4px;vertical-align:middle"></span>Red health · ${stageObj(c.stage).label}</div></div><span class="sp ${c.stage}" style="flex-shrink:0">${stageObj(c.stage).label}</span></div>`).join("")}
+            ${stale.filter(c=>c.health!=="red").map(c=>`<div class="risk-row"><div><div class="risk-name">${c.name}</div><div class="risk-detail" style="color:var(--yellow)"><i class="ti ti-clock" style="font-size:11px;margin-right:3px"></i>No contact for ${daysSince(c.last)} days</div></div><span class="sp ${c.stage}" style="flex-shrink:0">${stageObj(c.stage).label}</span></div>`).join("")}
           </div>`
         }
       </div>
     </div>
-
-    <!-- Row 4: highlights -->
     <div class="highlights section-gap">
       <div class="hl-card">
         <div class="hl-icon accent"><i class="ti ti-chart-line"></i></div>
-        <div>
-          <div class="hl-label">Est. upside (mid-range)</div>
-          <div class="hl-val accent">${estMidPipe?fmtMoney(estMidPipe,true):"—"}</div>
-        </div>
+        <div><div class="hl-label">Est. upside (mid-range)</div><div class="hl-val accent">${estMidPipe?fmtMoney(estMidPipe,true):"—"}</div></div>
       </div>
       <div class="hl-card">
         <div class="hl-icon green"><i class="ti ti-users"></i></div>
-        <div>
-          <div class="hl-label">Most active owner</div>
-          <div class="hl-val">${(()=>{
-            const counts={};
-            active.forEach(c=>{if(c.owner)counts[c.owner]=(counts[c.owner]||0)+1});
-            const top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
-            return top?top[0]+" ("+top[1]+")":"—";
-          })()}</div>
-        </div>
+        <div><div class="hl-label">Most active owner</div><div class="hl-val">${(()=>{const counts={};active.forEach(c=>{if(c.owner)counts[c.owner]=(counts[c.owner]||0)+1});const top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];return top?top[0]+" ("+top[1]+")":"—";})()}</div></div>
       </div>
       <div class="hl-card">
         <div class="hl-icon ${stale.length>0?"yellow":"green"}"><i class="ti ti-clock"></i></div>
-        <div>
-          <div class="hl-label">Stale (30+ days)</div>
-          <div class="hl-val ${stale.length>0?"red":"green"}">${stale.length} project${stale.length!==1?"s":""}</div>
-        </div>
+        <div><div class="hl-label">Stale (30+ days)</div><div class="hl-val ${stale.length>0?"red":"green"}">${stale.length} project${stale.length!==1?"s":""}</div></div>
       </div>
-    </div>
-  `;
+    </div>`;
 }
 
 // ── Modal ──────────────────────────────────────────────
@@ -715,8 +716,7 @@ function openModal(id=null){
   document.getElementById("f-health").value=c.health||"green";
   document.getElementById("f-last").value=c.last||"";
   document.getElementById("f-note").value=c.note||"";
-  const tbd=c.valueTbd!==false;
-  setVMode(tbd?"tbd":"known");
+  setVMode(c.valueTbd!==false?"tbd":"known");
   document.getElementById("f-est-low").value=c.estLow||"";
   document.getElementById("f-est-high").value=c.estHigh||"";
   document.getElementById("f-value").value=c.value||"";
@@ -724,20 +724,54 @@ function openModal(id=null){
 }
 function closeModal(){document.getElementById("modal-bg").classList.remove("open");editId=null;}
 function bgClick(e){if(e.target===document.getElementById("modal-bg"))closeModal();}
-function save(){
+
+async function save(){
   const name=document.getElementById("f-name").value.trim();
   if(!name) return;
   const tbd=vMode==="tbd";
-  const data={name,owner:document.getElementById("f-owner").value.trim(),stage:document.getElementById("f-stage").value,health:document.getElementById("f-health").value,last:document.getElementById("f-last").value,note:document.getElementById("f-note").value.trim(),valueTbd:tbd,value:tbd?null:(parseFloat(document.getElementById("f-value").value)||null),estLow:tbd?(parseFloat(document.getElementById("f-est-low").value)||null):null,estHigh:tbd?(parseFloat(document.getElementById("f-est-high").value)||null):null};
-  if(editId){const i=customers.findIndex(c=>c.id===editId);customers[i]={...customers[i],...data};}
-  else customers.push({id:nextId++,...data});
-  closeModal();renderTable();
-}
-function del(id){if(confirm("Remove this project?"))customers=customers.filter(c=>c.id!==id);renderTable();}
+  const data={
+    name,owner:document.getElementById("f-owner").value.trim(),
+    stage:document.getElementById("f-stage").value,
+    health:document.getElementById("f-health").value,
+    last:document.getElementById("f-last").value,
+    note:document.getElementById("f-note").value.trim(),
+    valueTbd:tbd,
+    value:tbd?null:(parseFloat(document.getElementById("f-value").value)||null),
+    estLow:tbd?(parseFloat(document.getElementById("f-est-low").value)||null):null,
+    estHigh:tbd?(parseFloat(document.getElementById("f-est-high").value)||null):null
+  };
 
-buildSelects();
-renderTable();
+  // Show saving spinner
+  document.getElementById("save-spinner").style.display="block";
+  document.getElementById("save-label").textContent="Saving…";
+  document.getElementById("save-btn").disabled=true;
+
+  if(editId){
+    const i=customers.findIndex(c=>c.id===editId);
+    customers[i]={...customers[i],...data};
+    await saveToSheets("update", customerToRow(customers[i]), i);
+  } else {
+    const newC={id:nextId++,...data};
+    customers.push(newC);
+    await saveToSheets("append", customerToRow(newC), null);
+  }
+
+  document.getElementById("save-spinner").style.display="none";
+  document.getElementById("save-label").textContent="Save project";
+  document.getElementById("save-btn").disabled=false;
+  closeModal();
+  renderTable();
+  if(isConfigured()) setStatus("success","Project saved to Google Sheets.");
+}
+
+async function del(id){
+  if(!confirm("Remove this project?")) return;
+  const i=customers.findIndex(c=>c.id===id);
+  await saveToSheets("delete", null, i);
+  customers=customers.filter(c=>c.id!==id);
+  renderTable();
+  if(isConfigured()) setStatus("success","Project deleted.");
+}
 </script>
-</div><!-- /app-root -->
 </body>
 </html>
