@@ -275,10 +275,129 @@ td{padding:11px 13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lic-status.expired{background:var(--rdim);color:#f08090;border-color:rgba(240,80,96,0.2)}
 .lic-type{display:inline-block;font-size:11px;padding:2px 7px;border-radius:4px;background:var(--bdim);color:#80b0ff;font-weight:500;letter-spacing:0.03em}
 .lic-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
-@media(max-width:768px){
-  .r4,.r3{grid-template-columns:1fr 1fr}
-  .r2,.hlrow{grid-template-columns:1fr}
-  nav,.page{padding-left:14px;padding-right:14px}
+
+/* ══════════════════════════════════════════════
+   MOBILE  (≤ 680px)
+   Bottom tab bar replaces top nav groups
+   Cards stack to single column
+   Table gets horizontal scroll
+══════════════════════════════════════════════ */
+@media(max-width:680px){
+
+  /* Nav: hide group tabs, show only brand + sync */
+  .ngroups{display:none}
+  nav{height:52px;padding:0 16px}
+  .nname{font-size:15px}
+  .slbl{display:none}
+
+  /* Bottom tab bar */
+  .mob-tabs{
+    display:flex;
+    position:fixed;
+    bottom:0;left:0;right:0;
+    z-index:200;
+    background:rgba(9,9,14,0.97);
+    backdrop-filter:blur(16px);
+    border-top:1px solid var(--border2);
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom)) 4px;
+  }
+  .mob-tab{
+    flex:1;display:flex;flex-direction:column;align-items:center;
+    gap:3px;padding:6px 4px 4px;border:none;background:none;
+    color:var(--text3);cursor:pointer;font-family:var(--fn);
+    font-size:9px;font-weight:600;letter-spacing:0.05em;
+    text-transform:uppercase;transition:color 0.15s;
+    border-radius:var(--r);
+  }
+  .mob-tab i{font-size:20px;transition:color 0.15s}
+  .mob-tab.active{color:var(--text)}
+  .mob-tab.active.pipeline{color:var(--accent)}
+  .mob-tab.active.pipeline i{color:var(--accent)}
+  .mob-tab.active.license{color:var(--blue)}
+  .mob-tab.active.license i{color:var(--blue)}
+  .mob-tab-divider{width:1px;background:var(--border);align-self:stretch;margin:4px 0;flex-shrink:0}
+
+  /* Pages get bottom padding for tab bar */
+  .page{
+    margin-top:52px;
+    padding:20px 14px 90px;
+    min-height:calc(100vh - 52px);
+  }
+
+  /* Grids: all single column on mobile */
+  .r4,.r3,.r2,.hlrow,.lic-summary{grid-template-columns:1fr 1fr}
+  .dgrid.r4 .kc:last-child,.dgrid.r3 .kc:last-child{grid-column:auto}
+
+  /* KPI cards: more compact */
+  .kc{padding:14px 14px 12px}
+  .kval{font-size:26px}
+  .kval.sm{font-size:18px}
+  .klbl{font-size:10px;margin-bottom:6px}
+  .ksub{font-size:10px}
+
+  /* Headers */
+  .ptitle,.dtitle{font-size:20px}
+  .dh{margin-bottom:18px}
+  .ph{margin-bottom:16px}
+
+  /* Toolbar: wrap and full-width search */
+  .toolbar{gap:6px}
+  .swrap{max-width:100%;min-width:0;flex:1 1 100%}
+  .fsel{flex:1;min-width:0}
+
+  /* Table: horizontal scroll */
+  .tcard{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:640px}
+  thead th,td{padding:9px 10px}
+
+  /* Charts: slightly shorter on mobile */
+  .chart-wrap.bar{height:160px}
+  .chart-wrap.donut{max-width:200px}
+
+  /* Stage + risk cards */
+  .scard,.rcard,.chcard{padding:14px}
+  .scardtitle,.rcardtitle,.chtitle{margin-bottom:12px}
+  .srname{width:85px;font-size:11px}
+
+  /* Expiry tiers */
+  .expiry-tier{padding:14px}
+  .expiry-item{padding:8px 10px}
+  .expiry-item-name{font-size:12px}
+  .expiry-days{font-size:12px}
+
+  /* Modal: full screen on mobile */
+  .mbg{align-items:flex-end}
+  .modal{
+    width:100%;max-width:100%;
+    border-radius:20px 20px 0 0;
+    padding:20px 18px 32px;
+    max-height:88vh;
+  }
+  .mgrid{grid-template-columns:1fr}
+  .mgrid .full{grid-column:1}
+
+  /* Lock screen */
+  .lbox{padding:0 8px}
+  .ltitle{font-size:22px}
+
+  /* Highlights row */
+  .hlrow{grid-template-columns:1fr}
+  .hlrow .hlc{padding:14px}
+
+  /* Hide note column on mobile — too cramped */
+  .cnote,.col-note{display:none}
+}
+
+/* Medium screens (681–1024px) */
+@media(min-width:681px) and (max-width:1024px){
+  .r4{grid-template-columns:repeat(2,1fr)}
+  .r3{grid-template-columns:repeat(3,1fr)}
+  .page{padding:24px 18px 50px}
+  .mob-tabs{display:none}
+}
+
+@media(min-width:1025px){
+  .mob-tabs{display:none}
 }
 </style>
 </head>
@@ -324,6 +443,23 @@ td{padding:11px 13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     <button class="nsync" onclick="syncNow()"><i class="ti ti-refresh" id="sicon"></i>Sync</button>
   </div>
 </nav>
+
+<!-- Mobile bottom tab bar -->
+<div class="mob-tabs" id="mob-tabs">
+  <button class="mob-tab pipeline active" id="mtab-projects" onclick="showPage('projects')">
+    <i class="ti ti-table"></i>Projects
+  </button>
+  <button class="mob-tab pipeline" id="mtab-dash" onclick="showPage('dash')">
+    <i class="ti ti-layout-dashboard"></i>Pipeline
+  </button>
+  <div class="mob-tab-divider"></div>
+  <button class="mob-tab license" id="mtab-licenses" onclick="showPage('licenses')">
+    <i class="ti ti-certificate"></i>Licenses
+  </button>
+  <button class="mob-tab license" id="mtab-licdash" onclick="showPage('licdash')">
+    <i class="ti ti-chart-pie"></i>Lic. Dash
+  </button>
+</div>
 
 <!-- Projects -->
 <div class="page active" id="page-projects">
@@ -673,11 +809,16 @@ function buildSelects(){
 function showPage(p){
   document.querySelectorAll(".page").forEach(el=>el.classList.remove("active"));
   document.querySelectorAll(".ntab").forEach(el=>el.classList.remove("active"));
+  document.querySelectorAll(".mob-tab").forEach(el=>el.classList.remove("active"));
   document.getElementById("page-"+p).classList.add("active");
   document.getElementById("tab-"+p).classList.add("active");
+  const mtab = document.getElementById("mtab-"+p);
+  if(mtab) mtab.classList.add("active");
   if(p==="dash") renderDash();
   if(p==="licenses"||p==="licdash") renderLicenses();
   if(p==="licdash") renderLicDash();
+  // Scroll to top on page change
+  window.scrollTo({top:0,behavior:"smooth"});
 }
 
 // ── Table ─────────────────────────────────────
