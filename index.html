@@ -53,10 +53,15 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:54px;background:rgba(
 .nlogo{width:27px;height:27px;border-radius:7px;background:var(--accent);display:flex;align-items:center;justify-content:center}
 .nlogo svg{width:14px;height:14px;fill:none;stroke:#09090e;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 .nname{font-family:var(--fdisp);font-size:18px;letter-spacing:0.06em;color:var(--text)}
-.ntabs{display:flex;gap:2px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:3px}
-.ntab{padding:5px 14px;font-size:12px;font-weight:500;border-radius:7px;border:none;background:none;color:var(--text2);cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:5px;font-family:var(--fn);letter-spacing:0.02em}
-.ntab i{font-size:14px}
+.ngroups{display:flex;align-items:center;gap:6px}
+.ngroup{display:flex;align-items:center;gap:2px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:3px}
+.ngroup-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;padding:0 8px 0 4px;border-right:1px solid var(--border);margin-right:2px}
+.ntab{padding:5px 12px;font-size:12px;font-weight:500;border-radius:7px;border:none;background:none;color:var(--text2);cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:5px;font-family:var(--fn);letter-spacing:0.02em;white-space:nowrap}
+.ntab i{font-size:13px}
 .ntab.active{background:var(--bg4);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.5)}
+.ntab.active.pipeline{color:var(--accent)}
+.ntab.active.license{color:var(--blue)}
+.ndivider{width:1px;height:20px;background:var(--border);flex-shrink:0}
 .nright{display:flex;align-items:center;gap:8px}
 .sdot{width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background 0.3s}
 .sdot.ok{background:var(--green);box-shadow:0 0 6px rgba(48,208,144,0.6)}
@@ -228,6 +233,48 @@ td{padding:11px 13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vmb.active{border-color:var(--accent);background:var(--adim2);color:var(--accent)}
 .mfooter{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
 
+
+/* ── Expiry warning tiers ── */
+.expiry-section{margin-bottom:0}
+.expiry-tier{border-radius:var(--r3);padding:18px 20px;margin-bottom:10px;border:1px solid transparent}
+.expiry-tier.t180{background:rgba(80,144,255,0.06);border-color:rgba(80,144,255,0.18)}
+.expiry-tier.t90{background:rgba(240,176,48,0.07);border-color:rgba(240,176,48,0.25)}
+.expiry-tier.t30{background:rgba(240,80,96,0.08);border-color:rgba(240,80,96,0.3);animation:tierpulse 3s ease-in-out infinite}
+@keyframes tierpulse{0%,100%{border-color:rgba(240,80,96,0.3)}50%{border-color:rgba(240,80,96,0.65)}}
+.expiry-tier-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.expiry-tier-title{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase}
+.expiry-tier-title i{font-size:16px}
+.expiry-tier.t180 .expiry-tier-title{color:#80b0ff}
+.expiry-tier.t90 .expiry-tier-title{color:var(--yellow)}
+.expiry-tier.t30 .expiry-tier-title{color:var(--red)}
+.expiry-count-badge{font-family:var(--fnum);font-size:13px;font-weight:600;padding:2px 10px;border-radius:20px}
+.expiry-tier.t180 .expiry-count-badge{background:rgba(80,144,255,0.15);color:#80b0ff}
+.expiry-tier.t90 .expiry-count-badge{background:rgba(240,176,48,0.15);color:var(--yellow)}
+.expiry-tier.t30 .expiry-count-badge{background:rgba(240,80,96,0.18);color:var(--red)}
+.expiry-items{display:flex;flex-direction:column;gap:6px}
+.expiry-item{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:var(--r);background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.04)}
+.expiry-item:hover{background:rgba(255,255,255,0.05)}
+.expiry-item-left{display:flex;flex-direction:column;gap:2px}
+.expiry-item-name{font-size:13px;font-weight:500;color:var(--text)}
+.expiry-item-meta{font-size:11px;color:var(--text3)}
+.expiry-item-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;margin-left:12px}
+.expiry-days{font-family:var(--fnum);font-size:13px;font-weight:600}
+.expiry-tier.t180 .expiry-days{color:#80b0ff}
+.expiry-tier.t90 .expiry-days{color:var(--yellow)}
+.expiry-tier.t30 .expiry-days{color:var(--red)}
+.expiry-date{font-family:var(--fnum);font-size:11px;color:var(--text3)}
+.expiry-cost{font-size:11px;color:var(--text3)}
+.tier-empty{font-size:12px;color:var(--text3);padding:8px 0;display:flex;align-items:center;gap:6px;opacity:0.6}
+.tier-empty i{font-size:14px;color:var(--green)}
+
+/* ── Licenses ── */
+.lic-status{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px 2px 6px;border-radius:20px;font-weight:500;white-space:nowrap;border:1px solid transparent;letter-spacing:0.02em}
+.lic-status::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.lic-status.active{background:var(--gdim);color:#60d890;border-color:rgba(48,208,144,0.2)}
+.lic-status.expiring{background:var(--ydim);color:#f0c060;border-color:rgba(240,176,48,0.2)}
+.lic-status.expired{background:var(--rdim);color:#f08090;border-color:rgba(240,80,96,0.2)}
+.lic-type{display:inline-block;font-size:11px;padding:2px 7px;border-radius:4px;background:var(--bdim);color:#80b0ff;font-weight:500;letter-spacing:0.03em}
+.lic-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
 @media(max-width:768px){
   .r4,.r3{grid-template-columns:1fr 1fr}
   .r2,.hlrow{grid-template-columns:1fr}
@@ -259,9 +306,17 @@ td{padding:11px 13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     <div class="nlogo"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
     <span class="nname">KMX Technologies</span>
   </div>
-  <div class="ntabs">
-    <button class="ntab active" id="tab-projects" onclick="showPage('projects')"><i class="ti ti-table"></i>Projects</button>
-    <button class="ntab" id="tab-dash" onclick="showPage('dash')"><i class="ti ti-layout-dashboard"></i>Dashboard</button>
+  <div class="ngroups">
+    <div class="ngroup">
+      <span class="ngroup-label">Pipeline</span>
+      <button class="ntab pipeline active" id="tab-projects" onclick="showPage('projects')"><i class="ti ti-table"></i>Data</button>
+      <button class="ntab pipeline" id="tab-dash" onclick="showPage('dash')"><i class="ti ti-layout-dashboard"></i>Dashboard</button>
+    </div>
+    <div class="ngroup">
+      <span class="ngroup-label">Licenses</span>
+      <button class="ntab license" id="tab-licenses" onclick="showPage('licenses')"><i class="ti ti-table"></i>Data</button>
+      <button class="ntab license" id="tab-licdash" onclick="showPage('licdash')"><i class="ti ti-layout-dashboard"></i>Dashboard</button>
+    </div>
   </div>
   <div class="nright">
     <div class="sdot" id="sdot"></div>
@@ -315,6 +370,49 @@ td{padding:11px 13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </div>
 </div>
 
+
+<!-- Licenses -->
+<div class="page" id="page-licenses">
+  <div class="ph">
+    <div><div class="ptitle">License Tracker</div><div class="psub">Infrastructure &amp; equipment license management</div></div>
+    <button class="btn acc" onclick="openLicModal()"><i class="ti ti-plus"></i>New license</button>
+  </div>
+  <div class="lic-summary" id="lic-summary"></div>
+  <div class="toolbar">
+    <div class="swrap"><i class="ti ti-search"></i><input class="sinp" id="lsearch" type="text" placeholder="Search licenses…" oninput="renderLicenses()"></div>
+    <select class="fsel" id="lfs" onchange="renderLicenses()">
+      <option value="">All status</option>
+      <option value="active">Active</option>
+      <option value="expiring">Expiring</option>
+      <option value="expired">Expired</option>
+    </select>
+    <select class="fsel" id="lft" onchange="renderLicenses()">
+      <option value="">All types</option>
+      <option value="Software">Software</option>
+      <option value="Hardware">Hardware</option>
+      <option value="Regulatory">Regulatory</option>
+      <option value="Compliance">Compliance</option>
+      <option value="Operational">Operational</option>
+      <option value="Other">Other</option>
+    </select>
+  </div>
+  <div class="tcard">
+    <table>
+      <thead><tr>
+        <th style="width:22%" onclick="licSort('name')">License name<span class="si" id="lsi-name">↕</span></th>
+        <th style="width:11%" onclick="licSort('type')">Type<span class="si" id="lsi-type">↕</span></th>
+        <th style="width:15%" onclick="licSort('company')">Assigned to<span class="si" id="lsi-company">↕</span></th>
+        <th style="width:10%" onclick="licSort('status')">Status<span class="si" id="lsi-status">↕</span></th>
+        <th style="width:12%" onclick="licSort('expiry')">Expiry<span class="si" id="lsi-expiry">↕</span></th>
+        <th style="width:11%" onclick="licSort('cost')">Annual cost<span class="si" id="lsi-cost">↕</span></th>
+        <th style="width:15%">Notes</th>
+        <th style="width:4%;text-align:right"></th>
+      </tr></thead>
+      <tbody id="lictbody"></tbody>
+    </table>
+  </div>
+</div>
+
 <!-- Modal -->
 <div class="mbg" id="mbg" onclick="if(event.target===this)closeModal()">
   <div class="modal">
@@ -362,8 +460,58 @@ td{padding:11px 13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   </div>
 </div>
 
+
+
+<!-- License Dashboard -->
+<div class="page" id="page-licdash">
+  <div class="dh">
+    <div class="dtitle">License Dashboard</div>
+    <div class="dsub" id="ldsub"></div>
+  </div>
+  <div id="ldcontent"></div>
+</div>
+
+<!-- License Modal -->
+<div class="mbg" id="lmbg" onclick="if(event.target===this)closeLicModal()">
+  <div class="modal">
+    <div class="mhdr">
+      <h3 id="lmtitle">New License</h3>
+      <button class="ib" onclick="closeLicModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="mgrid">
+      <div class="field full"><label>License name</label><input id="lfname" type="text" placeholder="e.g. Cisco IOS Network License"></div>
+      <div class="field"><label>Type</label>
+        <select id="lftype">
+          <option value="Software">Software</option>
+          <option value="Hardware">Hardware</option>
+          <option value="Regulatory">Regulatory</option>
+          <option value="Compliance">Compliance</option>
+          <option value="Operational">Operational</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Status</label>
+        <select id="lfstatus">
+          <option value="active">Active</option>
+          <option value="expiring">Expiring</option>
+          <option value="expired">Expired</option>
+        </select>
+      </div>
+      <div class="field"><label>Assigned company / project</label><input id="lfcompany" type="text" placeholder="e.g. Northgate Rail"></div>
+      <div class="field"><label>Expiry / renewal date</label><input id="lfexpiry" type="date"></div>
+      <div class="field"><label>Annual cost ($)</label><input id="lfcost" type="number" min="0" placeholder="0"></div>
+      <div class="field full"><label>Notes</label><textarea id="lfnote" placeholder="License key, supplier, conditions…"></textarea></div>
+    </div>
+    <div class="mfooter">
+      <button class="btn ghost" onclick="closeLicModal()">Cancel</button>
+      <button class="btn acc" onclick="saveLicense()">Save license</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyelyzFYo_GuAkhXaKP_V1E17ZbPIwqMcj14xQrc_HrD2m74C9NCbwvbmug8NX5cIhTrQ/exec";
+// Sheet names: "Sheet1" for projects, "Licenses" for licenses
 const PASS = "KMXTechnologies";
 const STAGES = [
   {k:"prospect",   l:"Prospect",      c:"#9090a8"},
@@ -399,6 +547,7 @@ function boot(){
   buildSelects();
   renderTable();
   syncNow();
+  syncLicenses();
 }
 
 // ── Sync state ────────────────────────────────
@@ -428,7 +577,10 @@ function syncNow(){
       if(document.getElementById("page-dash").classList.contains("active")) renderDash();
     })
     .catch(()=>setSyncState("err","Could not reach Google Sheets"))
-    .finally(()=>document.getElementById("sicon").className="ti ti-refresh");
+    .finally(()=>{
+      document.getElementById("sicon").className="ti ti-refresh";
+      if(document.getElementById("page-licdash").classList.contains("active")) renderLicDash();
+    });
 }
 
 // ── Write via GET (no-cors fire-and-forget + resync) ──
@@ -524,6 +676,8 @@ function showPage(p){
   document.getElementById("page-"+p).classList.add("active");
   document.getElementById("tab-"+p).classList.add("active");
   if(p==="dash") renderDash();
+  if(p==="licenses"||p==="licdash") renderLicenses();
+  if(p==="licdash") renderLicDash();
 }
 
 // ── Table ─────────────────────────────────────
@@ -627,7 +781,6 @@ function renderDash(){
     " · "+rows.length+" total project"+(rows.length!==1?"s":"");
 
   document.getElementById("dcontent").innerHTML=`
-    <!-- Deadline alerts banner -->
     ${(()=>{
       const urgent = rows.filter(r=>{
         const ra=dateAlert(r.renewal); const da=dateAlert(r.deadline);
@@ -636,8 +789,6 @@ function renderDash(){
       if(!urgent.length) return "";
       return `<div class="alert-banner"><i class="ti ti-bell-ringing"></i><span><b>${urgent.length} project${urgent.length!==1?"s":""}</b> with deadlines within 30 days or overdue: ${urgent.map(r=>r.name.split(" ")[0]).join(", ")}</span></div>`;
     })()}
-
-    <!-- KPI row 1 -->
     <div class="dgrid r4">
       <div class="kc ta ga">
         <div class="klbl"><i class="ti ti-briefcase"></i>Active projects</div>
@@ -660,8 +811,6 @@ function renderDash(){
         <div class="ksub">${reds>0?reds+" project"+(reds!==1?"s":"")+" need attention":"All projects healthy"}</div>
       </div>
     </div>
-
-    <!-- KPI row 2 -->
     <div class="dgrid r4 gap">
       <div class="kc tg">
         <div class="klbl"><i class="ti ti-circle-check"></i>Green health</div>
@@ -684,8 +833,6 @@ function renderDash(){
         <div class="ksub">${nearClose.length>0?nearClose.map(r=>r.name.split(" ")[0]).join(", "):"None in negotiation"}</div>
       </div>
     </div>
-
-    <!-- Charts row -->
     <div class="dgrid r3 gap">
       <div class="chcard">
         <div class="chtitle">Health breakdown</div>
@@ -700,8 +847,6 @@ function renderDash(){
         <div class="chart-wrap bar"><canvas id="chart-stage"></canvas></div>
       </div>
     </div>
-
-    <!-- Stage list + at risk -->
     <div class="dgrid r2 gap">
       <div class="scard">
         <div class="scardtitle">Projects by stage</div>
@@ -729,8 +874,6 @@ function renderDash(){
         }
       </div>
     </div>
-
-    <!-- Deadline summary -->
     <div class="dgrid r3 gap">
       ${(()=>{
         const now = Date.now();
@@ -758,8 +901,6 @@ function renderDash(){
         </div>`;
       })()}
     </div>
-
-    <!-- Highlights -->
     <div class="hlrow gap">
       <div class="hlc">
         <div class="hlic a"><i class="ti ti-chart-line"></i></div>
@@ -857,6 +998,364 @@ function delRow(id){
   rows.forEach((r,i)=>r.id=i);
   renderTable();
 }
+// ══════════════════════════════════════════════
+//  LICENSES
+// ══════════════════════════════════════════════
+// Licenses use a separate sheet tab called "Licenses"
+// Columns: name | type | company | status | expiry | cost | note
+
+let licenses = [], licEditId = null, licSk = "name", licSd = 1;
+
+// Derive status automatically from expiry date if not overridden
+function autoLicStatus(l){
+  if(!l.expiry) return l.status || "active";
+  const days = Math.round((new Date(l.expiry+"T00:00:00") - Date.now()) / 86400000);
+  if(days < 0)   return "expired";
+  if(days <= 60) return "expiring";
+  return "active";
+}
+
+function toLicRow(l){
+  return [l.name, l.type, l.company, l.status, l.expiry||"", l.cost||"", l.note];
+}
+
+// Load licenses from sheet (sheet param = "licenses")
+function syncLicenses(){
+  fetch(GAS_URL+"?action=get&sheet=licenses&t="+Date.now())
+    .then(r=>r.json())
+    .then(data=>{
+      licenses=(data.rows||[]).map((r,i)=>({
+        id:i,
+        name:r[0]||"", type:r[1]||"Other", company:r[2]||"",
+        status:r[3]||"active", expiry:normaliseDate(r[4]),
+        cost:r[5]?parseFloat(r[5]):null, note:r[6]||""
+      }));
+      licenses.forEach(l=>l.status=autoLicStatus(l));
+      renderLicenses();
+    })
+    .catch(()=>{});
+}
+
+function licSheetWrite(action, rowData, rowIdx){
+  let url = GAS_URL+"?action="+action+"&sheet=licenses";
+  if(rowData) url += "&row="+encodeURIComponent(JSON.stringify(rowData));
+  if(rowIdx !== undefined && rowIdx !== null) url += "&idx="+rowIdx;
+  url += "&t="+Date.now();
+  fetch(url,{mode:"no-cors"}).catch(()=>{});
+  setTimeout(syncLicenses, 2000);
+}
+
+function licSort(k){
+  if(licSk===k) licSd*=-1; else{licSk=k;licSd=1;}
+  renderLicenses();
+}
+
+function getLicFiltered(){
+  const q  = document.getElementById("lsearch").value.toLowerCase();
+  const fs = document.getElementById("lfs").value;
+  const ft = document.getElementById("lft").value;
+  return licenses.filter(l=>
+    (!q || l.name.toLowerCase().includes(q) || (l.company||"").toLowerCase().includes(q)) &&
+    (!fs || l.status===fs) &&
+    (!ft || l.type===ft)
+  ).sort((a,b)=>{
+    let av=a[licSk]??"", bv=b[licSk]??"";
+    if(licSk==="cost"){av=a.cost||0;bv=b.cost||0;}
+    if(licSk==="expiry"){av=a.expiry||"9999";bv=b.expiry||"9999";}
+    return av<bv?-licSd:av>bv?licSd:0;
+  });
+}
+
+function renderLicenses(){
+  // Summary cards
+  const total  = licenses.length;
+  const active   = licenses.filter(l=>l.status==="active").length;
+  const expiring = licenses.filter(l=>l.status==="expiring").length;
+  const expired  = licenses.filter(l=>l.status==="expired").length;
+  const totalCost= licenses.reduce((s,l)=>s+(l.cost||0),0);
+  document.getElementById("lic-summary").innerHTML=`
+    <div class="kc ta"><div class="klbl"><i class="ti ti-certificate"></i>Total licenses</div><div class="kval ca sm">${total}</div></div>
+    <div class="kc tg"><div class="klbl"><i class="ti ti-circle-check"></i>Active</div><div class="kval cg sm">${active}</div></div>
+    <div class="kc ty"><div class="klbl"><i class="ti ti-clock-exclamation"></i>Expiring soon</div><div class="kval cy sm">${expiring}</div></div>
+    <div class="kc ${expired>0?"tr":"tg"}"><div class="klbl"><i class="ti ti-alert-circle"></i>Expired</div><div class="kval ${expired>0?"cr":"cg"} sm">${expired}</div><div class="ksub">${totalCost?"Total: $"+Math.round(totalCost).toLocaleString()+"/yr":""}</div></div>
+  `;
+
+  // Sort icons
+  ["name","type","company","status","expiry","cost"].forEach(k=>{
+    const el=document.getElementById("lsi-"+k);
+    if(!el) return;
+    el.textContent = licSk===k?(licSd===1?"↑":"↓"):"↕";
+    el.closest("th").classList.toggle("sorted",licSk===k);
+  });
+
+  const data = getLicFiltered();
+  const tbody = document.getElementById("lictbody");
+  if(!data.length){
+    tbody.innerHTML=`<tr><td colspan="8"><div class="empty"><i class="ti ti-certificate"></i>${licenses.length===0?"No licenses yet — click New license to add one":"No licenses match your filters"}</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = data.map(l=>{
+    const alert = dateAlert(l.expiry);
+    const expiryHtml = alert
+      ? `<span class="dl-tag ${alert.cls==="ok"?"":""+alert.cls}">${fmtDate(l.expiry)}</span>`
+      : `<span style="color:var(--text3);font-size:12px">—</span>`;
+    const notePreview = l.note?(l.note.length>28?l.note.slice(0,28)+"…":l.note):"—";
+    return `<tr>
+      <td><span class="cname">${l.name}</span></td>
+      <td><span class="lic-type">${l.type}</span></td>
+      <td style="color:var(--text2)">${l.company||"—"}</td>
+      <td><span class="lic-status ${l.status}">${l.status[0].toUpperCase()+l.status.slice(1)}</span></td>
+      <td>${expiryHtml}</td>
+      <td><span class="vk">${l.cost?"$"+Number(l.cost).toLocaleString():"—"}</span></td>
+      <td class="nt" title="${l.note||""}">${notePreview}</td>
+      <td><div class="raction">
+        <button class="ib" onclick="openLicModal(${l.id})" title="Edit"><i class="ti ti-edit"></i></button>
+        <button class="ib del" onclick="delLicense(${l.id})" title="Delete"><i class="ti ti-trash"></i></button>
+      </div></td>
+    </tr>`;
+  }).join("");
+}
+
+function openLicModal(id=null){
+  licEditId=id;
+  document.getElementById("lmtitle").textContent=id!==null?"Edit License":"New License";
+  const l=id!==null?licenses.find(x=>x.id===id):{};
+  document.getElementById("lfname").value=l.name||"";
+  document.getElementById("lftype").value=l.type||"Software";
+  document.getElementById("lfstatus").value=l.status||"active";
+  document.getElementById("lfcompany").value=l.company||"";
+  document.getElementById("lfexpiry").value=l.expiry||"";
+  document.getElementById("lfcost").value=l.cost||"";
+  document.getElementById("lfnote").value=l.note||"";
+  document.getElementById("lmbg").classList.add("open");
+}
+function closeLicModal(){document.getElementById("lmbg").classList.remove("open");licEditId=null;}
+
+function saveLicense(){
+  const name=document.getElementById("lfname").value.trim();
+  if(!name) return;
+  const data={
+    name, type:document.getElementById("lftype").value,
+    company:document.getElementById("lfcompany").value.trim(),
+    status:document.getElementById("lfstatus").value,
+    expiry:document.getElementById("lfexpiry").value,
+    cost:parseFloat(document.getElementById("lfcost").value)||null,
+    note:document.getElementById("lfnote").value.trim()
+  };
+  data.status = autoLicStatus({...data});
+  if(licEditId!==null){
+    const i=licenses.findIndex(l=>l.id===licEditId);
+    licenses[i]={...licenses[i],...data};
+    licSheetWrite("update",toLicRow(licenses[i]),i);
+  } else {
+    const nl={...data,id:licenses.length};
+    licenses.push(nl);
+    licSheetWrite("append",toLicRow(nl),null);
+  }
+  closeLicModal();
+  renderLicenses();
+}
+
+function delLicense(id){
+  if(!confirm("Remove this license?")) return;
+  const i=licenses.findIndex(l=>l.id===id);
+  licSheetWrite("delete",null,i);
+  licenses.splice(i,1);
+  licenses.forEach((l,i)=>l.id=i);
+  renderLicenses();
+}
+
+// ── License Dashboard ─────────────────────────────────────────────────────
+function renderLicDash(){
+  const total     = licenses.length;
+  const active    = licenses.filter(l=>l.status==="active");
+  const expiring  = licenses.filter(l=>l.status==="expiring");
+  const expired   = licenses.filter(l=>l.status==="expired");
+  const totalCost = licenses.reduce((s,l)=>s+(l.cost||0),0);
+  const expCost   = expiring.reduce((s,l)=>s+(l.cost||0),0);
+  const byType    = {};
+  licenses.forEach(l=>{byType[l.type]=(byType[l.type]||0)+1;});
+  const maxType   = Math.max(...Object.values(byType),1);
+  const typeColors= {Software:"#5090ff",Hardware:"#30d0d0",Regulatory:"#a070f0",Compliance:"#f0b030",Operational:"#30d090",Other:"#9090a8"};
+
+  // Expiry tier buckets — only active/expiring licenses with an expiry date
+  function daysToExpiry(l){
+    if(!l.expiry) return null;
+    return Math.round((new Date(l.expiry+"T00:00:00") - Date.now()) / 86400000);
+  }
+  const withExpiry = licenses.filter(l=>l.expiry && l.status!=="expired")
+    .map(l=>({...l, daysLeft:daysToExpiry(l)}))
+    .filter(l=>l.daysLeft!==null && l.daysLeft>=0)
+    .sort((a,b)=>a.daysLeft-b.daysLeft);
+
+  const tier30  = withExpiry.filter(l=>l.daysLeft<=30);
+  const tier90  = withExpiry.filter(l=>l.daysLeft>30  && l.daysLeft<=90);
+  const tier180 = withExpiry.filter(l=>l.daysLeft>90  && l.daysLeft<=180);
+
+  const tierCost30  = tier30.reduce((s,l)=>s+(l.cost||0),0);
+  const tierCost90  = tier90.reduce((s,l)=>s+(l.cost||0),0);
+  const tierCost180 = tier180.reduce((s,l)=>s+(l.cost||0),0);
+
+  function tierItemHTML(l){
+    const plural = l.daysLeft===1?"day":"days";
+    return `<div class="expiry-item">
+      <div class="expiry-item-left">
+        <div class="expiry-item-name">${l.name}</div>
+        <div class="expiry-item-meta">${l.type}${l.company?" &middot; "+l.company:""}</div>
+      </div>
+      <div class="expiry-item-right">
+        <div class="expiry-days">${l.daysLeft} ${plural}</div>
+        <div class="expiry-date">${fmtDate(l.expiry)}</div>
+        ${l.cost?`<div class="expiry-cost">$${Number(l.cost).toLocaleString()}/yr</div>`:""}
+      </div>
+    </div>`;
+  }
+
+  function tierHTML(tier, cls, icon, label, items, cost){
+    const isEmpty = items.length===0;
+    return `<div class="expiry-tier ${cls}">
+      <div class="expiry-tier-hdr">
+        <div class="expiry-tier-title"><i class="ti ${icon}"></i>${label}</div>
+        <span class="expiry-count-badge">${items.length} license${items.length!==1?"s":""}</span>
+      </div>
+      <div class="expiry-items">
+        ${isEmpty
+          ? `<div class="tier-empty"><i class="ti ti-circle-check"></i>No licenses expiring in this window</div>`
+          : items.map(tierItemHTML).join("") +
+            (cost?`<div style="text-align:right;font-size:11px;color:var(--text3);margin-top:6px;padding-right:4px">Total at risk: <span style="font-family:var(--fnum);font-weight:600">$${Math.round(cost).toLocaleString()}/yr</span></div>`:"")
+        }
+      </div>
+    </div>`;
+  }
+
+  document.getElementById("ldsub").textContent =
+    new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}) +
+    " · " + total + " license" + (total!==1?"s":"");
+
+  document.getElementById("ldcontent").innerHTML = `
+
+    ${(tier30.length>0||expired.length>0)?`<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--r);margin-bottom:14px;background:rgba(240,80,96,0.09);border:1px solid rgba(240,80,96,0.28);color:#f08090;font-size:13px;animation:tierpulse 2.5s ease-in-out infinite"><i class="ti ti-bell-ringing" style="font-size:18px;flex-shrink:0"></i><span><strong style="color:var(--red)">${tier30.length+expired.length} license${tier30.length+expired.length!==1?"s":""}</strong> require immediate attention — expiring within 30 days or already expired.</span></div>`:""}
+
+    <div class="dgrid r4">
+      <div class="kc ta ga">
+        <div class="klbl"><i class="ti ti-certificate"></i>Total licenses</div>
+        <div class="kval ca">${total}</div>
+        <div class="ksub">across all categories</div>
+      </div>
+      <div class="kc tg gg">
+        <div class="klbl"><i class="ti ti-circle-check"></i>Active</div>
+        <div class="kval cg">${active.length}</div>
+        <div class="ksub">${active.length>0?Math.round(active.length/Math.max(total,1)*100)+"% of portfolio":""}</div>
+      </div>
+      <div class="kc tb">
+        <div class="klbl"><i class="ti ti-currency-dollar"></i>Total annual cost</div>
+        <div class="kval cb sm">${totalCost?"$"+Math.round(totalCost).toLocaleString():"—"}</div>
+        <div class="ksub">all licenses</div>
+      </div>
+      <div class="kc ${expired.length>0?"tr gr":"tg"}">
+        <div class="klbl"><i class="ti ti-alert-circle"></i>Expired</div>
+        <div class="kval ${expired.length>0?"cr":"cg"}">${expired.length}</div>
+        <div class="ksub">${expired.length>0?"Immediate action required":"All licenses current"}</div>
+      </div>
+    </div>
+
+    <div class="dgrid r3 gap">
+      <div class="kc tr">
+        <div class="klbl"><i class="ti ti-flame"></i>Expiring within 30 days</div>
+        <div class="kval cr sm">${tier30.length}</div>
+        <div class="ksub">${tierCost30?"$"+Math.round(tierCost30).toLocaleString()+" at risk":"None critical"}</div>
+      </div>
+      <div class="kc ty">
+        <div class="klbl"><i class="ti ti-clock-exclamation"></i>Expiring within 90 days</div>
+        <div class="kval cy sm">${tier90.length}</div>
+        <div class="ksub">${tierCost90?"$"+Math.round(tierCost90).toLocaleString()+" at risk":"None in window"}</div>
+      </div>
+      <div class="kc tb">
+        <div class="klbl"><i class="ti ti-clock"></i>Expiring within 180 days</div>
+        <div class="kval cb sm">${tier180.length}</div>
+        <div class="ksub">${tierCost180?"$"+Math.round(tierCost180).toLocaleString()+" at risk":"None in window"}</div>
+      </div>
+    </div>
+
+    <div class="gap" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:22px;margin-top:10px">
+      <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;display:flex;align-items:center;gap:6px"><i class="ti ti-bell" style="font-size:13px"></i>Expiry Timeline</div>
+      ${tier30.length+tier90.length+tier180.length+expired.length===0
+        ? `<div class="nodata" style="padding:2rem"><i class="ti ti-circle-check" style="font-size:28px;display:block;margin-bottom:8px;color:var(--green);opacity:0.5"></i>No licenses expiring in the next 180 days</div>`
+        : `${expired.length>0?`<div class="expiry-tier" style="background:rgba(240,80,96,0.1);border:1px solid rgba(240,80,96,0.35);border-radius:var(--r3);padding:18px 20px;margin-bottom:10px">
+            <div class="expiry-tier-hdr">
+              <div class="expiry-tier-title" style="color:var(--red);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;display:flex;align-items:center;gap:8px"><i class="ti ti-alert-circle" style="font-size:16px"></i>Already Expired</div>
+              <span class="expiry-count-badge" style="background:rgba(240,80,96,0.18);color:var(--red);font-family:var(--fnum);font-size:13px;font-weight:600;padding:2px 10px;border-radius:20px">${expired.length} license${expired.length!==1?"s":""}</span>
+            </div>
+            <div class="expiry-items">${expired.map(l=>`<div class="expiry-item"><div class="expiry-item-left"><div class="expiry-item-name">${l.name}</div><div class="expiry-item-meta">${l.type}${l.company?" &middot; "+l.company:""}</div></div><div class="expiry-item-right"><div class="expiry-days" style="color:var(--red)">Expired</div><div class="expiry-date">${fmtDate(l.expiry)}</div>${l.cost?`<div class="expiry-cost">$${Number(l.cost).toLocaleString()}/yr</div>`:""}</div></div>`).join("")}</div>
+          </div>`:""}
+          ${tierHTML("t30","t30","ti-flame","Critical — Expiring within 30 days",tier30,tierCost30)}
+          ${tierHTML("t90","t90","ti-clock-exclamation","Warning — Expiring within 90 days",tier90,tierCost90)}
+          ${tierHTML("t180","t180","ti-clock","Upcoming — Expiring within 180 days",tier180,tierCost180)}`
+      }
+    </div>
+
+    <div class="dgrid r2 gap">
+      <div class="chcard">
+        <div class="chtitle">Status breakdown</div>
+        <div class="chart-wrap donut"><canvas id="chart-lic-status"></canvas></div>
+      </div>
+      <div class="chcard">
+        <div class="chtitle">Licenses by type</div>
+        <div class="chart-wrap bar"><canvas id="chart-lic-type"></canvas></div>
+      </div>
+    </div>
+
+    <div class="scard gap">
+      <div class="scardtitle">Breakdown by type</div>
+      <div class="srows">${Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([type,cnt])=>{
+        const pct=Math.round(cnt/maxType*100);
+        const col=typeColors[type]||"#9090a8";
+        return `<div class="srow">
+          <div class="srname" style="color:\${col}">\${type}</div>
+          <div class="sbw"><div class="sb" style="width:\${pct}%;background:\${col}22;border-right:2px solid \${col}"></div></div>
+          <div class="sc">\${cnt}</div>
+        </div>`;
+      }).join("")}</div>
+    </div>
+  `;
+
+  const CHART_FONT = {family:"'JetBrains Mono',monospace",size:11};
+  const LEGEND_OPTS = {labels:{color:"rgba(240,240,245,0.6)",font:CHART_FONT,padding:12,boxWidth:10,boxHeight:10}};
+  const TOOLTIP_OPTS = {backgroundColor:"#1e1e28",titleColor:"#f0f0f5",bodyColor:"#9090a8",borderColor:"#323240",borderWidth:1,padding:10,titleFont:CHART_FONT,bodyFont:CHART_FONT};
+
+  destroyChart("chart-lic-status");
+  const ctxS = document.getElementById("chart-lic-status");
+  if(ctxS) chartInstances["chart-lic-status"] = new Chart(ctxS,{
+    type:"doughnut",
+    data:{
+      labels:["Active","Expiring (60d)","Expired"],
+      datasets:[{data:[active.length,expiring.length,expired.length],
+        backgroundColor:["rgba(48,208,144,0.85)","rgba(240,176,48,0.85)","rgba(240,80,96,0.85)"],
+        borderColor:["#30d090","#f0b030","#f05060"],borderWidth:1.5,hoverOffset:6}]
+    },
+    options:{cutout:"68%",plugins:{legend:LEGEND_OPTS,tooltip:TOOLTIP_OPTS},animation:{duration:700}}
+  });
+
+  destroyChart("chart-lic-type");
+  const typeKeys = Object.keys(byType);
+  const ctxT = document.getElementById("chart-lic-type");
+  if(ctxT) chartInstances["chart-lic-type"] = new Chart(ctxT,{
+    type:"bar",
+    data:{
+      labels:typeKeys,
+      datasets:[{label:"Licenses",data:typeKeys.map(k=>byType[k]),
+        backgroundColor:typeKeys.map(k=>(typeColors[k]||"#9090a8")+"99"),
+        borderColor:typeKeys.map(k=>typeColors[k]||"#9090a8"),
+        borderWidth:1.5,borderRadius:4,borderSkipped:false}]
+    },
+    options:{indexAxis:"y",plugins:{legend:{display:false},tooltip:TOOLTIP_OPTS},
+      scales:{
+        x:{ticks:{color:"rgba(240,240,245,0.4)",font:CHART_FONT,stepSize:1},grid:{color:"rgba(255,255,255,0.04)"},border:{display:false}},
+        y:{ticks:{color:"rgba(240,240,245,0.6)",font:CHART_FONT},grid:{display:false},border:{display:false}}
+      },animation:{duration:600},maintainAspectRatio:false}
+  });
+}
+
 </script>
 </body>
 </html>
