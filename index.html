@@ -105,7 +105,7 @@ tbody tr{border-bottom:1px solid var(--border);transition:background 0.08s}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:var(--bg3)}
 td{padding:11px 13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cn{width:20%}.co{width:11%}.cst{width:14%}.ch{width:9%}.cv{width:11%}.ce{width:11%}.cl{width:10%}.cnote{width:10%}.ca{width:4%;text-align:right}
+.cn{width:17%}.co{width:10%}.cst{width:13%}.ch{width:8%}.cv{width:10%}.ce{width:10%}.cl{width:9%}.cdl{width:14%}.cnote{width:5%}.ca{width:4%;text-align:right}
 .cname{font-weight:500;letter-spacing:0.01em}
 .sp{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px 2px 6px;border-radius:20px;font-weight:500;white-space:nowrap;border:1px solid transparent;letter-spacing:0.02em}
 .sp::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
@@ -126,6 +126,16 @@ td{padding:11px 13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vk{font-family:var(--fnum);font-size:12px;font-weight:500}
 .vr{font-family:var(--fnum);font-size:11px;color:var(--text3)}
 .nt{font-size:12px;color:var(--text3)}
+.dl-cell{display:flex;flex-direction:column;gap:2px}
+.dl-tag{display:inline-flex;align-items:center;gap:3px;font-family:var(--fnum);font-size:10px;font-weight:500;padding:1px 6px;border-radius:4px;white-space:nowrap}
+.dl-tag.ok{color:var(--text3)}
+.dl-tag.amber{background:rgba(240,176,48,0.15);color:var(--yellow);border:1px solid rgba(240,176,48,0.25)}
+.dl-tag.danger{background:rgba(240,80,96,0.15);color:var(--red);border:1px solid rgba(240,80,96,0.25);animation:flash 1.8s infinite}
+.dl-tag.overdue{background:rgba(240,80,96,0.22);color:#ff8090;border:1px solid rgba(240,80,96,0.4)}
+@keyframes flash{0%,100%{opacity:1}50%{opacity:0.6}}
+.alert-banner{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--r);margin-bottom:14px;font-size:12px;background:rgba(240,80,96,0.08);border:1px solid rgba(240,80,96,0.2);color:#f08090}
+.alert-banner i{font-size:15px;flex-shrink:0;color:var(--red)}
+.alert-banner b{color:var(--red)}
 .raction{display:flex;gap:2px;justify-content:flex-end}
 .ib{background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;border-radius:5px;font-size:14px;display:inline-flex;align-items:center;transition:all 0.1s}
 .ib:hover{color:var(--text);background:var(--bg4)}
@@ -286,6 +296,7 @@ td{padding:11px 13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         <th class="cv" onclick="doSort('value')">Contract<span class="si" id="si-value">↕</span></th>
         <th class="ce">Est. range</th>
         <th class="cl" onclick="doSort('last')">Last contact<span class="si" id="si-last">↕</span></th>
+        <th class="cdl" onclick="doSort('renewal')">Deadlines<span class="si" id="si-renewal">↕</span></th>
         <th class="cnote">Notes</th>
         <th class="ca"></th>
       </tr></thead>
@@ -323,6 +334,11 @@ td{padding:11px 13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         </select>
       </div>
       <div class="field"><label>Last contact</label><input id="fl" type="date"></div>
+      <div class="field"><label>Renewal date</label><input id="frenewal" type="date"></div>
+      <div class="field full" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="field"><label>Project deadline</label><input id="fdeadline" type="date"></div>
+        <div class="field"><label style="opacity:0">.</label><div style="font-size:11px;color:var(--text3);padding-top:10px;line-height:1.4">🟡 Amber at 60 days<br>🔴 Red at 30 days</div></div>
+      </div>
       <div class="field full">
         <label>Contract value</label>
         <div class="vmrow">
@@ -404,7 +420,8 @@ function syncNow(){
         value:r[5]?parseFloat(r[5]):null,
         estLow:r[6]?parseFloat(r[6]):null,
         estHigh:r[7]?parseFloat(r[7]):null,
-        last:r[8]||"", note:r[9]||""
+        last:r[8]||"", note:r[9]||"",
+        renewal:r[10]||"", deadline:r[11]||""
       }));
       renderTable();
       setSyncState("ok","Synced "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}));
@@ -447,7 +464,17 @@ function daysSince(d){
   return Math.round((Date.now()-new Date(d+"T00:00:00"))/86400000);
 }
 function toRow(r){
-  return[r.name,r.owner,r.stage,r.health,r.tbd?"TRUE":"FALSE",r.value||"",r.estLow||"",r.estHigh||"",r.last,r.note];
+  return[r.name,r.owner,r.stage,r.health,r.tbd?"TRUE":"FALSE",r.value||"",r.estLow||"",r.estHigh||"",r.last,r.note,r.renewal||"",r.deadline||""];
+}
+
+// Returns {label, cls} for a date: null=none, amber=60days, danger=30days, overdue=past
+function dateAlert(d){
+  if(!d) return null;
+  const days = Math.round((new Date(d+"T00:00:00") - Date.now()) / 86400000);
+  if(days < 0)  return {label:"Overdue "+Math.abs(days)+"d", cls:"overdue"};
+  if(days <= 30) return {label:days+"d left", cls:"danger"};
+  if(days <= 60) return {label:days+"d left", cls:"amber"};
+  return {label:fmtDate(d), cls:"ok"};
 }
 
 // ── Selects ───────────────────────────────────
@@ -479,6 +506,7 @@ function getFiltered(){
     let av=a[sk]??"",bv=b[sk]??"";
     if(sk==="stage"){av=SORDER.indexOf(a.stage);bv=SORDER.indexOf(b.stage);}
     if(sk==="value"){av=a.tbd?-1:(a.value||0);bv=b.tbd?-1:(b.value||0);}
+    if(sk==="renewal"){av=a.renewal||"9999";bv=b.renewal||"9999";}
     return av<bv?-sd:av>bv?sd:0;
   });
 }
@@ -509,6 +537,16 @@ function renderTable(){
       <td class="cv">${v?`<span class="vk">${v}</span>`:`<span class="vtbd">TBD</span>`}</td>
       <td class="ce"><span class="vr">${r.tbd?(rng||"—"):"—"}</span></td>
       <td class="cl" style="color:var(--text2);font-size:12px">${fmtDate(r.last)}</td>
+      <td class="cdl">${(()=>{
+        const ra=dateAlert(r.renewal);
+        const da=dateAlert(r.deadline);
+        if(!ra&&!da) return '<span style="color:var(--text3);font-size:11px">—</span>';
+        let out='<div class="dl-cell">';
+        if(ra) out+=`<span class="dl-tag ${ra.cls}"><i class="ti ti-refresh" style="font-size:9px"></i>${ra.label}</span>`;
+        if(da) out+=`<span class="dl-tag ${da.cls}"><i class="ti ti-calendar-due" style="font-size:9px"></i>${da.label}</span>`;
+        out+='</div>';
+        return out;
+      })()}</td>
       <td class="cnote nt" title="${r.note||""}">${np}</td>
       <td class="ca"><div class="raction">
         <button class="ib" onclick="openModal(${r.id})" title="Edit"><i class="ti ti-edit"></i></button>
@@ -557,6 +595,16 @@ function renderDash(){
     " · "+rows.length+" total project"+(rows.length!==1?"s":"");
 
   document.getElementById("dcontent").innerHTML=`
+    <!-- Deadline alerts banner -->
+    ${(()=>{
+      const urgent = rows.filter(r=>{
+        const ra=dateAlert(r.renewal); const da=dateAlert(r.deadline);
+        return (ra&&(ra.cls==="danger"||ra.cls==="overdue"))||(da&&(da.cls==="danger"||da.cls==="overdue"));
+      });
+      if(!urgent.length) return "";
+      return `<div class="alert-banner"><i class="ti ti-bell-ringing"></i><span><b>${urgent.length} project${urgent.length!==1?"s":""}</b> with deadlines within 30 days or overdue: ${urgent.map(r=>r.name.split(" ")[0]).join(", ")}</span></div>`;
+    })()}
+
     <!-- KPI row 1 -->
     <div class="dgrid r4">
       <div class="kc ta ga">
@@ -650,6 +698,35 @@ function renderDash(){
       </div>
     </div>
 
+    <!-- Deadline summary -->
+    <div class="dgrid r3 gap">
+      ${(()=>{
+        const now = Date.now();
+        const overdueR = rows.filter(r=>r.renewal&&new Date(r.renewal+"T00:00:00")<now).length;
+        const overdueD = rows.filter(r=>r.deadline&&new Date(r.deadline+"T00:00:00")<now).length;
+        const soon = rows.filter(r=>{
+          const ra=dateAlert(r.renewal); const da=dateAlert(r.deadline);
+          return (ra&&ra.cls!=="ok"&&ra.cls!=="overdue")||(da&&da.cls!=="ok"&&da.cls!=="overdue");
+        }).length;
+        return `
+        <div class="kc tr">
+          <div class="klbl"><i class="ti ti-rotate-clockwise"></i>Overdue renewals</div>
+          <div class="kval ${overdueR>0?"cr":"cg"} sm">${overdueR}</div>
+          <div class="ksub">${overdueR>0?"Action required":"All renewals current"}</div>
+        </div>
+        <div class="kc tr">
+          <div class="klbl"><i class="ti ti-calendar-due"></i>Overdue deadlines</div>
+          <div class="kval ${overdueD>0?"cr":"cg"} sm">${overdueD}</div>
+          <div class="ksub">${overdueD>0?"Action required":"All deadlines current"}</div>
+        </div>
+        <div class="kc ty">
+          <div class="klbl"><i class="ti ti-clock-exclamation"></i>Due within 60 days</div>
+          <div class="kval ${soon>0?"cy":"cg"} sm">${soon}</div>
+          <div class="ksub">${soon>0?"Review upcoming deadlines":"No upcoming deadlines"}</div>
+        </div>`;
+      })()}
+    </div>
+
     <!-- Highlights -->
     <div class="hlrow gap">
       <div class="hlc">
@@ -712,6 +789,8 @@ function openModal(id=null){
   document.getElementById("fst").value=r.stage||"prospect";
   document.getElementById("fh2").value=r.health||"green";
   document.getElementById("fl").value=r.last||"";
+  document.getElementById("frenewal").value=r.renewal||"";
+  document.getElementById("fdeadline").value=r.deadline||"";
   document.getElementById("fnote").value=r.note||"";
   const tbd=r.tbd!==false;
   setVM(tbd?"tbd":"known");
@@ -725,7 +804,7 @@ function saveProject(){
   const name=document.getElementById("fn").value.trim();
   if(!name) return;
   const tbd=vm==="tbd";
-  const data={name,owner:document.getElementById("fo").value.trim(),stage:document.getElementById("fst").value,health:document.getElementById("fh2").value,last:document.getElementById("fl").value,note:document.getElementById("fnote").value.trim(),tbd,value:tbd?null:(parseFloat(document.getElementById("fv").value)||null),estLow:tbd?(parseFloat(document.getElementById("fel").value)||null):null,estHigh:tbd?(parseFloat(document.getElementById("feh").value)||null):null};
+  const data={name,owner:document.getElementById("fo").value.trim(),stage:document.getElementById("fst").value,health:document.getElementById("fh2").value,last:document.getElementById("fl").value,note:document.getElementById("fnote").value.trim(),tbd,value:tbd?null:(parseFloat(document.getElementById("fv").value)||null),estLow:tbd?(parseFloat(document.getElementById("fel").value)||null):null,estHigh:tbd?(parseFloat(document.getElementById("feh").value)||null):null,renewal:document.getElementById("frenewal").value,deadline:document.getElementById("fdeadline").value};
   if(editId!==null){
     const i=rows.findIndex(r=>r.id===editId);
     rows[i]={...rows[i],...data};
