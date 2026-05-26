@@ -67,7 +67,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:54px;background:rgba(
 .sdot.ok{background:var(--green);box-shadow:0 0 6px rgba(48,208,144,0.6)}
 .sdot.err{background:var(--red);box-shadow:0 0 6px rgba(240,80,96,0.5)}
 .sdot.busy{background:var(--yellow);animation:pulse 0.8s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+@keyframes goldpulse{0%,100%{border-color:rgba(212,175,55,0.35);box-shadow:none}50%{border-color:rgba(212,175,55,0.85);box-shadow:0 0 8px rgba(212,175,55,0.4)}}
+@keyframes barpulse{0%,100%{opacity:0.6}50%{opacity:1}}
 .slbl{font-size:11px;color:var(--text3);font-family:var(--fnum)}
 .nsync{height:28px;padding:0 10px;font-size:12px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:var(--fn);transition:all 0.12s}
 .nsync:hover{background:var(--bg4);color:var(--text)}
