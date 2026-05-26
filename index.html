@@ -120,7 +120,8 @@ td{padding:11px 13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sp.lab{background:var(--ydim);color:#f0c060;border-color:rgba(240,176,48,0.2)}
 .sp.demo{background:var(--pkdim);color:#f0a0c8;border-color:rgba(240,112,176,0.2)}
 .sp.negotiation{background:var(--tdim);color:#60d8d8;border-color:rgba(48,208,208,0.2)}
-.sp.won{background:var(--adim2);color:var(--accent);border-color:rgba(200,240,96,0.2)}
+.sp.won{background:rgba(212,175,55,0.12);color:#D4AF37;border-color:rgba(212,175,55,0.35);animation:goldpulse 2s ease-in-out infinite}
+@keyframes goldpulse{0%,100%{border-color:rgba(212,175,55,0.35);box-shadow:none}50%{border-color:rgba(212,175,55,0.85);box-shadow:0 0 8px rgba(212,175,55,0.4)}}
 .sp.lost{background:var(--rdim);color:#f08090;border-color:rgba(240,80,96,0.2)}
 .hb{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text2)}
 .hd{width:7px;height:7px;border-radius:50%;flex-shrink:0}
