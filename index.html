@@ -493,15 +493,105 @@ td{padding:11px 13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* ── Print styles ── */
 @media print{
-  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
-  nav,.mob-tabs,#lock,.board-export-btn,.nsync{display:none!important}
-  .page{display:none!important}
-  #page-board{display:block!important;margin:0;padding:20px 28px;min-height:auto}
-  body{background:#0f0f18!important}
-  .board-page{background:#0f0f18}
-  .kc,.bhc,.bchcard,.bhl,.scard,.rcard,.board-table{break-inside:avoid}
-  .board-section{break-inside:avoid}
-  @page{size:A4 landscape;margin:0}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box}
+  html,body{width:100%;height:auto;overflow:visible!important;margin:0;padding:0}
+  body::-webkit-scrollbar{display:none!important}
+  nav,.mob-tabs,#lock,.board-export-btn,.board-theme-toggle,.nsync,
+  .board-export-row{display:none!important}
+  .page{display:none!important;height:0!important;overflow:hidden!important}
+  #page-board{
+    display:block!important;
+    position:static!important;
+    margin:0!important;
+    padding:16px 24px!important;
+    min-height:auto!important;
+    width:100%!important;
+    overflow:visible!important;
+  }
+  #app{overflow:visible!important}
+  .bhc,.kc,.bchcard,.bhl,.board-table tr,.board-section,.board-lic-grid{break-inside:avoid}
+  @page{size:A4 landscape;margin:8mm 10mm}
+}
+
+/* ── Light (Professional) theme ── */
+body.light-theme{
+  --bg:#f4f5f7;
+  --bg2:#ffffff;
+  --bg3:#f0f1f4;
+  --bg4:#e8eaee;
+  --border:#dde0e8;
+  --border2:#c8ccd6;
+  --text:#1a1d2e;
+  --text2:#4a5068;
+  --text3:#8890aa;
+  --accent:#1a6e3c;
+  --accent2:#145530;
+  --adim:rgba(26,110,60,0.08);
+  --adim2:rgba(26,110,60,0.12);
+  --blue:#1855c4;
+  --bdim:rgba(24,85,196,0.1);
+  --green:#1a7a4a;
+  --gdim:rgba(26,122,74,0.1);
+  --yellow:#9a6800;
+  --ydim:rgba(154,104,0,0.1);
+  --red:#c0242a;
+  --rdim:rgba(192,36,42,0.08);
+  --purple:#6030c0;
+  --pdim:rgba(96,48,192,0.1);
+  --teal:#0a7878;
+  --tdim:rgba(10,120,120,0.1);
+  --pink:#9a3068;
+  --pkdim:rgba(154,48,104,0.1);
+}
+body.light-theme .llogo,
+body.light-theme .nlogo,
+body.light-theme .board-logo{background:#1a6e3c}
+body.light-theme .lbtn{background:#1a6e3c;color:#fff}
+body.light-theme .lbtn:hover{background:#145530}
+body.light-theme .btn.acc{background:#1a6e3c;color:#fff}
+body.light-theme .btn.acc:hover{background:#145530}
+body.light-theme .board-export-btn{background:#1a6e3c;color:#fff}
+body.light-theme .board-export-btn:hover{background:#145530}
+body.light-theme .ntab.active{background:#ffffff;color:var(--text)}
+body.light-theme .ntab.active.pipeline{color:#1a6e3c}
+body.light-theme .ntab.active.license{color:#1855c4}
+body.light-theme #lock{background:var(--bg)}
+body.light-theme #lock::before{background:radial-gradient(ellipse at 50% 35%,rgba(26,110,60,0.08) 0%,transparent 60%)}
+body.light-theme .sp.prospect{background:#f0f0f4;color:#6070a0;border-color:#d8dce8}
+body.light-theme .sp.won{background:rgba(212,175,55,0.12);color:#8a6500;border-color:rgba(212,175,55,0.35)}
+body.light-theme .hd.green{box-shadow:0 0 5px rgba(26,122,74,0.4)}
+body.light-theme .hd.yellow{box-shadow:0 0 5px rgba(154,104,0,0.4)}
+body.light-theme .hd.red{box-shadow:0 0 5px rgba(192,36,42,0.4)}
+body.light-theme .sdot.ok{box-shadow:0 0 5px rgba(26,122,74,0.4)}
+body.light-theme nav{background:rgba(244,245,247,0.95)}
+body.light-theme .mob-tabs{background:rgba(244,245,247,0.97)}
+body.light-theme .mob-tab.active.pipeline{color:#1a6e3c}
+body.light-theme .mob-tab.active.pipeline i{color:#1a6e3c}
+body.light-theme .board-hero .bhc.gold .bhc-val,
+body.light-theme .bhc-val.gold{color:#8a6500}
+body.light-theme .kval.ca{color:#1a6e3c}
+
+/* Toggle button */
+.board-theme-toggle{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:7px 14px;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r);font-size:12px;font-weight:500;
+  font-family:var(--fn);color:var(--text2);cursor:pointer;
+  transition:all 0.15s;
+}
+.board-theme-toggle:hover{background:var(--bg4);color:var(--text)}
+.board-theme-toggle i{font-size:15px}
+.board-export-row{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+
+@media print{
+  body.light-theme{background:#ffffff!important}
+  body.light-theme #page-board{background:#ffffff!important}
+  body.light-theme .bhc,body.light-theme .kc,
+  body.light-theme .bchcard,body.light-theme .board-table{
+    border:1px solid #dde0e8!important;
+    background:#ffffff!important;
+  }
 }
 </style>
 </head>
@@ -1654,7 +1744,12 @@ function renderBoard(){
       <div class="board-meta">
         <div class="board-date">${new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"})}</div>
         <div class="board-prepared">Confidential — For board use only</div>
-        <button class="board-export-btn" onclick="window.print()"><i class="ti ti-printer"></i>Export / Print PDF</button>
+        <div class="board-export-row">
+          <button class="board-export-btn" onclick="doPrint()"><i class="ti ti-printer"></i>Export / Print PDF</button>
+          <button class="board-theme-toggle" id="theme-toggle" onclick="toggleBoardTheme()">
+            <i class="ti ti-sun" id="theme-icon"></i><span id="theme-label">Professional theme</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -1832,6 +1927,36 @@ function renderBoard(){
 
   const CHART_FONT = {family:"'JetBrains Mono',monospace",size:11};
   const TOOLTIP_OPTS = {backgroundColor:"#1e1e28",titleColor:"#f0f0f5",bodyColor:"#9090a8",borderColor:"#323240",borderWidth:1,padding:10,titleFont:CHART_FONT,bodyFont:CHART_FONT};
+}
+
+// ── Board print & theme ──────────────────────────────────────────────────────
+let boardLightTheme = false;
+
+function toggleBoardTheme(){
+  boardLightTheme = !boardLightTheme;
+  document.body.classList.toggle("light-theme", boardLightTheme);
+  document.getElementById("theme-icon").className = boardLightTheme ? "ti ti-moon" : "ti ti-sun";
+  document.getElementById("theme-label").textContent = boardLightTheme ? "Dark theme" : "Professional theme";
+}
+
+function doPrint(){
+  // Force all pages hidden, board visible, no scrollbars
+  const style = document.createElement("style");
+  style.id = "print-override";
+  style.textContent = `
+    @media print {
+      html { overflow: hidden !important; }
+      body { overflow: hidden !important; width: 100% !important; }
+      ::-webkit-scrollbar { display: none !important; }
+    }
+  `;
+  document.head.appendChild(style);
+  window.print();
+  // Clean up after print dialog closes
+  setTimeout(() => {
+    const el = document.getElementById("print-override");
+    if(el) el.remove();
+  }, 2000);
 }
 
 </script>
