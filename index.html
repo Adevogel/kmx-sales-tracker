@@ -402,6 +402,107 @@ td{padding:11px 13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(min-width:1025px){
   .mob-tabs{display:none}
 }
+
+/* ══════════════════════════════════════════════
+   BOARD VIEW
+══════════════════════════════════════════════ */
+.board-page{background:var(--bg)}
+.board-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--border2);flex-wrap:wrap;gap:16px}
+.board-brand{display:flex;align-items:center;gap:14px}
+.board-logo{width:48px;height:48px;border-radius:12px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.board-logo svg{width:24px;height:24px;fill:none;stroke:#09090e;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.board-co{font-family:var(--fdisp);font-size:28px;letter-spacing:0.06em;color:var(--text);line-height:1}
+.board-tagline{font-size:12px;color:var(--text3);margin-top:3px;letter-spacing:0.06em;text-transform:uppercase}
+.board-meta{text-align:right}
+.board-date{font-family:var(--fnum);font-size:12px;color:var(--text3)}
+.board-prepared{font-size:11px;color:var(--text3);margin-top:2px}
+.board-export-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;background:var(--accent);color:#09090e;border:none;border-radius:var(--r);font-size:13px;font-weight:600;font-family:var(--fn);cursor:pointer;transition:all 0.15s;margin-top:8px}
+.board-export-btn:hover{background:var(--accent2)}
+.board-export-btn i{font-size:15px}
+
+.board-section{margin-bottom:32px}
+.board-section-title{font-family:var(--fdisp);font-size:16px;letter-spacing:0.08em;color:var(--text3);text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.board-section-title i{font-size:16px}
+
+/* Hero KPIs - large numbers */
+.board-hero{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:32px}
+.bhc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:24px 20px 20px;position:relative;overflow:hidden;text-align:center}
+.bhc.gold{border-top:3px solid #D4AF37}
+.bhc.green{border-top:3px solid var(--green)}
+.bhc.blue{border-top:3px solid var(--blue)}
+.bhc.accent{border-top:3px solid var(--accent)}
+.bhc.red{border-top:3px solid var(--red)}
+.bhc.purple{border-top:3px solid var(--purple)}
+.bhc-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px}
+.bhc-val{font-family:var(--fnum);font-size:40px;font-weight:600;letter-spacing:-0.03em;line-height:1}
+.bhc-val.gold{color:#D4AF37}
+.bhc-val.green{color:var(--green)}
+.bhc-val.blue{color:var(--blue)}
+.bhc-val.accent{color:var(--accent)}
+.bhc-val.red{color:var(--red)}
+.bhc-val.purple{color:var(--purple)}
+.bhc-sub{font-size:11px;color:var(--text3);margin-top:8px;font-weight:300}
+
+/* Pipeline table for board */
+.board-table{width:100%;border-collapse:collapse;font-size:13px}
+.board-table thead th{padding:10px 14px;text-align:left;font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;border-bottom:2px solid var(--border2);white-space:nowrap}
+.board-table tbody tr{border-bottom:1px solid var(--border)}
+.board-table tbody tr:last-child{border-bottom:none}
+.board-table tbody tr:hover{background:var(--bg3)}
+.board-table td{padding:11px 14px;font-size:13px;color:var(--text)}
+.board-table .td-name{font-weight:500}
+.board-table .td-val{font-family:var(--fnum);font-size:12px}
+.board-table .td-note{font-size:12px;color:var(--text3);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Two-col layout for board charts */
+.board-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.board-3col{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.bchcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:20px}
+.bchcard-title{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px}
+.board-chart-wrap{position:relative}
+.board-chart-wrap.donut{max-width:220px;margin:0 auto}
+.board-chart-wrap.bar{height:200px}
+
+/* Highlights */
+.board-highlights{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:0}
+.bhl{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:18px 20px}
+.bhl-label{font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:300;letter-spacing:0.04em;text-transform:uppercase}
+.bhl-val{font-family:var(--fnum);font-size:20px;font-weight:600;letter-spacing:-0.02em}
+.bhl-val.accent{color:var(--accent)}
+.bhl-val.green{color:var(--green)}
+.bhl-val.red{color:var(--red)}
+.bhl-val.gold{color:#D4AF37}
+
+/* Win/Loss summary */
+.board-winloss{display:flex;align-items:center;gap:8px;margin-top:10px}
+.wl-bar{flex:1;height:8px;border-radius:4px;overflow:hidden;background:var(--bg4);display:flex}
+.wl-won{background:#D4AF37;border-radius:4px 0 0 4px;transition:width 0.6s}
+.wl-lost{background:var(--red);border-radius:0 4px 4px 0}
+.wl-label{font-size:11px;color:var(--text3);font-family:var(--fnum);white-space:nowrap}
+
+/* License summary for board */
+.board-lic-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.board-lic-alert{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--r);background:rgba(240,80,96,0.08);border:1px solid rgba(240,80,96,0.25);color:#f08090;font-size:13px;margin-bottom:16px}
+.board-lic-alert i{font-size:16px;flex-shrink:0;color:var(--red)}
+
+/* Footer */
+.board-footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.board-footer-left{font-size:11px;color:var(--text3)}
+.board-footer-right{font-size:11px;color:var(--text3);font-family:var(--fnum)}
+.board-confidential{font-size:10px;color:var(--text3);text-align:center;margin-top:8px;letter-spacing:0.06em;text-transform:uppercase;opacity:0.5}
+
+/* ── Print styles ── */
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  nav,.mob-tabs,#lock,.board-export-btn,.nsync{display:none!important}
+  .page{display:none!important}
+  #page-board{display:block!important;margin:0;padding:20px 28px;min-height:auto}
+  body{background:#0f0f18!important}
+  .board-page{background:#0f0f18}
+  .kc,.bhc,.bchcard,.bhl,.scard,.rcard,.board-table{break-inside:avoid}
+  .board-section{break-inside:avoid}
+  @page{size:A4 landscape;margin:0}
+}
 </style>
 </head>
 <body>
@@ -439,6 +540,9 @@ td{padding:11px 13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       <button class="ntab license" id="tab-licenses" onclick="showPage('licenses')"><i class="ti ti-table"></i>Data</button>
       <button class="ntab license" id="tab-licdash" onclick="showPage('licdash')"><i class="ti ti-layout-dashboard"></i>Dashboard</button>
     </div>
+    <div class="ngroup" style="background:rgba(212,175,55,0.08);border-color:rgba(212,175,55,0.2)">
+      <button class="ntab" id="tab-board" onclick="showPage('board')" style="color:#D4AF37"><i class="ti ti-presentation"></i>Board View</button>
+    </div>
   </div>
   <div class="nright">
     <div class="sdot" id="sdot"></div>
@@ -461,6 +565,10 @@ td{padding:11px 13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   </button>
   <button class="mob-tab license" id="mtab-licdash" onclick="showPage('licdash')">
     <i class="ti ti-chart-pie"></i>Lic. Dash
+  </button>
+  <div class="mob-tab-divider"></div>
+  <button class="mob-tab" id="mtab-board" onclick="showPage('board')" style="color:#D4AF37">
+    <i class="ti ti-presentation" style="color:#D4AF37"></i>Board
   </button>
 </div>
 
@@ -543,7 +651,7 @@ td{padding:11px 13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
         <th style="width:15%" onclick="licSort('company')">Assigned to<span class="si" id="lsi-company">↕</span></th>
         <th style="width:10%" onclick="licSort('status')">Status<span class="si" id="lsi-status">↕</span></th>
         <th style="width:12%" onclick="licSort('expiry')">Expiry<span class="si" id="lsi-expiry">↕</span></th>
-        <th style="width:11%" onclick="licSort('cost')">Annual cost<span class="si" id="lsi-cost">↕</span></th>
+        <th style="width:11%" onclick="licSort('cost')">License Revenue<span class="si" id="lsi-cost">↕</span></th>
         <th style="width:15%">Notes</th>
         <th style="width:4%;text-align:right"></th>
       </tr></thead>
@@ -610,6 +718,12 @@ td{padding:11px 13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   <div id="ldcontent"></div>
 </div>
 
+
+<!-- Board View -->
+<div class="page board-page" id="page-board">
+  <div id="board-content"></div>
+</div>
+
 <!-- License Modal -->
 <div class="mbg" id="lmbg" onclick="if(event.target===this)closeLicModal()">
   <div class="modal">
@@ -638,7 +752,7 @@ td{padding:11px 13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
       </div>
       <div class="field"><label>Assigned company / project</label><input id="lfcompany" type="text" placeholder="e.g. Northgate Rail"></div>
       <div class="field"><label>Expiry / renewal date</label><input id="lfexpiry" type="date"></div>
-      <div class="field"><label>Annual cost ($)</label><input id="lfcost" type="number" min="0" placeholder="0"></div>
+      <div class="field"><label>License Revenue ($)</label><input id="lfcost" type="number" min="0" placeholder="0"></div>
       <div class="field full"><label>Notes</label><textarea id="lfnote" placeholder="License key, supplier, conditions…"></textarea></div>
     </div>
     <div class="mfooter">
@@ -820,6 +934,7 @@ function showPage(p){
   if(p==="dash") renderDash();
   if(p==="licenses"||p==="licdash") renderLicenses();
   if(p==="licdash") renderLicDash();
+  if(p==="board") renderBoard();
   // Scroll to top on page change
   window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -1221,7 +1336,7 @@ function renderLicenses(){
     <div class="kc ta"><div class="klbl"><i class="ti ti-certificate"></i>Total licenses</div><div class="kval ca sm">${total}</div></div>
     <div class="kc tg"><div class="klbl"><i class="ti ti-circle-check"></i>Active</div><div class="kval cg sm">${active}</div></div>
     <div class="kc ty"><div class="klbl"><i class="ti ti-clock-exclamation"></i>Expiring soon</div><div class="kval cy sm">${expiring}</div></div>
-    <div class="kc ${expired>0?"tr":"tg"}"><div class="klbl"><i class="ti ti-alert-circle"></i>Expired</div><div class="kval ${expired>0?"cr":"cg"} sm">${expired}</div><div class="ksub">${totalCost?"Total: $"+Math.round(totalCost).toLocaleString()+"/yr":""}</div></div>
+    <div class="kc ${expired>0?"tr":"tg"}"><div class="klbl"><i class="ti ti-alert-circle"></i>Expired</div><div class="kval ${expired>0?"cr":"cg"} sm">${expired}</div><div class="ksub">${totalCost?"Revenue: $"+Math.round(totalCost).toLocaleString():""}</div></div>
   `;
 
   // Sort icons
@@ -1350,7 +1465,7 @@ function renderLicDash(){
       <div class="expiry-item-right">
         <div class="expiry-days">${l.daysLeft} ${plural}</div>
         <div class="expiry-date">${fmtDate(l.expiry)}</div>
-        ${l.cost?`<div class="expiry-cost">$${Number(l.cost).toLocaleString()}/yr</div>`:""}
+        ${l.cost?`<div class="expiry-cost">$${Number(l.cost).toLocaleString()}</div>`:""}
       </div>
     </div>`;
   }
@@ -1366,7 +1481,7 @@ function renderLicDash(){
         ${isEmpty
           ? `<div class="tier-empty"><i class="ti ti-circle-check"></i>No licenses expiring in this window</div>`
           : items.map(tierItemHTML).join("") +
-            (cost?`<div style="text-align:right;font-size:11px;color:var(--text3);margin-top:6px;padding-right:4px">Total at risk: <span style="font-family:var(--fnum);font-weight:600">$${Math.round(cost).toLocaleString()}/yr</span></div>`:"")
+            (cost?`<div style="text-align:right;font-size:11px;color:var(--text3);margin-top:6px;padding-right:4px">Revenue at risk: <span style="font-family:var(--fnum);font-weight:600">$${Math.round(cost).toLocaleString()}</span></div>`:"")
         }
       </div>
     </div>`;
@@ -1392,7 +1507,7 @@ function renderLicDash(){
         <div class="ksub">${active.length>0?Math.round(active.length/Math.max(total,1)*100)+"% of portfolio":""}</div>
       </div>
       <div class="kc tb">
-        <div class="klbl"><i class="ti ti-currency-dollar"></i>Total License Revenue</div>
+        <div class="klbl"><i class="ti ti-currency-dollar"></i>License Revenue</div>
         <div class="kval cb sm">${totalCost?"$"+Math.round(totalCost).toLocaleString():"—"}</div>
         <div class="ksub">all licenses</div>
       </div>
@@ -1430,7 +1545,7 @@ function renderLicDash(){
               <div class="expiry-tier-title" style="color:var(--red);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;display:flex;align-items:center;gap:8px"><i class="ti ti-alert-circle" style="font-size:16px"></i>Already Expired</div>
               <span class="expiry-count-badge" style="background:rgba(240,80,96,0.18);color:var(--red);font-family:var(--fnum);font-size:13px;font-weight:600;padding:2px 10px;border-radius:20px">${expired.length} license${expired.length!==1?"s":""}</span>
             </div>
-            <div class="expiry-items">${expired.map(l=>`<div class="expiry-item"><div class="expiry-item-left"><div class="expiry-item-name">${l.name}</div><div class="expiry-item-meta">${l.type}${l.company?" &middot; "+l.company:""}</div></div><div class="expiry-item-right"><div class="expiry-days" style="color:var(--red)">Expired</div><div class="expiry-date">${fmtDate(l.expiry)}</div>${l.cost?`<div class="expiry-cost">$${Number(l.cost).toLocaleString()}/yr</div>`:""}</div></div>`).join("")}</div>
+            <div class="expiry-items">${expired.map(l=>`<div class="expiry-item"><div class="expiry-item-left"><div class="expiry-item-name">${l.name}</div><div class="expiry-item-meta">${l.type}${l.company?" &middot; "+l.company:""}</div></div><div class="expiry-item-right"><div class="expiry-days" style="color:var(--red)">Expired</div><div class="expiry-date">${fmtDate(l.expiry)}</div>${l.cost?`<div class="expiry-cost">$${Number(l.cost).toLocaleString()}</div>`:""}</div></div>`).join("")}</div>
           </div>`:""}
           ${tierHTML("t30","t30","ti-flame","Critical — Expiring within 30 days",tier30,tierCost30)}
           ${tierHTML("t90","t90","ti-clock-exclamation","Warning — Expiring within 90 days",tier90,tierCost90)}
@@ -1498,6 +1613,225 @@ function renderLicDash(){
         y:{ticks:{color:"rgba(240,240,245,0.6)",font:CHART_FONT},grid:{display:false},border:{display:false}}
       },animation:{duration:600},maintainAspectRatio:false}
   });
+}
+
+// ══════════════════════════════════════════════
+//  BOARD VIEW
+// ══════════════════════════════════════════════
+function renderBoard(){
+  const active      = rows.filter(r=>r.stage!=="won"&&r.stage!=="lost");
+  const won         = rows.filter(r=>r.stage==="won");
+  const lost        = rows.filter(r=>r.stage==="lost");
+  const pipe        = active.filter(r=>!r.tbd&&r.value).reduce((s,r)=>s+r.value,0);
+  const wonVal      = won.filter(r=>!r.tbd&&r.value).reduce((s,r)=>s+r.value,0);
+  const estMid      = active.filter(r=>r.tbd&&(r.estLow||r.estHigh)).reduce((s,r)=>s+((r.estLow||0)+(r.estHigh||0))/2,0);
+  const wr          = won.length+lost.length>0?Math.round(won.length/(won.length+lost.length)*100):null;
+  const reds        = active.filter(r=>r.health==="red").length;
+  const greens      = active.filter(r=>r.health==="green").length;
+  const stale       = active.filter(r=>{const d=daysSince(r.last);return d!==null&&d>30;});
+  const nearClose   = active.filter(r=>r.stage==="negotiation");
+  const totalLicCost= licenses.reduce((s,l)=>s+(l.cost||0),0);
+  const expiredLic  = licenses.filter(l=>l.status==="expired");
+  const expiringLic = licenses.filter(l=>l.status==="expiring");
+
+  // Top active deals sorted by value
+  const topDeals = [...active]
+    .sort((a,b)=>(b.value||0)-(a.value||0))
+    .slice(0,8);
+
+  const wlWonPct = won.length+lost.length>0?Math.round(won.length/(won.length+lost.length)*100):0;
+
+  document.getElementById("board-content").innerHTML = `
+    <!-- Header -->
+    <div class="board-header">
+      <div class="board-brand">
+        <div class="board-logo"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <div>
+          <div class="board-co">KMX Technologies</div>
+          <div class="board-tagline">Infrastructure Pipeline — Board Summary</div>
+        </div>
+      </div>
+      <div class="board-meta">
+        <div class="board-date">${new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"})}</div>
+        <div class="board-prepared">Confidential — For board use only</div>
+        <button class="board-export-btn" onclick="window.print()"><i class="ti ti-printer"></i>Export / Print PDF</button>
+      </div>
+    </div>
+
+    <!-- Hero KPIs -->
+    <div class="board-section">
+      <div class="board-section-title"><i class="ti ti-chart-line"></i>Pipeline at a Glance</div>
+      <div class="board-hero">
+        <div class="bhc accent">
+          <div class="bhc-label">Active Projects</div>
+          <div class="bhc-val accent">${active.length}</div>
+          <div class="bhc-sub">${rows.length} total including closed</div>
+        </div>
+        <div class="bhc blue">
+          <div class="bhc-label">Confirmed Pipeline</div>
+          <div class="bhc-val blue">${pipe?fmtMoney(pipe,true):"—"}</div>
+          <div class="bhc-sub">Contracted value only</div>
+        </div>
+        <div class="bhc gold">
+          <div class="bhc-label">Closed Won</div>
+          <div class="bhc-val gold">${won.length}</div>
+          <div class="bhc-sub">${wonVal?fmtMoney(wonVal,true)+" total value":"No value on record"}</div>
+        </div>
+        <div class="bhc ${wr!==null?(wr>=50?"green":"red"):"purple"}">
+          <div class="bhc-label">Win Rate</div>
+          <div class="bhc-val ${wr!==null?(wr>=50?"green":"red"):"purple"}">${wr!==null?wr+"%":"—"}</div>
+          <div class="bhc-sub">${won.length} won · ${lost.length} lost</div>
+        </div>
+      </div>
+      <div class="board-hero" style="margin-bottom:0">
+        <div class="bhc green">
+          <div class="bhc-label">Est. Upside</div>
+          <div class="bhc-val green">${estMid?fmtMoney(estMid,true):"—"}</div>
+          <div class="bhc-sub">Mid-range estimate</div>
+        </div>
+        <div class="bhc ${reds>0?"red":"green"}">
+          <div class="bhc-label">At Risk</div>
+          <div class="bhc-val ${reds>0?"red":"green"}">${reds}</div>
+          <div class="bhc-sub">${reds>0?reds+" project"+(reds!==1?"s":"")+" flagged red":"All projects healthy"}</div>
+        </div>
+        <div class="bhc purple">
+          <div class="bhc-label">Near Closing</div>
+          <div class="bhc-val purple">${nearClose.length}</div>
+          <div class="bhc-sub">${nearClose.length>0?"In negotiation":"None in negotiation"}</div>
+        </div>
+        <div class="bhc ${stale.length>0?"red":"green"}">
+          <div class="bhc-label">Stale (30d+)</div>
+          <div class="bhc-val ${stale.length>0?"red":"green"}">${stale.length}</div>
+          <div class="bhc-sub">No contact in 30+ days</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Win/Loss bar -->
+    <div class="board-section">
+      <div class="board-section-title"><i class="ti ti-trophy"></i>Deal Outcomes</div>
+      <div class="bchcard">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;align-items:center">
+          <div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em">Win / Loss ratio</div>
+            <div class="board-winloss">
+              <div class="wl-bar">
+                <div class="wl-won" style="width:${wlWonPct}%"></div>
+                <div class="wl-lost" style="width:${100-wlWonPct}%"></div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px">
+              <span style="font-size:11px;color:#D4AF37;font-family:var(--fnum)">${wlWonPct}% Won</span>
+              <span style="font-size:11px;color:var(--red);font-family:var(--fnum)">${100-wlWonPct}% Lost</span>
+            </div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em">Health breakdown</div>
+            <div style="display:flex;justify-content:center;gap:16px;margin-top:8px">
+              <div style="text-align:center"><div style="font-family:var(--fnum);font-size:22px;font-weight:600;color:var(--green)">${greens}</div><div style="font-size:10px;color:var(--text3)">Green</div></div>
+              <div style="text-align:center"><div style="font-family:var(--fnum);font-size:22px;font-weight:600;color:var(--yellow)">${active.filter(r=>r.health==="yellow").length}</div><div style="font-size:10px;color:var(--text3)">Yellow</div></div>
+              <div style="text-align:center"><div style="font-family:var(--fnum);font-size:22px;font-weight:600;color:var(--red)">${reds}</div><div style="font-size:10px;color:var(--text3)">Red</div></div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.06em">Pipeline by stage</div>
+            ${STAGES.filter(s=>s.k!=="won"&&s.k!=="lost").map(s=>{
+              const cnt=active.filter(r=>r.stage===s.k).length;
+              const pct=active.length>0?Math.round(cnt/active.length*100):0;
+              return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+                <div style="font-size:11px;color:${s.c};width:90px;flex-shrink:0">${s.l}</div>
+                <div style="flex:1;background:var(--bg4);border-radius:3px;height:4px;overflow:hidden">
+                  <div style="width:${pct}%;height:100%;background:${s.c}88;border-right:${cnt>0?'2px solid '+s.c:'none'}"></div>
+                </div>
+                <div style="font-family:var(--fnum);font-size:11px;color:var(--text3);width:16px;text-align:right">${cnt}</div>
+              </div>`;
+            }).join("")}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active projects table -->
+    <div class="board-section">
+      <div class="board-section-title"><i class="ti ti-briefcase"></i>Active Projects${topDeals.length<active.length?` (Top ${topDeals.length} by value)`:""}</div>
+      <div class="bchcard" style="padding:0;overflow:hidden">
+        <table class="board-table">
+          <thead><tr>
+            <th>Company</th>
+            <th>Owner</th>
+            <th>Stage</th>
+            <th>Health</th>
+            <th>Contract value</th>
+            <th>Est. range</th>
+            <th>Last contact</th>
+            <th>Notes</th>
+          </tr></thead>
+          <tbody>
+            ${topDeals.length===0
+              ? `<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text3)">No active projects</td></tr>`
+              : topDeals.map(r=>{
+                const s=stg(r.stage);
+                const v=r.tbd?null:fmtMoney(r.value);
+                const rng=fmtRange(r);
+                return `<tr>
+                  <td class="td-name">${r.name}</td>
+                  <td style="color:var(--text2)">${r.owner||"—"}</td>
+                  <td><span class="sp ${r.stage}">${s.l}</span></td>
+                  <td><span class="hb"><span class="hd ${r.health}"></span>${r.health[0].toUpperCase()+r.health.slice(1)}</span></td>
+                  <td class="td-val">${v||'<span style="color:var(--text3);font-style:italic">TBD</span>'}</td>
+                  <td class="td-val" style="color:var(--text3)">${r.tbd?(rng||"—"):"—"}</td>
+                  <td style="color:var(--text2);font-size:12px">${fmtDate(r.last)}</td>
+                  <td class="td-note">${r.note||"—"}</td>
+                </tr>`;
+              }).join("")
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- License summary -->
+    <div class="board-section">
+      <div class="board-section-title"><i class="ti ti-certificate"></i>License Portfolio</div>
+      ${expiredLic.length>0||expiringLic.length>0?`<div class="board-lic-alert"><i class="ti ti-bell-ringing"></i><span><strong style="color:var(--red)">${expiredLic.length+expiringLic.length} license${expiredLic.length+expiringLic.length!==1?"s":""}</strong> require attention — ${expiredLic.length} expired, ${expiringLic.length} expiring soon.</span></div>`:""}
+      <div class="board-lic-grid">
+        <div class="bhc accent">
+          <div class="bhc-label">Total Licenses</div>
+          <div class="bhc-val accent">${licenses.length}</div>
+          <div class="bhc-sub">in portfolio</div>
+        </div>
+        <div class="bhc green">
+          <div class="bhc-label">Active</div>
+          <div class="bhc-val green">${licenses.filter(l=>l.status==="active").length}</div>
+          <div class="bhc-sub">current and valid</div>
+        </div>
+        <div class="bhc ${expiredLic.length>0?"red":"green"}">
+          <div class="bhc-label">Expired</div>
+          <div class="bhc-val ${expiredLic.length>0?"red":"green"}">${expiredLic.length}</div>
+          <div class="bhc-sub">${expiredLic.length>0?"Immediate action":"All current"}</div>
+        </div>
+        <div class="bhc blue">
+          <div class="bhc-label">License Revenue</div>
+          <div class="bhc-val blue sm">${totalLicCost?fmtMoney(totalLicCost,true):"—"}</div>
+          <div class="bhc-sub">recurring &amp; one-time fees</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="board-footer">
+      <div class="board-footer-left">KMX Technologies · Infrastructure Pipeline · Confidential</div>
+      <div class="board-footer-right">${new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</div>
+    </div>
+    <div class="board-confidential">This document is confidential and intended solely for the named recipients</div>
+  `;
+
+  // Render board charts
+  destroyChart("board-chart-health");
+  destroyChart("board-chart-winloss");
+
+  const CHART_FONT = {family:"'JetBrains Mono',monospace",size:11};
+  const TOOLTIP_OPTS = {backgroundColor:"#1e1e28",titleColor:"#f0f0f5",bodyColor:"#9090a8",borderColor:"#323240",borderWidth:1,padding:10,titleFont:CHART_FONT,bodyFont:CHART_FONT};
 }
 
 </script>
