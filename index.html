@@ -8,6 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -593,6 +595,36 @@ body.light-theme .kval.ca{color:#1a6e3c}
     background:#ffffff!important;
   }
 }
+
+/* ── Pipeline Velocity Funnel ── */
+.funnel-wrap{padding:4px 0}
+/* Header row */
+.funnel-header{display:flex;align-items:center;gap:0;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.fh-stage{width:120px;flex-shrink:0;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;text-align:right;padding-right:12px}
+.fh-bar{flex:1}
+.fh-count{width:56px;flex-shrink:0;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;text-align:right;padding-right:4px}
+.fh-conv{width:80px;flex-shrink:0;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;text-align:right}
+/* Data row */
+.funnel-row{display:flex;align-items:center;gap:0;margin-bottom:4px}
+.fd-stage{width:120px;flex-shrink:0;font-size:12px;font-weight:500;text-align:right;padding-right:12px}
+.fd-bar-wrap{flex:1;display:flex;align-items:center}
+.fd-bar{height:30px;border-radius:5px;min-width:4px;display:flex;align-items:center;padding:0 10px;transition:width 0.7s cubic-bezier(.22,1,.36,1)}
+.fd-bar-lbl{font-size:11px;font-weight:600;font-family:var(--fnum);color:rgba(9,9,14,0.9);white-space:nowrap}
+.fd-count{width:56px;flex-shrink:0;font-family:var(--fnum);font-size:12px;font-weight:600;text-align:right;padding-right:4px}
+.fd-conv{width:80px;flex-shrink:0;font-family:var(--fnum);font-size:12px;font-weight:500;text-align:right}
+/* Drop-off indicator between rows — spans the full bar area */
+.funnel-gap{display:flex;align-items:center;gap:0;margin:2px 0}
+.funnel-gap-spacer{width:120px;flex-shrink:0;padding-right:12px}
+.funnel-gap-line{flex:1;display:flex;align-items:center;gap:6px;padding:3px 0}
+.funnel-gap-line::before{content:'';display:block;width:1px;height:12px;background:var(--border2);margin-left:14px;flex-shrink:0}
+.funnel-gap-text{font-size:10px;color:var(--text3);font-family:var(--fnum);white-space:nowrap}
+.funnel-gap-line.dropped .funnel-gap-text{color:var(--red)}
+.funnel-gap-line.nodrop .funnel-gap-text{color:var(--green)}
+.funnel-gap-right{width:136px;flex-shrink:0}
+/* Summary */
+.funnel-total{display:flex;align-items:center;gap:0;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.funnel-total-lbl{flex:1;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;font-weight:500;text-align:right;padding-right:12px}
+.funnel-total-val{font-family:var(--fnum);font-size:15px;font-weight:600;color:var(--accent);width:136px;text-align:right}
 </style>
 </head>
 <body>
@@ -917,7 +949,7 @@ function syncNow(){
       }));
       renderTable();
       setSyncState("ok","Synced "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}));
-      if(document.getElementById("page-dash").classList.contains("active")) renderDash();
+      if(document.getElementById("page-dash").classList.contains("active")){renderDash();renderFunnel();}
     })
     .catch(()=>setSyncState("err","Could not reach Google Sheets"))
     .finally(()=>{
@@ -1182,7 +1214,7 @@ function renderDash(){
         <div class="ksub">${nearClose.length>0?nearClose.map(r=>r.name.split(" ")[0]).join(", "):"None in negotiation"}</div>
       </div>
     </div>
-    <div class="dgrid r3 gap">
+    <div class="dgrid r2 gap">
       <div class="chcard">
         <div class="chtitle">Health breakdown</div>
         <div class="chart-wrap donut"><canvas id="chart-health"></canvas></div>
@@ -1191,10 +1223,10 @@ function renderDash(){
         <div class="chtitle">Won vs Lost</div>
         <div class="chart-wrap donut"><canvas id="chart-winloss"></canvas></div>
       </div>
-      <div class="chcard">
-        <div class="chtitle">Pipeline by stage</div>
-        <div class="chart-wrap bar"><canvas id="chart-stage"></canvas></div>
-      </div>
+    </div>
+    <div class="chcard gap" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:20px">
+      <div class="chtitle" style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px">Pipeline velocity — stage conversion</div>
+      <div class="funnel-wrap" id="funnel-chart"></div>
     </div>
     <div class="dgrid r2 gap">
       <div class="scard">
@@ -1284,14 +1316,82 @@ function renderDash(){
     datasets:[{data:[won.length,lost.length,inProgress],backgroundColor:["rgba(200,240,96,0.85)","rgba(240,80,96,0.85)","rgba(80,144,255,0.5)"],borderColor:["#c8f060","#f05060","#5090ff"],borderWidth:1.5,hoverOffset:6}]
   },options:{cutout:"68%",plugins:{legend:LEGEND_OPTS,tooltip:{...TOOLTIP_OPTS}},animation:{animateRotate:true,duration:700}}});
 
-  // Stage bar chart
-  mkChart("chart-stage",{type:"bar",data:{
-    labels:STAGES.map(s=>s.l),
-    datasets:[{label:"Projects",data:STAGES.map(s=>rows.filter(r=>r.stage===s.k).length),backgroundColor:STAGES.map(s=>s.c+"99"),borderColor:STAGES.map(s=>s.c),borderWidth:1.5,borderRadius:4,borderSkipped:false}]
-  },options:{indexAxis:"y",plugins:{legend:{display:false},tooltip:{...TOOLTIP_OPTS}},scales:{
-    x:{ticks:{color:"rgba(240,240,245,0.4)",font:CHART_FONT,stepSize:1},grid:{color:"rgba(255,255,255,0.04)"},border:{display:false}},
-    y:{ticks:{color:"rgba(240,240,245,0.6)",font:CHART_FONT},grid:{display:false},border:{display:false}}
-  },animation:{duration:600},maintainAspectRatio:false}});
+  // ── Pipeline velocity funnel ────────────────────
+  renderFunnel();
+}
+
+function renderFunnel(){
+  const el = document.getElementById("funnel-chart");
+  if(!el) return;
+
+  const funnelStages = STAGES.filter(s=>s.k!=="won"&&s.k!=="lost");
+  const counts = funnelStages.map(s=>rows.filter(r=>r.stage===s.k).length);
+  const maxCount = Math.max(...counts, 1);
+
+  // Header
+  let html = `<div class="funnel-header">
+    <div class="fh-stage">Stage</div>
+    <div class="fh-bar"></div>
+    <div class="fh-count">Projects</div>
+    <div class="fh-conv">% vs prev. stage</div>
+  </div>`;
+
+  funnelStages.forEach((s,i)=>{
+    const cnt      = counts[i];
+    const prevCnt  = i > 0 ? counts[i-1] : null;
+    const barPct   = Math.round(cnt / maxCount * 100);
+
+    // Conversion rate
+    const hasConv  = prevCnt !== null && prevCnt > 0;
+    const convRatio= hasConv ? cnt / prevCnt : null;
+    const convStr  = hasConv ? Math.round(convRatio * 100) + "%" : "—";
+    const convCol  = !hasConv ? "var(--text3)"
+                   : convRatio >= 0.7 ? "var(--green)"
+                   : convRatio >= 0.4 ? "var(--yellow)"
+                   : "var(--red)";
+
+    // Drop-off connector between previous row and this one
+    if(i > 0 && prevCnt !== null){
+      const dropped  = prevCnt - cnt;
+      const dropPct  = prevCnt > 0 ? Math.round(dropped / prevCnt * 100) : 0;
+      const isDrop   = dropped > 0;
+      html += `<div class="funnel-gap">
+        <div class="funnel-gap-spacer"></div>
+        <div class="funnel-gap-line ${isDrop?"dropped":"nodrop"}">
+          <span class="funnel-gap-text">${isDrop ? "▼ "+dropped+" dropped ("+dropPct+"%)" : "✓ no drop-off"}</span>
+        </div>
+        <div class="funnel-gap-right"></div>
+      </div>`;
+    }
+
+    // Bar label — only show text if bar is wide enough to fit it
+    const barLabel = cnt > 0 && barPct >= 18
+      ? `<span class="fd-bar-lbl">${cnt} ${cnt===1?"project":"projects"}</span>`
+      : "";
+
+    html += `<div class="funnel-row">
+      <div class="fd-stage" style="color:${s.c}">${s.l}</div>
+      <div class="fd-bar-wrap">
+        <div class="fd-bar" style="width:${Math.max(barPct,2)}%;background:${s.c}bb">${barLabel}</div>
+      </div>
+      <div class="fd-count" style="color:${s.c}">${cnt}</div>
+      <div class="fd-conv" style="color:${convCol}">${convStr}</div>
+    </div>`;
+  });
+
+  // Overall summary
+  const first = counts[0] || 0;
+  const last  = counts[funnelStages.length-2] || 0; // negotiation is second-to-last before won/lost
+  const overallConv = first > 0
+    ? Math.round(last / first * 100) + "%"
+    : "—";
+
+  html += `<div class="funnel-total">
+    <div class="funnel-total-lbl">Overall Prospect → Negotiation conversion</div>
+    <div class="funnel-total-val">${overallConv}</div>
+  </div>`;
+
+  el.innerHTML = html;
 }
 
 // ── Modal ─────────────────────────────────────
@@ -1745,7 +1845,7 @@ function renderBoard(){
         <div class="board-date">${new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"})}</div>
         <div class="board-prepared">Confidential — For board use only</div>
         <div class="board-export-row">
-          <button class="board-export-btn" onclick="doPrint()"><i class="ti ti-printer"></i>Export / Print PDF</button>
+          <button class="board-export-btn" id="export-btn" onclick="doPrint()"><i class="ti ti-file-type-pdf" id="export-icon"></i><span id="export-label">Download PDF</span></button>
           <button class="board-theme-toggle" id="theme-toggle" onclick="toggleBoardTheme()">
             <i class="ti ti-sun" id="theme-icon"></i><span id="theme-label">Professional theme</span>
           </button>
@@ -1765,6 +1865,7 @@ function renderBoard(){
         <div class="bhc blue">
           <div class="bhc-label">Confirmed Pipeline</div>
           <div class="bhc-val blue">${pipe?fmtMoney(pipe,true):"—"}</div>
+          <div class="bhc-sub">Contracted value only</div>
         </div>
         <div class="bhc gold">
           <div class="bhc-label">Closed Won</div>
@@ -1938,24 +2039,111 @@ function toggleBoardTheme(){
   document.getElementById("theme-label").textContent = boardLightTheme ? "Dark theme" : "Professional theme";
 }
 
-function doPrint(){
-  // Force all pages hidden, board visible, no scrollbars
-  const style = document.createElement("style");
-  style.id = "print-override";
-  style.textContent = `
-    @media print {
-      html { overflow: hidden !important; }
-      body { overflow: hidden !important; width: 100% !important; }
-      ::-webkit-scrollbar { display: none !important; }
+async function doPrint(){
+  const btn = document.getElementById("export-btn");
+  const icon = document.getElementById("export-icon");
+  const label = document.getElementById("export-label");
+
+  // Show loading state
+  btn.disabled = true;
+  icon.className = "ti ti-loader-2";
+  icon.style.animation = "rot 0.9s linear infinite";
+  label.textContent = "Generating PDF…";
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const boardEl = document.getElementById("board-content");
+
+    // Temporarily expand for full capture
+    const origOverflow = document.body.style.overflow;
+    document.body.style.overflow = "visible";
+
+    // Hide export row during capture
+    const exportRow = document.querySelector(".board-export-row");
+    if(exportRow) exportRow.style.visibility = "hidden";
+
+    // Capture at 2x scale for sharpness
+    const canvas = await html2canvas(boardEl, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: boardLightTheme ? "#ffffff" : "#09090e",
+      scrollX: 0,
+      scrollY: -window.scrollY,
+      windowWidth: boardEl.scrollWidth,
+      windowHeight: boardEl.scrollHeight,
+      logging: false
+    });
+
+    // Restore
+    document.body.style.overflow = origOverflow;
+    if(exportRow) exportRow.style.visibility = "visible";
+
+    // Build PDF — A4 landscape
+    const pdf = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4"
+    });
+
+    const pageW = pdf.internal.pageSize.getWidth();   // 297mm
+    const pageH = pdf.internal.pageSize.getHeight();  // 210mm
+    const margin = 8;
+    const contentW = pageW - margin * 2;
+
+    const imgData = canvas.toDataURL("image/png");
+    const imgW = canvas.width;
+    const imgH = canvas.height;
+
+    // Scale to fit content width, then paginate
+    const scale = contentW / (imgW / 2);  // divide by 2 because we captured at 2x
+    const scaledH = (imgH / 2) * scale;
+    const pageContentH = pageH - margin * 2;
+
+    let yOffset = 0;
+    let pageNum = 0;
+
+    while(yOffset < scaledH) {
+      if(pageNum > 0) pdf.addPage();
+
+      // How many mm of content fits on this page
+      const sliceH = Math.min(pageContentH, scaledH - yOffset);
+      // Corresponding pixels in the original canvas (at 2x)
+      const srcY = (yOffset / scale) * 2;
+      const srcH = (sliceH / scale) * 2;
+
+      // Create a slice canvas
+      const sliceCanvas = document.createElement("canvas");
+      sliceCanvas.width = imgW;
+      sliceCanvas.height = srcH;
+      const ctx = sliceCanvas.getContext("2d");
+      ctx.drawImage(canvas, 0, srcY, imgW, srcH, 0, 0, imgW, srcH);
+
+      pdf.addImage(
+        sliceCanvas.toDataURL("image/png"),
+        "PNG",
+        margin, margin,
+        contentW, sliceH
+      );
+
+      yOffset += pageContentH;
+      pageNum++;
     }
-  `;
-  document.head.appendChild(style);
-  window.print();
-  // Clean up after print dialog closes
-  setTimeout(() => {
-    const el = document.getElementById("print-override");
-    if(el) el.remove();
-  }, 2000);
+
+    // Download
+    const date = new Date().toLocaleDateString("en-GB").replace(/\//g,"-");
+    pdf.save("KMX-Board-Pack-" + date + ".pdf");
+
+  } catch(err) {
+    console.error("PDF export error:", err);
+    alert("PDF export failed. Please try again.");
+  }
+
+  // Reset button
+  btn.disabled = false;
+  icon.className = "ti ti-file-type-pdf";
+  icon.style.animation = "";
+  label.textContent = "Download PDF";
 }
 
 </script>
