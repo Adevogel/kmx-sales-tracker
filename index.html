@@ -1324,47 +1324,47 @@ function renderFunnel(){
   const el = document.getElementById("funnel-chart");
   if(!el) return;
 
+  // Active pipeline stages only — won/lost are outcomes shown separately
   const funnelStages = STAGES.filter(s=>s.k!=="won"&&s.k!=="lost");
   const counts = funnelStages.map(s=>rows.filter(r=>r.stage===s.k).length);
   const maxCount = Math.max(...counts, 1);
 
-  // Header
+  // True deal outcomes
+  const totalWon  = rows.filter(r=>r.stage==="won").length;
+  const totalLost = rows.filter(r=>r.stage==="lost").length;
+  const totalClosed = totalWon + totalLost;
+  const winRate   = totalClosed > 0 ? Math.round(totalWon / totalClosed * 100) : null;
+  const lostRate  = totalClosed > 0 ? Math.round(totalLost / totalClosed * 100) : null;
+
+  // Header — remove the "% vs prev. stage" column since it was misleading
+  // Replace with a simple "Active" label
   let html = `<div class="funnel-header">
     <div class="fh-stage">Stage</div>
     <div class="fh-bar"></div>
-    <div class="fh-count">Projects</div>
-    <div class="fh-conv">% vs prev. stage</div>
+    <div class="fh-count">Active</div>
+    <div class="fh-conv" style="color:var(--text3)">% of total</div>
   </div>`;
 
+  const totalActive = counts.reduce((a,b)=>a+b,0);
+
   funnelStages.forEach((s,i)=>{
-    const cnt      = counts[i];
-    const prevCnt  = i > 0 ? counts[i-1] : null;
-    const barPct   = Math.round(cnt / maxCount * 100);
+    const cnt    = counts[i];
+    const barPct = Math.round(cnt / maxCount * 100);
+    // Show each stage's share of total active pipeline
+    const ofTotal = totalActive > 0 ? Math.round(cnt / totalActive * 100) + "%" : "—";
+    const ofTotalCol = "var(--text3)";
 
-    // Conversion rate
-    const hasConv  = prevCnt !== null && prevCnt > 0;
-    const convRatio= hasConv ? cnt / prevCnt : null;
-    const convStr  = hasConv ? Math.round(convRatio * 100) + "%" : "—";
-    const convCol  = !hasConv ? "var(--text3)"
-                   : convRatio >= 0.7 ? "var(--green)"
-                   : convRatio >= 0.4 ? "var(--yellow)"
-                   : "var(--red)";
-
-    // Drop-off connector between previous row and this one
-    if(i > 0 && prevCnt !== null){
-      const dropped  = prevCnt - cnt;
-      const dropPct  = prevCnt > 0 ? Math.round(dropped / prevCnt * 100) : 0;
-      const isDrop   = dropped > 0;
+    // Simple connector — just a vertical line, no drop-off messaging
+    if(i > 0){
       html += `<div class="funnel-gap">
         <div class="funnel-gap-spacer"></div>
-        <div class="funnel-gap-line ${isDrop?"dropped":"nodrop"}">
-          <span class="funnel-gap-text">${isDrop ? "▼ "+dropped+" dropped ("+dropPct+"%)" : "✓ no drop-off"}</span>
+        <div class="funnel-gap-line nodrop" style="border-left:none">
+          <span class="funnel-gap-text" style="color:var(--border2)">↓</span>
         </div>
         <div class="funnel-gap-right"></div>
       </div>`;
     }
 
-    // Bar label — only show text if bar is wide enough to fit it
     const barLabel = cnt > 0 && barPct >= 18
       ? `<span class="fd-bar-lbl">${cnt} ${cnt===1?"project":"projects"}</span>`
       : "";
@@ -1375,20 +1375,38 @@ function renderFunnel(){
         <div class="fd-bar" style="width:${Math.max(barPct,2)}%;background:${s.c}bb">${barLabel}</div>
       </div>
       <div class="fd-count" style="color:${s.c}">${cnt}</div>
-      <div class="fd-conv" style="color:${convCol}">${convStr}</div>
+      <div class="fd-conv" style="color:${ofTotalCol}">${ofTotal}</div>
     </div>`;
   });
 
-  // Overall summary
-  const first = counts[0] || 0;
-  const last  = counts[funnelStages.length-2] || 0; // negotiation is second-to-last before won/lost
-  const overallConv = first > 0
-    ? Math.round(last / first * 100) + "%"
-    : "—";
-
-  html += `<div class="funnel-total">
-    <div class="funnel-total-lbl">Overall Prospect → Negotiation conversion</div>
-    <div class="funnel-total-val">${overallConv}</div>
+  // Outcomes section — this is where real win/loss data lives
+  html += `<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+    <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px">Deal outcomes (closed deals only)</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <div style="flex:1;background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.25);border-radius:var(--r);padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:10px;color:#D4AF37;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px">Closed Won</div>
+          <div style="font-family:var(--fnum);font-size:20px;font-weight:600;color:#D4AF37">${totalWon}</div>
+        </div>
+        <div style="font-family:var(--fnum);font-size:22px;font-weight:600;color:#D4AF37;opacity:0.7">${winRate!==null?winRate+"%":"—"}</div>
+      </div>
+      <div style="flex:1;background:var(--rdim);border:1px solid rgba(240,80,96,0.2);border-radius:var(--r);padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:10px;color:var(--red);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px">Closed Lost</div>
+          <div style="font-family:var(--fnum);font-size:20px;font-weight:600;color:var(--red)">${totalLost}</div>
+        </div>
+        <div style="font-family:var(--fnum);font-size:22px;font-weight:600;color:var(--red);opacity:0.7">${lostRate!==null?lostRate+"%":"—"}</div>
+      </div>
+    </div>
+    ${totalClosed > 0 ? `
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="font-size:11px;color:var(--text3);white-space:nowrap">Win rate</div>
+      <div style="flex:1;height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;display:flex">
+        <div style="width:${winRate}%;background:#D4AF37;border-radius:3px 0 0 3px"></div>
+        <div style="width:${lostRate}%;background:var(--red);border-radius:0 3px 3px 0"></div>
+      </div>
+      <div style="font-family:var(--fnum);font-size:11px;color:#D4AF37;white-space:nowrap">${winRate}% won</div>
+    </div>` : `<div style="font-size:12px;color:var(--text3);text-align:center;padding:4px 0">No closed deals yet</div>`}
   </div>`;
 
   el.innerHTML = html;
