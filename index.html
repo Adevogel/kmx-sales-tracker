@@ -2088,6 +2088,10 @@ function renderBoard(){
 
   const CHART_FONT = {family:"'JetBrains Mono',monospace",size:11};
   const TOOLTIP_OPTS = {backgroundColor:"#1e1e28",titleColor:"#f0f0f5",bodyColor:"#9090a8",borderColor:"#323240",borderWidth:1,padding:10,titleFont:CHART_FONT,bodyFont:CHART_FONT};
+
+  // Populate pipeline velocity funnel on board view
+  // Use setTimeout so the DOM has rendered the board-funnel div first
+  setTimeout(()=>renderFunnelInto("board-funnel"), 0);
 }
 
 // ── Board print & theme ──────────────────────────────────────────────────────
