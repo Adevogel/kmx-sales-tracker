@@ -1326,8 +1326,10 @@ function renderDash(){
   renderFunnel();
 }
 
-function renderFunnel(){
-  const el = document.getElementById("funnel-chart");
+function renderFunnel(){ renderFunnelInto("funnel-chart"); }
+
+function renderFunnelInto(targetId){
+  const el = document.getElementById(targetId);
   if(!el) return;
 
   // Active pipeline stages only — won/lost are outcomes shown separately
@@ -2033,6 +2035,14 @@ function renderBoard(){
             }
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- Pipeline velocity -->
+    <div class="board-section">
+      <div class="board-section-title"><i class="ti ti-trending-up"></i>Pipeline Velocity</div>
+      <div class="bchcard">
+        <div id="board-funnel"></div>
       </div>
     </div>
 
