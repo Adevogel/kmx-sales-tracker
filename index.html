@@ -613,13 +613,19 @@ body.light-theme .kval.ca{color:#1a6e3c}
 .fd-count{width:56px;flex-shrink:0;font-family:var(--fnum);font-size:12px;font-weight:600;text-align:right;padding-right:4px}
 .fd-conv{width:80px;flex-shrink:0;font-family:var(--fnum);font-size:12px;font-weight:500;text-align:right}
 /* Drop-off indicator between rows — spans the full bar area */
-.funnel-gap{display:flex;align-items:center;gap:0;margin:2px 0}
+.funnel-gap{display:flex;align-items:center;gap:0;margin:1px 0}
 .funnel-gap-spacer{width:120px;flex-shrink:0;padding-right:12px}
-.funnel-gap-line{flex:1;display:flex;align-items:center;gap:6px;padding:3px 0}
-.funnel-gap-line::before{content:'';display:block;width:1px;height:12px;background:var(--border2);margin-left:14px;flex-shrink:0}
-.funnel-gap-text{font-size:10px;color:var(--text3);font-family:var(--fnum);white-space:nowrap}
-.funnel-gap-line.dropped .funnel-gap-text{color:var(--red)}
-.funnel-gap-line.nodrop .funnel-gap-text{color:var(--green)}
+.funnel-gap-line{flex:1;display:flex;align-items:center;gap:6px;padding:2px 0 2px 14px}
+.funnel-gap-arrow{font-size:14px;line-height:1;flex-shrink:0;transition:color 0.3s}
+.funnel-gap-text{font-size:10px;font-family:var(--fnum);white-space:nowrap;font-weight:500}
+.funnel-gap-line.flow-green .funnel-gap-arrow{color:var(--green)}
+.funnel-gap-line.flow-green .funnel-gap-text{color:var(--green)}
+.funnel-gap-line.flow-amber .funnel-gap-arrow{color:var(--yellow)}
+.funnel-gap-line.flow-amber .funnel-gap-text{color:var(--yellow)}
+.funnel-gap-line.flow-red .funnel-gap-arrow{color:var(--red)}
+.funnel-gap-line.flow-red .funnel-gap-text{color:var(--red)}
+.funnel-gap-line.flow-grey .funnel-gap-arrow{color:var(--text3)}
+.funnel-gap-line.flow-grey .funnel-gap-text{color:var(--text3)}
 .funnel-gap-right{width:136px;flex-shrink:0}
 /* Summary */
 .funnel-total{display:flex;align-items:center;gap:0;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
@@ -1354,12 +1360,39 @@ function renderFunnel(){
     const ofTotal = totalActive > 0 ? Math.round(cnt / totalActive * 100) + "%" : "—";
     const ofTotalCol = "var(--text3)";
 
-    // Simple connector — just a vertical line, no drop-off messaging
+    // Coloured flow arrow between stages
+    // Logic: compare this stage count to the PREVIOUS stage count
+    // Green  = next stage has >= 50% of current (healthy flow)
+    // Amber  = next stage has 20–49% of current (slowing)
+    // Red    = next stage has < 20% of current OR is 0 when current > 0 (stalled)
+    // Grey   = current stage has 0 projects (nothing to flow yet)
     if(i > 0){
+      const prevCnt = counts[i-1];
+      let flowClass, flowMsg;
+      if(prevCnt === 0){
+        flowClass = "flow-grey";
+        flowMsg   = "no projects at prev. stage";
+      } else {
+        const ratio = cnt / prevCnt;
+        if(ratio >= 0.5){
+          flowClass = "flow-green";
+          flowMsg   = "flowing well";
+        } else if(ratio >= 0.2){
+          flowClass = "flow-amber";
+          flowMsg   = "flow slowing";
+        } else if(cnt === 0 && prevCnt > 0){
+          flowClass = "flow-red";
+          flowMsg   = "pipeline stalled here";
+        } else {
+          flowClass = "flow-red";
+          flowMsg   = "low flow";
+        }
+      }
       html += `<div class="funnel-gap">
         <div class="funnel-gap-spacer"></div>
-        <div class="funnel-gap-line nodrop" style="border-left:none">
-          <span class="funnel-gap-text" style="color:var(--border2)">↓</span>
+        <div class="funnel-gap-line ${flowClass}">
+          <span class="funnel-gap-arrow">↓</span>
+          <span class="funnel-gap-text">${flowMsg}</span>
         </div>
         <div class="funnel-gap-right"></div>
       </div>`;
@@ -2058,11 +2091,10 @@ function toggleBoardTheme(){
 }
 
 async function doPrint(){
-  const btn = document.getElementById("export-btn");
-  const icon = document.getElementById("export-icon");
+  const btn   = document.getElementById("export-btn");
+  const icon  = document.getElementById("export-icon");
   const label = document.getElementById("export-label");
 
-  // Show loading state
   btn.disabled = true;
   icon.className = "ti ti-loader-2";
   icon.style.animation = "rot 0.9s linear infinite";
@@ -2072,23 +2104,27 @@ async function doPrint(){
     const { jsPDF } = window.jspdf;
     const boardEl = document.getElementById("board-content");
 
-    // Temporarily expand for full capture
+    // Expand body so html2canvas can see everything
     const origOverflow = document.body.style.overflow;
     document.body.style.overflow = "visible";
 
-    // Hide export row during capture
+    // Hide the export buttons during capture
     const exportRow = document.querySelector(".board-export-row");
     if(exportRow) exportRow.style.visibility = "hidden";
 
-    // Capture at 2x scale for sharpness
+    // Capture the full element at 1.5x for a good quality/size balance
     const canvas = await html2canvas(boardEl, {
-      scale: 2,
+      scale: 1.5,
       useCORS: true,
       allowTaint: true,
       backgroundColor: boardLightTheme ? "#ffffff" : "#09090e",
       scrollX: 0,
-      scrollY: -window.scrollY,
-      windowWidth: boardEl.scrollWidth,
+      scrollY: 0,
+      x: 0,
+      y: 0,
+      width:  boardEl.scrollWidth,
+      height: boardEl.scrollHeight,
+      windowWidth:  boardEl.scrollWidth,
       windowHeight: boardEl.scrollHeight,
       logging: false
     });
@@ -2097,67 +2133,31 @@ async function doPrint(){
     document.body.style.overflow = origOverflow;
     if(exportRow) exportRow.style.visibility = "visible";
 
-    // Build PDF — A4 landscape
+    // --- Single page sized exactly to the content ---
+    // Work in mm. Target width = 280mm (A4 landscape width minus margins).
+    const targetWidthMm  = 280;
+    const mmPerPx        = targetWidthMm / canvas.width;
+    const contentHeightMm = canvas.height * mmPerPx;
+
+    // Create a custom-sized single page PDF
     const pdf = new jsPDF({
-      orientation: "landscape",
+      orientation: contentHeightMm > targetWidthMm ? "portrait" : "landscape",
       unit: "mm",
-      format: "a4"
+      format: [targetWidthMm, contentHeightMm]
     });
 
-    const pageW = pdf.internal.pageSize.getWidth();   // 297mm
-    const pageH = pdf.internal.pageSize.getHeight();  // 210mm
-    const margin = 8;
-    const contentW = pageW - margin * 2;
+    // Place the full canvas image on the single page — no slicing, no pagination
+    const imgData = canvas.toDataURL("image/jpeg", 0.95);
+    pdf.addImage(imgData, "JPEG", 0, 0, targetWidthMm, contentHeightMm);
 
-    const imgData = canvas.toDataURL("image/png");
-    const imgW = canvas.width;
-    const imgH = canvas.height;
-
-    // Scale to fit content width, then paginate
-    const scale = contentW / (imgW / 2);  // divide by 2 because we captured at 2x
-    const scaledH = (imgH / 2) * scale;
-    const pageContentH = pageH - margin * 2;
-
-    let yOffset = 0;
-    let pageNum = 0;
-
-    while(yOffset < scaledH) {
-      if(pageNum > 0) pdf.addPage();
-
-      // How many mm of content fits on this page
-      const sliceH = Math.min(pageContentH, scaledH - yOffset);
-      // Corresponding pixels in the original canvas (at 2x)
-      const srcY = (yOffset / scale) * 2;
-      const srcH = (sliceH / scale) * 2;
-
-      // Create a slice canvas
-      const sliceCanvas = document.createElement("canvas");
-      sliceCanvas.width = imgW;
-      sliceCanvas.height = srcH;
-      const ctx = sliceCanvas.getContext("2d");
-      ctx.drawImage(canvas, 0, srcY, imgW, srcH, 0, 0, imgW, srcH);
-
-      pdf.addImage(
-        sliceCanvas.toDataURL("image/png"),
-        "PNG",
-        margin, margin,
-        contentW, sliceH
-      );
-
-      yOffset += pageContentH;
-      pageNum++;
-    }
-
-    // Download
-    const date = new Date().toLocaleDateString("en-GB").replace(/\//g,"-");
+    const date = new Date().toLocaleDateString("en-GB").replace(/\//g, "-");
     pdf.save("KMX-Board-Pack-" + date + ".pdf");
 
   } catch(err) {
     console.error("PDF export error:", err);
-    alert("PDF export failed. Please try again.");
+    alert("PDF export failed — please try again.");
   }
 
-  // Reset button
   btn.disabled = false;
   icon.className = "ti ti-file-type-pdf";
   icon.style.animation = "";
