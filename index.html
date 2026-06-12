@@ -111,8 +111,10 @@ thead th.sorted .si{opacity:1}
 tbody tr{border-bottom:1px solid var(--border);transition:background 0.08s}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:var(--bg3)}
-td{padding:10px 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
-.cn{width:18%}.co{width:8%}.cst{width:12%}.ch{width:7%}.cv{width:9%}.ce{width:9%}.cl{width:8%}.cdl{width:9%}.cinfra{width:8%}.cage{width:5%}.cfu{width:7%}.cnote{display:none;width:0}.ca{width:2%;text-align:right}
+td{padding:10px 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+.ca{white-space:normal;vertical-align:top;padding-top:8px}
+.cn{width:22%}.co{width:11%}.cst{width:14%}.ch{width:9%}.cv{width:12%}.cl{width:10%}.cage{width:7%}.cfu{width:9%}.ca{width:6%;text-align:right}
+.ce,.cdl,.cinfra,.cnote{display:none}
 .cname{font-weight:500;letter-spacing:0.01em}
 .sp{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px 2px 6px;border-radius:20px;font-weight:500;white-space:nowrap;border:1px solid transparent;letter-spacing:0.02em}
 .sp::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
@@ -782,13 +784,10 @@ body.light-theme .kval.ca{color:#1a6e3c}
         <th class="cst" onclick="doSort('stage')">Stage<span class="si" id="si-stage">↕</span></th>
         <th class="ch" onclick="doSort('health')">Health<span class="si" id="si-health">↕</span></th>
         <th class="cv" onclick="doSort('value')">Contract<span class="si" id="si-value">↕</span></th>
-        <th class="ce">Est. range</th>
         <th class="cl" onclick="doSort('last')">Last contact<span class="si" id="si-last">↕</span></th>
-        <th class="cdl" onclick="doSort('renewal')">Deadlines<span class="si" id="si-renewal">↕</span></th>
-        <th class="cinfra" onclick="doSort('infraType')">Sector<span class="si" id="si-infraType">↕</span></th>
         <th class="cage" onclick="doSort('created')">Age<span class="si" id="si-created">↕</span></th>
         <th class="cfu" onclick="doSort('followUpDate')">Follow-up<span class="si" id="si-followUpDate">↕</span></th>
-        <th class="ca"></th>
+        <th class="ca">Actions</th>
       </tr></thead>
       <tbody id="tbody"></tbody>
     </table>
@@ -1216,17 +1215,7 @@ function renderTable(){
       <td class="cv">${v?`<span class="vk">${v}</span>`:`<span class="vtbd">TBD</span>`}</td>
       <td class="ce"><span class="vr">${r.tbd?(rng||"—"):"—"}</span></td>
       <td class="cl" style="color:var(--text2);font-size:12px">${fmtDate(r.last)}</td>
-      <td class="cdl">${(()=>{
-        const ra=dateAlert(r.renewal);
-        const da=dateAlert(r.deadline);
-        if(!ra&&!da) return '<span style="color:var(--text3);font-size:11px">—</span>';
-        let out='<div class="dl-cell">';
-        if(ra) out+=`<span class="dl-tag ${ra.cls}"><i class="ti ti-refresh" style="font-size:9px"></i>${ra.label}</span>`;
-        if(da) out+=`<span class="dl-tag ${da.cls}"><i class="ti ti-calendar-due" style="font-size:9px"></i>${da.label}</span>`;
-        out+='</div>';
-        return out;
-      })()}</td>
-      <td class="cinfra">${r.infraType?`<span class="infra-pill ${r.infraType}">${infraLabel(r.infraType)}</span>`:"—"}</td>
+
       <td class="cage">${r.created?(()=>{const d=daysSince(r.created);return d===0?"Today":d+"d";})():"—"}</td>
       <td class="cfu">${(()=>{
         if(!r.followUpDate) return '<span class="fu-ok">—</span>';
@@ -1235,10 +1224,22 @@ function renderTable(){
         if(d<=7) return '<span class="fu-soon">In '+d+'d</span>';
         return '<span class="fu-ok">'+fmtDate(r.followUpDate)+'</span>';
       })()}</td>
-      <td class="ca"><div class="raction">
-        <button class="ib" onclick="openModal(${r.id})" title="Edit"><i class="ti ti-edit"></i></button>
-        <button class="ib del" onclick="delRow(${r.id})" title="Delete"><i class="ti ti-trash"></i></button>
-      </div></td>
+      <td class="ca">
+        <div class="raction">
+          <button class="ib" onclick="openModal(${r.id})" title="Edit"><i class="ti ti-edit"></i></button>
+          <button class="ib del" onclick="delRow(${r.id})" title="Delete"><i class="ti ti-trash"></i></button>
+        </div>
+        ${(()=>{
+          const tags=[];
+          if(r.infraType) tags.push(`<span class="infra-pill ${r.infraType}" style="display:block;margin-top:3px">${infraLabel(r.infraType)}</span>`);
+          const rng=fmtRange(r);
+          if(rng&&rng!=="TBD") tags.push(`<span style="font-size:10px;color:var(--text3);display:block;font-family:var(--fnum);margin-top:2px">${rng}</span>`);
+          const ra=dateAlert(r.renewal);const da=dateAlert(r.deadline);
+          if(ra&&ra.cls!=="ok") tags.push(`<span class="dl-tag ${ra.cls}" style="display:block;margin-top:2px;font-size:9px"><i class="ti ti-refresh" style="font-size:8px"></i>${ra.label}</span>`);
+          if(da&&da.cls!=="ok") tags.push(`<span class="dl-tag ${da.cls}" style="display:block;margin-top:2px;font-size:9px"><i class="ti ti-calendar-due" style="font-size:8px"></i>${da.label}</span>`);
+          return tags.join("");
+        })()}
+      </td>
     </tr>`;
   }).join("");
 }
