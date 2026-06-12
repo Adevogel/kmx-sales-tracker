@@ -111,8 +111,8 @@ thead th.sorted .si{opacity:1}
 tbody tr{border-bottom:1px solid var(--border);transition:background 0.08s}
 tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:var(--bg3)}
-td{padding:11px 13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cn{width:17%}.co{width:10%}.cst{width:13%}.ch{width:8%}.cv{width:10%}.ce{width:10%}.cl{width:9%}.cdl{width:14%}.cnote{width:5%}.ca{width:4%;text-align:right}
+td{padding:10px 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+.cn{width:18%}.co{width:8%}.cst{width:12%}.ch{width:7%}.cv{width:9%}.ce{width:9%}.cl{width:8%}.cdl{width:9%}.cinfra{width:8%}.cage{width:5%}.cfu{width:7%}.cnote{display:none;width:0}.ca{width:2%;text-align:right}
 .cname{font-weight:500;letter-spacing:0.01em}
 .sp{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px 2px 6px;border-radius:20px;font-weight:500;white-space:nowrap;border:1px solid transparent;letter-spacing:0.02em}
 .sp::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
@@ -906,11 +906,11 @@ body.light-theme .kval.ca{color:#1a6e3c}
           <div class="vmb" id="vm-known" onclick="setVM('known')">Known value</div>
         </div>
         <div id="vf-tbd" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="field"><label>Est. low ($)</label><input id="fel" type="number" min="0" placeholder="50000"></div>
-          <div class="field"><label>Est. high ($)</label><input id="feh" type="number" min="0" placeholder="150000"></div>
+          <div class="field"><label>Est. low ($)</label><input id="fel" type="number" min="0" placeholder="e.g. 1000000"></div>
+          <div class="field"><label>Est. high ($)</label><input id="feh" type="number" min="0" placeholder="e.g. 3000000"></div>
         </div>
         <div id="vf-known" style="display:none">
-          <div class="field"><label>Value ($)</label><input id="fv" type="number" min="0" placeholder="120000"></div>
+          <div class="field"><label>Value ($)</label><input id="fv" type="number" min="0" placeholder="e.g. 2500000"></div>
         </div>
       </div>
       <div class="field full"><label>Notes</label><textarea id="fnote" placeholder="Infrastructure type, requirements…"></textarea></div>
@@ -1073,8 +1073,9 @@ function fmtMoney(v,short){
 function fmtRange(r){
   if(!r.tbd) return null;
   if(!r.estLow&&!r.estHigh) return "TBD";
-  const lo=r.estLow?"$"+Math.round(r.estLow/1000)+"k":"";
-  const hi=r.estHigh?"$"+Math.round(r.estHigh/1000)+"k":"";
+  const fmt=v=>v>=1e6?"$"+(v/1e6).toFixed(1)+"M":v>=1000?"$"+Math.round(v/1000)+"k":"$"+v;
+  const lo=r.estLow?fmt(r.estLow):"";
+  const hi=r.estHigh?fmt(r.estHigh):"";
   return (lo&&hi)?lo+"–"+hi:lo||hi;
 }
 // Normalise any date format from Google Sheets into YYYY-MM-DD
