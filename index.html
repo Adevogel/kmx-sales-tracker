@@ -652,6 +652,20 @@ body.light-theme .kval.ca{color:#1a6e3c}
   .mob-card-note{font-size:12px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);line-height:1.4}
   .mob-card-dl{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
 }
+
+/* ── Infrastructure type pills ── */
+.infra-pill{display:inline-block;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:500;letter-spacing:0.03em;white-space:nowrap}
+.infra-pill.datacentre{background:rgba(80,144,255,0.12);color:#80b0ff}
+.infra-pill.rail{background:rgba(160,112,240,0.12);color:#c0a0ff}
+.infra-pill.energy{background:rgba(240,176,48,0.12);color:#f0c060}
+.infra-pill.water{background:rgba(48,208,208,0.12);color:#60d8d8}
+.infra-pill.fibre{background:rgba(200,240,96,0.1);color:#c8f060}
+.infra-pill.ports{background:rgba(48,208,144,0.12);color:#60d890}
+.infra-pill.other{background:rgba(144,144,168,0.12);color:#9090a8}
+/* Follow-up overdue */
+.fu-overdue{font-size:11px;font-family:var(--fnum);color:var(--red);font-weight:500}
+.fu-soon{font-size:11px;font-family:var(--fnum);color:var(--yellow);font-weight:500}
+.fu-ok{font-size:11px;font-family:var(--fnum);color:var(--text3)}
 </style>
 </head>
 <body>
@@ -748,7 +762,9 @@ body.light-theme .kval.ca{color:#1a6e3c}
         <th class="ce">Est. range</th>
         <th class="cl" onclick="doSort('last')">Last contact<span class="si" id="si-last">↕</span></th>
         <th class="cdl" onclick="doSort('renewal')">Deadlines<span class="si" id="si-renewal">↕</span></th>
-        <th class="cnote">Notes</th>
+        <th class="cinfra" onclick="doSort('infraType')">Sector<span class="si" id="si-infraType">↕</span></th>
+        <th class="cage" onclick="doSort('created')">Age<span class="si" id="si-created">↕</span></th>
+        <th class="cfu" onclick="doSort('followUpDate')">Follow-up<span class="si" id="si-followUpDate">↕</span></th>
         <th class="ca"></th>
       </tr></thead>
       <tbody id="tbody"></tbody>
@@ -821,7 +837,7 @@ body.light-theme .kval.ca{color:#1a6e3c}
     <div class="mgrid">
       <div class="field full"><label>Company name</label><input id="fn" type="text" placeholder="e.g. Northgate Rail"></div>
       <div class="field"><label>Account owner</label><input id="fo" type="text" placeholder="Your name"></div>
-      <div class="field"><label>Deal stage</label><select id="fst"></select></div>
+      <div class="field"><label>Deal stage</label><select id="fst" onchange="toggleLossReason()"></select></div>
       <div class="field"><label>Health</label>
         <select id="fh2">
           <option value="green">🟢 Green</option>
@@ -835,6 +851,31 @@ body.light-theme .kval.ca{color:#1a6e3c}
         <div class="field"><label>Project deadline</label><input id="fdeadline" type="date"></div>
         <div class="field"><label style="opacity:0">.</label><div style="font-size:11px;color:var(--text3);padding-top:10px;line-height:1.4">🟡 Amber at 60 days<br>🔴 Red at 30 days</div></div>
       </div>
+      <div class="field"><label>Infrastructure sector</label>
+        <select id="finfra">
+          <option value="">— Select sector —</option>
+          <option value="datacentre">Data Centre</option>
+          <option value="rail">Rail</option>
+          <option value="energy">Energy</option>
+          <option value="water">Water</option>
+          <option value="fibre">Fibre</option>
+          <option value="ports">Ports</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="field" id="loss-reason-field" style="display:none"><label>Loss reason</label>
+        <select id="flossreason">
+          <option value="">— Select reason —</option>
+          <option value="price">Price</option>
+          <option value="competitor">Competitor</option>
+          <option value="timing">Timing</option>
+          <option value="scope">Scope</option>
+          <option value="relationship">Relationship</option>
+          <option value="nodecision">No decision</option>
+        </select>
+      </div>
+      <div class="field"><label>Next action</label><input id="fnextaction" type="text" placeholder="e.g. Send proposal, Book site visit…"></div>
+      <div class="field"><label>Follow-up date</label><input id="ffollowup" type="date"></div>
       <div class="field full">
         <label>Contract value</label>
         <div class="vmrow">
@@ -974,7 +1015,10 @@ function syncNow(){
         estLow:r[6]?parseFloat(r[6]):null,
         estHigh:r[7]?parseFloat(r[7]):null,
         last:normaliseDate(r[8]), note:r[9]||"",
-        renewal:normaliseDate(r[10]), deadline:normaliseDate(r[11])
+        renewal:normaliseDate(r[10]), deadline:normaliseDate(r[11]),
+        created:normaliseDate(r[12]), stageChanged:normaliseDate(r[13]),
+        infraType:r[14]||"", lossReason:r[15]||"",
+        nextAction:r[16]||"", followUpDate:normaliseDate(r[17])
       }));
       renderTable();
       setSyncState("ok","Synced "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}));
@@ -1045,13 +1089,24 @@ function fmtDate(d){
   return new Date(n+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"});
 }
 function stg(k){return STAGES.find(s=>s.k===k)||STAGES[0];}
+const INFRA_LABELS={datacentre:"Data Centre",rail:"Rail",energy:"Energy",water:"Water",fibre:"Fibre",ports:"Ports",other:"Other"};
+function infraLabel(k){return INFRA_LABELS[k]||k;}
+
+// Stage probability weights for weighted pipeline
+const STAGE_WEIGHTS={prospect:0.05,scoping:0.15,proposal:0.30,lab:0.45,demo:0.55,negotiation:0.75,won:1,lost:0};
+
+function toggleLossReason(){
+  const stage=document.getElementById("fst")?.value;
+  const field=document.getElementById("loss-reason-field");
+  if(field) field.style.display=stage==="lost"?"block":"none";
+}
 function daysSince(d){
   const n = normaliseDate(d);
   if(!n) return null;
   return Math.round((Date.now()-new Date(n+"T00:00:00"))/86400000);
 }
 function toRow(r){
-  return[r.name,r.owner,r.stage,r.health,r.tbd?"TRUE":"FALSE",r.value||"",r.estLow||"",r.estHigh||"",r.last,r.note,r.renewal||"",r.deadline||""];
+  return[r.name,r.owner,r.stage,r.health,r.tbd?"TRUE":"FALSE",r.value||"",r.estLow||"",r.estHigh||"",r.last,r.note,r.renewal||"",r.deadline||"",r.created||"",r.stageChanged||"",r.infraType||"",r.lossReason||"",r.nextAction||"",r.followUpDate||""];
 }
 
 // Returns {label, cls} for a date: null=none, amber=60days, danger=30days, overdue=past
@@ -1103,6 +1158,9 @@ function getFiltered(){
     if(sk==="stage"){av=SORDER.indexOf(a.stage);bv=SORDER.indexOf(b.stage);}
     if(sk==="value"){av=a.tbd?-1:(a.value||0);bv=b.tbd?-1:(b.value||0);}
     if(sk==="renewal"){av=a.renewal||"9999";bv=b.renewal||"9999";}
+    if(sk==="created"){av=a.created||"9999";bv=b.created||"9999";}
+    if(sk==="infraType"){av=a.infraType||"";bv=b.infraType||"";}
+    if(sk==="followUpDate"){av=a.followUpDate||"9999";bv=b.followUpDate||"9999";}
     return av<bv?-sd:av>bv?sd:0;
   });
 }
@@ -1144,7 +1202,15 @@ function renderTable(){
         out+='</div>';
         return out;
       })()}</td>
-      <td class="cnote nt" title="${r.note||""}">${np}</td>
+      <td class="cinfra">${r.infraType?`<span class="infra-pill ${r.infraType}">${infraLabel(r.infraType)}</span>`:"—"}</td>
+      <td class="cage">${r.created?(()=>{const d=daysSince(r.created);return d===0?"Today":d+"d";})():"—"}</td>
+      <td class="cfu">${(()=>{
+        if(!r.followUpDate) return '<span class="fu-ok">—</span>';
+        const d=Math.round((new Date(r.followUpDate+"T00:00:00")-Date.now())/86400000);
+        if(d<0) return '<span class="fu-overdue">'+Math.abs(d)+'d overdue</span>';
+        if(d<=7) return '<span class="fu-soon">In '+d+'d</span>';
+        return '<span class="fu-ok">'+fmtDate(r.followUpDate)+'</span>';
+      })()}</td>
       <td class="ca"><div class="raction">
         <button class="ib" onclick="openModal(${r.id})" title="Edit"><i class="ti ti-edit"></i></button>
         <button class="ib del" onclick="delRow(${r.id})" title="Delete"><i class="ti ti-trash"></i></button>
@@ -1490,7 +1556,12 @@ function openModal(id=null){
   document.getElementById("fl").value=r.last||"";
   document.getElementById("frenewal").value=r.renewal||"";
   document.getElementById("fdeadline").value=r.deadline||"";
+  document.getElementById("finfra").value=r.infraType||"";
+  document.getElementById("flossreason").value=r.lossReason||"";
+  document.getElementById("fnextaction").value=r.nextAction||"";
+  document.getElementById("ffollowup").value=r.followUpDate||"";
   document.getElementById("fnote").value=r.note||"";
+  toggleLossReason();
   const tbd=r.tbd!==false;
   setVM(tbd?"tbd":"known");
   document.getElementById("fel").value=r.estLow||"";
@@ -1503,7 +1574,11 @@ function saveProject(){
   const name=document.getElementById("fn").value.trim();
   if(!name) return;
   const tbd=vm==="tbd";
-  const data={name,owner:document.getElementById("fo").value.trim(),stage:document.getElementById("fst").value,health:document.getElementById("fh2").value,last:document.getElementById("fl").value,note:document.getElementById("fnote").value.trim(),tbd,value:tbd?null:(parseFloat(document.getElementById("fv").value)||null),estLow:tbd?(parseFloat(document.getElementById("fel").value)||null):null,estHigh:tbd?(parseFloat(document.getElementById("feh").value)||null):null,renewal:document.getElementById("frenewal").value,deadline:document.getElementById("fdeadline").value};
+  const today = new Date().toISOString().split("T")[0];
+  const existingRow = editId!==null ? rows.find(r=>r.id===editId) : null;
+  const newStage = document.getElementById("fst").value;
+  const stageChanged = existingRow && existingRow.stage !== newStage ? today : (existingRow?.stageChanged||today);
+  const data={name,owner:document.getElementById("fo").value.trim(),stage:newStage,health:document.getElementById("fh2").value,last:document.getElementById("fl").value,note:document.getElementById("fnote").value.trim(),tbd,value:tbd?null:(parseFloat(document.getElementById("fv").value)||null),estLow:tbd?(parseFloat(document.getElementById("fel").value)||null):null,estHigh:tbd?(parseFloat(document.getElementById("feh").value)||null):null,renewal:document.getElementById("frenewal").value,deadline:document.getElementById("fdeadline").value,created:existingRow?.created||today,stageChanged,infraType:document.getElementById("finfra").value,lossReason:document.getElementById("flossreason").value,nextAction:document.getElementById("fnextaction").value.trim(),followUpDate:document.getElementById("ffollowup").value};
   if(editId!==null){
     const i=rows.findIndex(r=>r.id===editId);
     rows[i]={...rows[i],...data};
@@ -2238,12 +2313,20 @@ function renderMobileProjects(data){
           <span class="mob-card-field-val">${v||"TBD"}${rng&&r.tbd?` <span style="font-size:10px;color:var(--text3)">(${rng})</span>`:""}</span>
         </div>
         <div class="mob-card-field">
+          <span class="mob-card-field-label">Sector</span>
+          <span class="mob-card-field-val">${r.infraType?infraLabel(r.infraType):"—"}</span>
+        </div>
+        <div class="mob-card-field">
+          <span class="mob-card-field-label">Deal age</span>
+          <span class="mob-card-field-val">${r.created?(daysSince(r.created)===0?"Today":daysSince(r.created)+"d"):"—"}</span>
+        </div>
+        <div class="mob-card-field">
           <span class="mob-card-field-label">Last contact</span>
           <span class="mob-card-field-val">${fmtDate(r.last)}</span>
         </div>
         <div class="mob-card-field">
-          <span class="mob-card-field-label">Renewal</span>
-          <span class="mob-card-field-val">${r.renewal?fmtDate(r.renewal):"—"}</span>
+          <span class="mob-card-field-label">Follow-up</span>
+          <span class="mob-card-field-val">${r.followUpDate?fmtDate(r.followUpDate):"—"}</span>
         </div>
       </div>
       ${ra&&ra.cls!=="ok"?`<div class="mob-card-dl"><span class="dl-tag ${ra.cls}"><i class="ti ti-refresh" style="font-size:9px"></i>Renewal: ${ra.label}</span></div>`:""}
