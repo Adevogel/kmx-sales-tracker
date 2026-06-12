@@ -666,6 +666,7 @@ body.light-theme .kval.ca{color:#1a6e3c}
 .infra-pill.mining{background:rgba(201,149,42,0.12);color:#d4af37}
 .infra-pill.industrial{background:rgba(240,112,176,0.12);color:#f0a0c8}
 .infra-pill.chipfab{background:rgba(200,240,96,0.1);color:#c8f060}
+.infra-pill.power{background:rgba(255,140,66,0.12);color:#ff8c42}
 /* Follow-up overdue */
 .fu-overdue{font-size:11px;font-family:var(--fnum);color:var(--red);font-weight:500}
 .fu-soon{font-size:11px;font-family:var(--fnum);color:var(--yellow);font-weight:500}
@@ -887,6 +888,7 @@ body.light-theme .kval.ca{color:#1a6e3c}
           <option value="mining">Mining</option>
           <option value="industrial">Industrial</option>
           <option value="chipfab">Chip Fabrication</option>
+          <option value="power">Power</option>
         </select>
       </div>
       <div class="field" id="loss-reason-field" style="display:none"><label>Loss reason</label>
@@ -1116,7 +1118,8 @@ function fmtDate(d){
   return new Date(n+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"});
 }
 function stg(k){return STAGES.find(s=>s.k===k)||STAGES[0];}
-const INFRA_LABELS={datacenter:"Data Center",foodbev:"Food and Beverage",municipal:"Municipal",oilgas:"Oil and Gas",lithium:"Lithium Concentration",minerals:"Critical Minerals",mining:"Mining",industrial:"Industrial",chipfab:"Chip Fabrication"};
+const INFRA_LABELS={datacenter:"Data Center",foodbev:"Food and Beverage",municipal:"Municipal",oilgas:"Oil and Gas",lithium:"Lithium Concentration",minerals:"Critical Minerals",mining:"Mining",industrial:"Industrial",chipfab:"Chip Fabrication",power:"Power"};
+function infraLabelShort(k){return k==="foodbev"?"F&B":infraLabel(k);}
 function infraLabel(k){return INFRA_LABELS[k]||k;}
 
 // Stage probability weights for weighted pipeline
@@ -1235,7 +1238,7 @@ function renderTable(){
         </div>
         ${(()=>{
           const tags=[];
-          if(r.infraType) tags.push(`<span class="infra-pill ${r.infraType}" style="display:block;margin-top:3px">${infraLabel(r.infraType)}</span>`);
+          if(r.infraType) tags.push(`<span class="infra-pill ${r.infraType}" style="display:block;margin-top:3px">${infraLabelShort(r.infraType)}</span>`);
           const rng=fmtRange(r);
           if(rng&&rng!=="TBD") tags.push(`<span style="font-size:10px;color:var(--text3);display:block;font-family:var(--fnum);margin-top:2px">${rng}</span>`);
           const ra=dateAlert(r.renewal);const da=dateAlert(r.deadline);
@@ -1320,7 +1323,7 @@ function renderDash(){
 
   // ── Infrastructure type breakdown ──────────────────
   const infraCounts={};
-  const INFRA_COLORS={datacenter:"#5090ff",foodbev:"#f0b030",municipal:"#30d090",oilgas:"#f05060",lithium:"#a070f0",minerals:"#30d0d0",mining:"#c9952a",industrial:"#f070b0",chipfab:"#c8f060"};
+  const INFRA_COLORS={datacenter:"#5090ff",foodbev:"#f0b030",municipal:"#30d090",oilgas:"#f05060",lithium:"#a070f0",minerals:"#30d0d0",mining:"#c9952a",industrial:"#f070b0",chipfab:"#c8f060",power:"#ff8c42"};
   rows.forEach(r=>{if(r.infraType)infraCounts[r.infraType]=(infraCounts[r.infraType]||0)+1;});
   const maxInfra=Math.max(...Object.values(infraCounts),1);
 
