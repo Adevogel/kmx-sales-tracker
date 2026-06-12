@@ -666,6 +666,29 @@ body.light-theme .kval.ca{color:#1a6e3c}
 .fu-overdue{font-size:11px;font-family:var(--fnum);color:var(--red);font-weight:500}
 .fu-soon{font-size:11px;font-family:var(--fnum);color:var(--yellow);font-weight:500}
 .fu-ok{font-size:11px;font-family:var(--fnum);color:var(--text3)}
+
+/* ── Part 2 dashboard additions ── */
+.action-row{display:flex;align-items:center;gap:0;padding:9px 10px;border-radius:var(--r);transition:background 0.08s;border-bottom:1px solid var(--border)}
+.action-row:last-child{border-bottom:none}
+.action-row:hover{background:var(--bg3)}
+.action-co{font-size:13px;font-weight:500;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.action-meta{font-size:11px;color:var(--text3);margin-top:1px}
+.action-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;margin-left:10px}
+.action-date-overdue{font-family:var(--fnum);font-size:12px;font-weight:600;color:var(--red)}
+.action-date-soon{font-family:var(--fnum);font-size:12px;font-weight:600;color:var(--yellow)}
+.action-task{font-size:11px;color:var(--text3);max-width:140px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.loss-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.loss-row:last-child{border-bottom:none}
+.loss-label{font-size:12px;color:var(--text2);width:110px;flex-shrink:0}
+.loss-bar-wrap{flex:1;background:var(--bg4);border-radius:3px;height:5px;overflow:hidden}
+.loss-bar{height:100%;border-radius:3px;background:var(--red)}
+.loss-count{font-family:var(--fnum);font-size:11px;color:var(--text3);width:20px;text-align:right;flex-shrink:0}
+.infra-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.infra-row:last-child{border-bottom:none}
+.infra-row-label{font-size:12px;color:var(--text2);width:100px;flex-shrink:0;display:flex;align-items:center;gap:6px}
+.infra-bar-wrap{flex:1;background:var(--bg4);border-radius:3px;height:5px;overflow:hidden}
+.infra-bar{height:100%;border-radius:3px}
+.infra-count{font-family:var(--fnum);font-size:11px;color:var(--text3);width:20px;text-align:right;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -1253,19 +1276,94 @@ function renderDash(){
   const nearClose=active.filter(r=>r.stage==="negotiation");
   const maxCnt=Math.max(...STAGES.map(s=>rows.filter(r=>r.stage===s.k).length),1);
 
+  // ── Weighted pipeline ──────────────────────────────
+  const weightedPipe = active.filter(r=>!r.tbd&&r.value)
+    .reduce((s,r)=>s+(r.value*(STAGE_WEIGHTS[r.stage]||0)),0);
+  const weightedEst = active.filter(r=>r.tbd&&(r.estLow||r.estHigh))
+    .reduce((s,r)=>s+((r.estLow||0)+(r.estHigh||0))/2*(STAGE_WEIGHTS[r.stage]||0),0);
+  const totalWeighted = weightedPipe + weightedEst;
+
+  // ── Deal age stats ─────────────────────────────────
+  const withAge = active.filter(r=>r.created);
+  const avgAge = withAge.length>0
+    ? Math.round(withAge.reduce((s,r)=>s+daysSince(r.created),0)/withAge.length)
+    : null;
+  const oldestDeal = withAge.length>0
+    ? withAge.reduce((a,b)=>daysSince(a.created)>daysSince(b.created)?a:b)
+    : null;
+  // Average days per stage (using stageChanged)
+  const stageAges = {};
+  STAGES.forEach(s=>{
+    const inStage = rows.filter(r=>r.stage===s.k&&r.stageChanged);
+    if(inStage.length>0){
+      stageAges[s.k]=Math.round(inStage.reduce((sum,r)=>sum+daysSince(r.stageChanged),0)/inStage.length);
+    }
+  });
+
+  // ── Follow-up / action items ───────────────────────
+  const now = Date.now();
+  const overdueFollowup = active.filter(r=>r.followUpDate&&new Date(r.followUpDate+"T00:00:00")<now);
+  const dueThisWeek = active.filter(r=>{
+    if(!r.followUpDate) return false;
+    const d=Math.round((new Date(r.followUpDate+"T00:00:00")-now)/86400000);
+    return d>=0&&d<=7;
+  });
+  const allDue = [...overdueFollowup,...dueThisWeek]
+    .filter((r,i,a)=>a.findIndex(x=>x.id===r.id)===i)
+    .sort((a,b)=>new Date(a.followUpDate)-new Date(b.followUpDate));
+
+  // ── Infrastructure type breakdown ──────────────────
+  const infraCounts={};
+  const INFRA_COLORS={datacentre:"#5090ff",rail:"#a070f0",energy:"#f0b030",water:"#30d0d0",fibre:"#c8f060",ports:"#30d090",other:"#9090a8"};
+  rows.forEach(r=>{if(r.infraType)infraCounts[r.infraType]=(infraCounts[r.infraType]||0)+1;});
+  const maxInfra=Math.max(...Object.values(infraCounts),1);
+
+  // ── Loss reasons ───────────────────────────────────
+  const lossCounts={};
+  const LOSS_LABELS={price:"Price",competitor:"Competitor",timing:"Timing",scope:"Scope",relationship:"Relationship",nodecision:"No decision"};
+  lost.forEach(r=>{if(r.lossReason)lossCounts[r.lossReason]=(lossCounts[r.lossReason]||0)+1;});
+  const maxLoss=Math.max(...Object.values(lossCounts),1);
+
+  // ── Month-by-month data ────────────────────────────
+  // Last 6 months
+  const months=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date();
+    d.setMonth(d.getMonth()-i);
+    months.push({
+      label:d.toLocaleDateString("en-US",{month:"short",year:"2-digit"}),
+      year:d.getFullYear(),
+      month:d.getMonth()
+    });
+  }
+  const monthlyAdded=months.map(m=>rows.filter(r=>{
+    if(!r.created) return false;
+    const d=new Date(r.created+"T00:00:00");
+    return d.getFullYear()===m.year&&d.getMonth()===m.month;
+  }).length);
+  const monthlyClosed=months.map(m=>rows.filter(r=>{
+    if(r.stage!=="won"&&r.stage!=="lost") return false;
+    if(!r.stageChanged) return false;
+    const d=new Date(r.stageChanged+"T00:00:00");
+    return d.getFullYear()===m.year&&d.getMonth()===m.month;
+  }).length);
+
   document.getElementById("dsub").textContent=
     new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})+
     " · "+rows.length+" total project"+(rows.length!==1?"s":"");
 
   document.getElementById("dcontent").innerHTML=`
+
     ${(()=>{
-      const urgent = rows.filter(r=>{
-        const ra=dateAlert(r.renewal); const da=dateAlert(r.deadline);
-        return (ra&&(ra.cls==="danger"||ra.cls==="overdue"))||(da&&(da.cls==="danger"||da.cls==="overdue"));
-      });
-      if(!urgent.length) return "";
-      return `<div class="alert-banner"><i class="ti ti-bell-ringing"></i><span><b>${urgent.length} project${urgent.length!==1?"s":""}</b> with deadlines within 30 days or overdue: ${urgent.map(r=>r.name.split(" ")[0]).join(", ")}</span></div>`;
+      const urgent=rows.filter(r=>{const ra=dateAlert(r.renewal);const da=dateAlert(r.deadline);return(ra&&(ra.cls==="danger"||ra.cls==="overdue"))||(da&&(da.cls==="danger"||da.cls==="overdue"));});
+      const overdueAct=overdueFollowup.length;
+      const banners=[];
+      if(urgent.length) banners.push(`<div class="alert-banner"><i class="ti ti-bell-ringing"></i><span><b>${urgent.length} project${urgent.length!==1?"s":""}</b> with deadlines within 30 days or overdue: ${urgent.map(r=>r.name.split(" ")[0]).join(", ")}</span></div>`);
+      if(overdueAct) banners.push(`<div class="alert-banner" style="background:rgba(240,176,48,0.08);border-color:rgba(240,176,48,0.25);color:#f0c060"><i class="ti ti-player-play" style="color:var(--yellow)"></i><span><b>${overdueAct} follow-up${overdueAct!==1?"s":""}</b> overdue: ${overdueFollowup.map(r=>r.name.split(" ")[0]).join(", ")}</span></div>`);
+      return banners.join("");
     })()}
+
+    <!-- Row 1: Core KPIs -->
     <div class="dgrid r4">
       <div class="kc ta ga">
         <div class="klbl"><i class="ti ti-briefcase"></i>Active projects</div>
@@ -1275,29 +1373,26 @@ function renderDash(){
       <div class="kc tb">
         <div class="klbl"><i class="ti ti-currency-dollar"></i>Confirmed pipeline</div>
         <div class="kval cb sm">${pipe?fmtMoney(pipe,true):"—"}</div>
-        <div class="ksub">Known contract value only</div>
+        <div class="ksub">Known contract value</div>
+      </div>
+      <div class="kc" style="border-top:2px solid #D4AF37">
+        <div class="klbl"><i class="ti ti-calculator"></i>Weighted pipeline</div>
+        <div class="kval sm" style="color:#D4AF37">${totalWeighted?fmtMoney(totalWeighted,true):"—"}</div>
+        <div class="ksub">Probability-adjusted forecast</div>
       </div>
       <div class="kc tg gg">
         <div class="klbl"><i class="ti ti-trophy"></i>Closed won</div>
         <div class="kval" style="color:#D4AF37;font-family:var(--fnum);font-size:34px;font-weight:600;letter-spacing:-0.02em;line-height:1">${won.length}</div>
         <div class="ksub">${wonVal?`<b>${fmtMoney(wonVal,true)}</b> total value`:"No value recorded"}</div>
       </div>
+    </div>
+
+    <!-- Row 2: Health + performance KPIs -->
+    <div class="dgrid r4 gap">
       <div class="kc ${reds>0?"tr gr":"tg"}">
         <div class="klbl"><i class="ti ti-alert-triangle"></i>At risk</div>
         <div class="kval ${reds>0?"cr":"cg"}">${reds}</div>
-        <div class="ksub">${reds>0?reds+" project"+(reds!==1?"s":"")+" need attention":"All projects healthy"}</div>
-      </div>
-    </div>
-    <div class="dgrid r4 gap">
-      <div class="kc tg">
-        <div class="klbl"><i class="ti ti-circle-check"></i>Green health</div>
-        <div class="kval cg">${greens}</div>
-        <div class="ksub">of ${active.length} active</div>
-      </div>
-      <div class="kc ty">
-        <div class="klbl"><i class="ti ti-circle-dot"></i>Yellow health</div>
-        <div class="kval cy">${yellows}</div>
-        <div class="ksub">${yellows>0?"Monitor closely":"None flagged"}</div>
+        <div class="ksub">${reds>0?reds+" need attention":"All healthy"}</div>
       </div>
       <div class="kc tp">
         <div class="klbl"><i class="ti ti-target"></i>Win rate</div>
@@ -1305,37 +1400,52 @@ function renderDash(){
         <div class="ksub">${won.length} won · ${lost.length} lost</div>
       </div>
       <div class="kc tt">
-        <div class="klbl"><i class="ti ti-flame"></i>Near closing</div>
-        <div class="kval sm" style="color:var(--teal)">${nearClose.length}</div>
-        <div class="ksub">${nearClose.length>0?nearClose.map(r=>r.name.split(" ")[0]).join(", "):"None in negotiation"}</div>
+        <div class="klbl"><i class="ti ti-clock-hour-4"></i>Avg deal age</div>
+        <div class="kval sm" style="color:var(--teal)">${avgAge!==null?avgAge+"d":"—"}</div>
+        <div class="ksub">${oldestDeal?`Oldest: ${oldestDeal.name.split(" ")[0]} (${daysSince(oldestDeal.created)}d)`:"No age data yet"}</div>
+      </div>
+      <div class="kc ${allDue.length>0?"ty":"tg"}">
+        <div class="klbl"><i class="ti ti-player-play"></i>Actions due</div>
+        <div class="kval ${allDue.length>0?"cy":"cg"} sm">${allDue.length}</div>
+        <div class="ksub">${overdueFollowup.length>0?`<span style="color:var(--red)">${overdueFollowup.length} overdue</span> · ${dueThisWeek.length} this week`:dueThisWeek.length>0?dueThisWeek.length+" due this week":"All actions on track"}</div>
       </div>
     </div>
+
+    <!-- Row 3: Charts -->
     <div class="dgrid r2 gap">
       <div class="chcard">
         <div class="chtitle">Health breakdown</div>
         <div class="chart-wrap donut"><canvas id="chart-health"></canvas></div>
       </div>
       <div class="chcard">
-        <div class="chtitle">Won vs Lost</div>
-        <div class="chart-wrap donut"><canvas id="chart-winloss"></canvas></div>
+        <div class="chtitle">Month-by-month activity</div>
+        <div class="chart-wrap bar" style="height:200px"><canvas id="chart-monthly"></canvas></div>
       </div>
     </div>
+
+    <!-- Row 4: Pipeline velocity full width -->
     <div class="chcard gap" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r3);padding:20px">
       <div class="chtitle" style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px">Pipeline velocity — stage conversion</div>
       <div class="funnel-wrap" id="funnel-chart"></div>
     </div>
+
+    <!-- Row 5: Stage + attention -->
     <div class="dgrid r2 gap">
       <div class="scard">
         <div class="scardtitle">Projects by stage</div>
         <div class="srows">${STAGES.map(s=>{
           const cnt=rows.filter(r=>r.stage===s.k).length;
           const pct=Math.round(cnt/maxCnt*100);
+          const avgStageAge=stageAges[s.k];
           return`<div class="srow">
             <div class="srname" style="color:${s.c}">${s.l}</div>
-            <div class="sbw"><div class="sb${s.k==='won'?' won-bar':''}" style="width:${pct}%;background:${s.c}22;border-right:2px solid ${s.c}"></div></div>
+            <div class="sbw"><div class="sb${s.k==="won"?" won-bar":""}" style="width:${pct}%;background:${s.c}22;border-right:2px solid ${s.c}"></div></div>
             <div class="sc">${cnt}</div>
+            ${avgStageAge!==undefined?`<div style="font-size:10px;color:var(--text3);font-family:var(--fnum);width:32px;text-align:right;flex-shrink:0">${avgStageAge}d</div>`:`<div style="width:32px"></div>`}
           </div>`;
-        }).join("")}</div>
+        }).join("")}
+        <div style="font-size:10px;color:var(--text3);text-align:right;margin-top:8px;padding-top:6px;border-top:1px solid var(--border)">Avg days at stage shown right</div>
+        </div>
       </div>
       <div class="rcard">
         <div class="rcardtitle">
@@ -1351,46 +1461,79 @@ function renderDash(){
         }
       </div>
     </div>
+
+    <!-- Row 6: Due this week + infra breakdown + loss reasons -->
+    <div class="dgrid r3 gap">
+      <div class="rcard">
+        <div class="rcardtitle">
+          <span>Follow-ups due</span>
+          ${allDue.length>0?`<span class="rbadge" style="${overdueFollowup.length>0?"":"background:var(--ydim);color:var(--yellow)"}">${allDue.length}</span>`:""}
+        </div>
+        ${allDue.length===0
+          ?`<div class="nodata"><i class="ti ti-circle-check" style="font-size:24px;display:block;margin-bottom:6px;color:var(--green);opacity:0.4"></i>No follow-ups due</div>`
+          :`<div>${allDue.slice(0,5).map(r=>{
+            const d=Math.round((new Date(r.followUpDate+"T00:00:00")-now)/86400000);
+            const isOverdue=d<0;
+            return`<div class="action-row">
+              <div>
+                <div class="action-co">${r.name}</div>
+                <div class="action-meta">${r.nextAction||stg(r.stage).l}</div>
+              </div>
+              <div class="action-right">
+                <span class="${isOverdue?"action-date-overdue":"action-date-soon"}">${isOverdue?Math.abs(d)+"d overdue":"In "+d+"d"}</span>
+              </div>
+            </div>`;
+          }).join("")}${allDue.length>5?`<div style="font-size:11px;color:var(--text3);text-align:center;padding:8px 0">+${allDue.length-5} more</div>`:""}</div>`
+        }
+      </div>
+      <div class="scard">
+        <div class="scardtitle">By infrastructure sector</div>
+        ${Object.keys(infraCounts).length===0
+          ?`<div class="nodata" style="padding:1.5rem"><i class="ti ti-building" style="font-size:22px;display:block;margin-bottom:6px;opacity:0.2"></i>Add sector to projects to see breakdown</div>`
+          :`<div>${Object.entries(infraCounts).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{
+            const pct=Math.round(v/maxInfra*100);
+            const col=INFRA_COLORS[k]||"#9090a8";
+            return`<div class="infra-row">
+              <div class="infra-row-label" style="color:${col}"><span style="width:6px;height:6px;border-radius:50%;background:${col};flex-shrink:0;display:inline-block"></span>${infraLabel(k)}</div>
+              <div class="infra-bar-wrap"><div class="infra-bar" style="width:${pct}%;background:${col}88"></div></div>
+              <div class="infra-count">${v}</div>
+            </div>`;
+          }).join("")}</div>`
+        }
+      </div>
+      <div class="scard">
+        <div class="scardtitle">Loss reasons</div>
+        ${Object.keys(lossCounts).length===0
+          ?`<div class="nodata" style="padding:1.5rem"><i class="ti ti-mood-happy" style="font-size:22px;display:block;margin-bottom:6px;opacity:0.2"></i>${lost.length===0?"No lost deals yet":"Add loss reasons to closed lost projects"}</div>`
+          :`<div>${Object.entries(lossCounts).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{
+            const pct=Math.round(v/maxLoss*100);
+            return`<div class="loss-row">
+              <div class="loss-label">${LOSS_LABELS[k]||k}</div>
+              <div class="loss-bar-wrap"><div class="loss-bar" style="width:${pct}%"></div></div>
+              <div class="loss-count">${v}</div>
+            </div>`;
+          }).join("")}</div>`
+        }
+      </div>
+    </div>
+
+    <!-- Row 7: Deadline KPIs + highlights -->
     <div class="dgrid r3 gap">
       ${(()=>{
-        const now = Date.now();
-        const overdueR = rows.filter(r=>r.renewal&&new Date(r.renewal+"T00:00:00")<now).length;
-        const overdueD = rows.filter(r=>r.deadline&&new Date(r.deadline+"T00:00:00")<now).length;
-        const soon = rows.filter(r=>{
-          const ra=dateAlert(r.renewal); const da=dateAlert(r.deadline);
-          return (ra&&ra.cls!=="ok"&&ra.cls!=="overdue")||(da&&da.cls!=="ok"&&da.cls!=="overdue");
-        }).length;
-        return `
-        <div class="kc tr">
-          <div class="klbl"><i class="ti ti-rotate-clockwise"></i>Overdue renewals</div>
-          <div class="kval ${overdueR>0?"cr":"cg"} sm">${overdueR}</div>
-          <div class="ksub">${overdueR>0?"Action required":"All renewals current"}</div>
-        </div>
-        <div class="kc tr">
-          <div class="klbl"><i class="ti ti-calendar-due"></i>Overdue deadlines</div>
-          <div class="kval ${overdueD>0?"cr":"cg"} sm">${overdueD}</div>
-          <div class="ksub">${overdueD>0?"Action required":"All deadlines current"}</div>
-        </div>
-        <div class="kc ty">
-          <div class="klbl"><i class="ti ti-clock-exclamation"></i>Due within 60 days</div>
-          <div class="kval ${soon>0?"cy":"cg"} sm">${soon}</div>
-          <div class="ksub">${soon>0?"Review upcoming deadlines":"No upcoming deadlines"}</div>
-        </div>`;
+        const nowMs=Date.now();
+        const overdueR=rows.filter(r=>r.renewal&&new Date(r.renewal+"T00:00:00")<nowMs).length;
+        const overdueD=rows.filter(r=>r.deadline&&new Date(r.deadline+"T00:00:00")<nowMs).length;
+        const soon=rows.filter(r=>{const ra=dateAlert(r.renewal);const da=dateAlert(r.deadline);return(ra&&ra.cls!=="ok"&&ra.cls!=="overdue")||(da&&da.cls!=="ok"&&da.cls!=="overdue");}).length;
+        return`
+        <div class="kc tr"><div class="klbl"><i class="ti ti-rotate-clockwise"></i>Overdue renewals</div><div class="kval ${overdueR>0?"cr":"cg"} sm">${overdueR}</div><div class="ksub">${overdueR>0?"Action required":"All current"}</div></div>
+        <div class="kc tr"><div class="klbl"><i class="ti ti-calendar-due"></i>Overdue deadlines</div><div class="kval ${overdueD>0?"cr":"cg"} sm">${overdueD}</div><div class="ksub">${overdueD>0?"Action required":"All current"}</div></div>
+        <div class="kc ty"><div class="klbl"><i class="ti ti-clock-exclamation"></i>Due within 60 days</div><div class="kval ${soon>0?"cy":"cg"} sm">${soon}</div><div class="ksub">${soon>0?"Review upcoming":"None upcoming"}</div></div>`;
       })()}
     </div>
     <div class="hlrow gap">
-      <div class="hlc">
-        <div class="hlic a"><i class="ti ti-chart-line"></i></div>
-        <div><div class="hllbl">Est. upside (mid-range)</div><div class="hlval a">${estMid?fmtMoney(estMid,true):"—"}</div></div>
-      </div>
-      <div class="hlc">
-        <div class="hlic g"><i class="ti ti-users"></i></div>
-        <div><div class="hllbl">Most active owner</div><div class="hlval">${(()=>{const c={};active.forEach(r=>{if(r.owner)c[r.owner]=(c[r.owner]||0)+1});const t=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];return t?t[0]+" ("+t[1]+")":"—";})()}</div></div>
-      </div>
-      <div class="hlc">
-        <div class="hlic ${stale.length>0?"y":"g"}"><i class="ti ti-clock"></i></div>
-        <div><div class="hllbl">Stale 30+ days</div><div class="hlval ${stale.length>0?"r":"g"}">${stale.length} project${stale.length!==1?"s":""}</div></div>
-      </div>
+      <div class="hlc"><div class="hlic a"><i class="ti ti-chart-line"></i></div><div><div class="hllbl">Est. upside (mid-range)</div><div class="hlval a">${estMid?fmtMoney(estMid,true):"—"}</div></div></div>
+      <div class="hlc"><div class="hlic g"><i class="ti ti-users"></i></div><div><div class="hllbl">Most active owner</div><div class="hlval">${(()=>{const cc={};active.forEach(r=>{if(r.owner)cc[r.owner]=(cc[r.owner]||0)+1});const t=Object.entries(cc).sort((a,b)=>b[1]-a[1])[0];return t?t[0]+" ("+t[1]+")":"—";})()}</div></div></div>
+      <div class="hlc"><div class="hlic ${stale.length>0?"y":"g"}"><i class="ti ti-clock"></i></div><div><div class="hllbl">Stale 30+ days</div><div class="hlval ${stale.length>0?"r":"g"}">${stale.length} project${stale.length!==1?"s":""}</div></div></div>
     </div>
   `;
 
@@ -1405,12 +1548,18 @@ function renderDash(){
     datasets:[{data:[greens,yellows,reds],backgroundColor:["rgba(48,208,144,0.85)","rgba(240,176,48,0.85)","rgba(240,80,96,0.85)"],borderColor:["#30d090","#f0b030","#f05060"],borderWidth:1.5,hoverOffset:6}]
   },options:{cutout:"68%",plugins:{legend:LEGEND_OPTS,tooltip:{...TOOLTIP_OPTS}},animation:{animateRotate:true,duration:700}}});
 
-  // Win/Loss donut
-  const inProgress=active.length;
-  mkChart("chart-winloss",{type:"doughnut",data:{
-    labels:["Won","Lost","In Progress"],
-    datasets:[{data:[won.length,lost.length,inProgress],backgroundColor:["rgba(200,240,96,0.85)","rgba(240,80,96,0.85)","rgba(80,144,255,0.5)"],borderColor:["#c8f060","#f05060","#5090ff"],borderWidth:1.5,hoverOffset:6}]
-  },options:{cutout:"68%",plugins:{legend:LEGEND_OPTS,tooltip:{...TOOLTIP_OPTS}},animation:{animateRotate:true,duration:700}}});
+  // Monthly activity bar chart
+  destroyChart("chart-monthly");
+  mkChart("chart-monthly",{type:"bar",data:{
+    labels:months.map(m=>m.label),
+    datasets:[
+      {label:"New deals",data:monthlyAdded,backgroundColor:"rgba(80,144,255,0.7)",borderColor:"#5090ff",borderWidth:1.5,borderRadius:3},
+      {label:"Closed",data:monthlyClosed,backgroundColor:"rgba(212,175,55,0.7)",borderColor:"#D4AF37",borderWidth:1.5,borderRadius:3}
+    ]
+  },options:{plugins:{legend:{labels:{color:"rgba(240,240,245,0.6)",font:CHART_FONT,padding:12,boxWidth:10,boxHeight:10}},tooltip:{...TOOLTIP_OPTS}},scales:{
+    x:{ticks:{color:"rgba(240,240,245,0.5)",font:CHART_FONT},grid:{color:"rgba(255,255,255,0.04)"},border:{display:false}},
+    y:{ticks:{color:"rgba(240,240,245,0.4)",font:CHART_FONT,stepSize:1},grid:{color:"rgba(255,255,255,0.04)"},border:{display:false}}
+  },animation:{duration:600},maintainAspectRatio:false}});
 
   // ── Pipeline velocity funnel ────────────────────
   renderFunnel();
