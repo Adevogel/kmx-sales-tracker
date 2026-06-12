@@ -657,13 +657,15 @@ body.light-theme .kval.ca{color:#1a6e3c}
 
 /* ── Infrastructure type pills ── */
 .infra-pill{display:inline-block;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:500;letter-spacing:0.03em;white-space:nowrap}
-.infra-pill.datacentre{background:rgba(80,144,255,0.12);color:#80b0ff}
-.infra-pill.rail{background:rgba(160,112,240,0.12);color:#c0a0ff}
-.infra-pill.energy{background:rgba(240,176,48,0.12);color:#f0c060}
-.infra-pill.water{background:rgba(48,208,208,0.12);color:#60d8d8}
-.infra-pill.fibre{background:rgba(200,240,96,0.1);color:#c8f060}
-.infra-pill.ports{background:rgba(48,208,144,0.12);color:#60d890}
-.infra-pill.other{background:rgba(144,144,168,0.12);color:#9090a8}
+.infra-pill.datacenter{background:rgba(80,144,255,0.12);color:#80b0ff}
+.infra-pill.foodbev{background:rgba(240,176,48,0.12);color:#f0c060}
+.infra-pill.municipal{background:rgba(48,208,144,0.12);color:#60d890}
+.infra-pill.oilgas{background:rgba(240,80,96,0.12);color:#f08090}
+.infra-pill.lithium{background:rgba(160,112,240,0.12);color:#c0a0ff}
+.infra-pill.minerals{background:rgba(48,208,208,0.12);color:#60d8d8}
+.infra-pill.mining{background:rgba(201,149,42,0.12);color:#d4af37}
+.infra-pill.industrial{background:rgba(240,112,176,0.12);color:#f0a0c8}
+.infra-pill.chipfab{background:rgba(200,240,96,0.1);color:#c8f060}
 /* Follow-up overdue */
 .fu-overdue{font-size:11px;font-family:var(--fnum);color:var(--red);font-weight:500}
 .fu-soon{font-size:11px;font-family:var(--fnum);color:var(--yellow);font-weight:500}
@@ -876,13 +878,15 @@ body.light-theme .kval.ca{color:#1a6e3c}
       <div class="field"><label>Infrastructure sector</label>
         <select id="finfra">
           <option value="">— Select sector —</option>
-          <option value="datacentre">Data Centre</option>
-          <option value="rail">Rail</option>
-          <option value="energy">Energy</option>
-          <option value="water">Water</option>
-          <option value="fibre">Fibre</option>
-          <option value="ports">Ports</option>
-          <option value="other">Other</option>
+          <option value="datacenter">Data Center</option>
+          <option value="foodbev">Food and Beverage</option>
+          <option value="municipal">Municipal</option>
+          <option value="oilgas">Oil and Gas</option>
+          <option value="lithium">Lithium Concentration</option>
+          <option value="minerals">Critical Minerals</option>
+          <option value="mining">Mining</option>
+          <option value="industrial">Industrial</option>
+          <option value="chipfab">Chip Fabrication</option>
         </select>
       </div>
       <div class="field" id="loss-reason-field" style="display:none"><label>Loss reason</label>
@@ -1112,7 +1116,7 @@ function fmtDate(d){
   return new Date(n+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"});
 }
 function stg(k){return STAGES.find(s=>s.k===k)||STAGES[0];}
-const INFRA_LABELS={datacentre:"Data Centre",rail:"Rail",energy:"Energy",water:"Water",fibre:"Fibre",ports:"Ports",other:"Other"};
+const INFRA_LABELS={datacenter:"Data Center",foodbev:"Food and Beverage",municipal:"Municipal",oilgas:"Oil and Gas",lithium:"Lithium Concentration",minerals:"Critical Minerals",mining:"Mining",industrial:"Industrial",chipfab:"Chip Fabrication"};
 function infraLabel(k){return INFRA_LABELS[k]||k;}
 
 // Stage probability weights for weighted pipeline
@@ -1316,7 +1320,7 @@ function renderDash(){
 
   // ── Infrastructure type breakdown ──────────────────
   const infraCounts={};
-  const INFRA_COLORS={datacentre:"#5090ff",rail:"#a070f0",energy:"#f0b030",water:"#30d0d0",fibre:"#c8f060",ports:"#30d090",other:"#9090a8"};
+  const INFRA_COLORS={datacenter:"#5090ff",foodbev:"#f0b030",municipal:"#30d090",oilgas:"#f05060",lithium:"#a070f0",minerals:"#30d0d0",mining:"#c9952a",industrial:"#f070b0",chipfab:"#c8f060"};
   rows.forEach(r=>{if(r.infraType)infraCounts[r.infraType]=(infraCounts[r.infraType]||0)+1;});
   const maxInfra=Math.max(...Object.values(infraCounts),1);
 
