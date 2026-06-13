@@ -1356,10 +1356,20 @@ function getPipelineTarget(){
 function setPipelineTarget(val){
   const num = parseFloat(val) || 5000000;
   _pipelineTarget = num;
-  // Write to Settings sheet
+  // Write to Settings sheet via sheetWrite pattern (fire + resync)
   if(GAS_URL !== "PASTE_YOUR_SCRIPT_URL_HERE"){
-    let url = GAS_URL + "?action=setting&key=pipeline_target&value=" + encodeURIComponent(num) + "&t=" + Date.now();
+    const url = GAS_URL
+      + "?action=setting"
+      + "&key=pipeline_target"
+      + "&value=" + encodeURIComponent(num)
+      + "&t=" + Date.now();
     fetch(url, {mode:"no-cors"}).catch(()=>{});
+    // Re-read from sheet after short delay to confirm it saved
+    setTimeout(()=>{
+      loadSettings().then(()=>{
+        if(document.getElementById("page-dash").classList.contains("active")) renderDash();
+      });
+    }, 2000);
   }
   renderDash();
 }
@@ -1834,6 +1844,12 @@ function renderDash(){
       <div class="hlc"><div class="hlic ${stuck.length>0?"r":"g"}"><i class="ti ti-freeze-row"></i></div><div><div class="hllbl">Stuck 60+ days</div><div class="hlval ${stuck.length>0?"r":"g"}">${stuck.length} deal${stuck.length!==1?"s":""}</div></div></div>
     </div>
   `;
+
+  // ── Sync target input to current value (in case it was loaded from sheet) ───
+  setTimeout(()=>{
+    const inp = document.getElementById("pipeline-target-input");
+    if(inp) inp.value = _pipelineTarget;
+  }, 0);
 
   // ── Render charts ────────────────────────────
   const CHART_FONT = {family:"'JetBrains Mono',monospace",size:11};
