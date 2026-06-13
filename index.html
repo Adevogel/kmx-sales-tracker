@@ -285,26 +285,19 @@ td{padding:10px 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;f
 
 /* ══════════════════════════════════════════════
    MOBILE  (≤ 680px)
-   Bottom tab bar replaces top nav groups
-   Cards stack to single column
-   Table gets horizontal scroll
 ══════════════════════════════════════════════ */
 @media(max-width:680px){
 
-  /* Nav: hide group tabs, show only brand + sync */
+  /* ── Nav ── */
   .ngroups{display:none}
   nav{height:52px;padding:0 16px}
   .nname{font-size:15px}
   .slbl{display:none}
 
-  /* Bottom tab bar */
+  /* ── Bottom tab bar ── */
   .mob-tabs{
-    display:flex;
-    position:fixed;
-    bottom:0;left:0;right:0;
-    z-index:200;
-    background:rgba(9,9,14,0.97);
-    backdrop-filter:blur(16px);
+    display:flex;position:fixed;bottom:0;left:0;right:0;z-index:200;
+    background:rgba(9,9,14,0.97);backdrop-filter:blur(16px);
     border-top:1px solid var(--border2);
     padding:6px 4px calc(6px + env(safe-area-inset-bottom)) 4px;
   }
@@ -312,9 +305,8 @@ td{padding:10px 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;f
     flex:1;display:flex;flex-direction:column;align-items:center;
     gap:3px;padding:6px 4px 4px;border:none;background:none;
     color:var(--text3);cursor:pointer;font-family:var(--fn);
-    font-size:9px;font-weight:600;letter-spacing:0.05em;
-    text-transform:uppercase;transition:color 0.15s;
-    border-radius:var(--r);
+    font-size:9px;font-weight:600;letter-spacing:0.04em;
+    text-transform:uppercase;transition:color 0.15s;border-radius:var(--r);
   }
   .mob-tab i{font-size:20px;transition:color 0.15s}
   .mob-tab.active{color:var(--text)}
@@ -324,88 +316,147 @@ td{padding:10px 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;f
   .mob-tab.active.license i{color:var(--blue)}
   .mob-tab-divider{width:1px;background:var(--border);align-self:stretch;margin:4px 0;flex-shrink:0}
 
-  /* Pages get bottom padding for tab bar */
-  .page{
-    margin-top:52px;
-    padding:20px 14px 90px;
-    min-height:calc(100vh - 52px);
-  }
-
-  /* Grids: all single column on mobile */
-  .r4,.r3,.r2,.hlrow,.lic-summary{grid-template-columns:1fr 1fr}
-  .dgrid.r4 .kc:last-child,.dgrid.r3 .kc:last-child{grid-column:auto}
-
-  /* KPI cards: more compact */
-  .kc{padding:14px 14px 12px}
-  .kval{font-size:26px}
-  .kval.sm{font-size:18px}
-  .klbl{font-size:10px;margin-bottom:6px}
-  .ksub{font-size:10px}
-
-  /* Headers */
+  /* ── Page layout ── */
+  .page{margin-top:52px;padding:16px 14px 96px;min-height:calc(100vh - 52px)}
+  .ph{margin-bottom:14px;flex-wrap:wrap;gap:10px}
+  .dh{margin-bottom:16px}
   .ptitle,.dtitle{font-size:20px}
-  .dh{margin-bottom:18px}
-  .ph{margin-bottom:16px}
+  .psub,.dsub{font-size:11px}
 
-  /* Toolbar: wrap and full-width search */
-  .toolbar{gap:6px}
+  /* ── Toolbar ── */
+  .toolbar{gap:6px;flex-wrap:wrap}
   .swrap{max-width:100%;min-width:0;flex:1 1 100%}
-  .fsel{flex:1;min-width:0}
+  .fsel{flex:1;min-width:0;font-size:12px}
+  .btn{font-size:12px;height:32px;padding:0 12px}
 
-  /* Table: hide on mobile, replaced by cards below */
+  /* ── Table: hidden on mobile, cards shown instead ── */
   .tcard table{display:none}
 
-  /* Charts: slightly shorter on mobile */
-  .chart-wrap.bar{height:160px}
-  .chart-wrap.donut{max-width:200px}
+  /* ── KPI grids ── */
+  .r4,.r3,.lic-summary{grid-template-columns:1fr 1fr}
+  .r2{grid-template-columns:1fr}
+  .hlrow{grid-template-columns:1fr 1fr}
+  .dgrid{gap:8px}
+  .gap{margin-top:8px}
 
-  /* Stage + risk cards */
-  .scard,.rcard,.chcard{padding:14px}
-  .scardtitle,.rcardtitle,.chtitle{margin-bottom:12px}
-  .srname{width:85px;font-size:11px}
+  /* ── KPI cards ── */
+  .kc{padding:12px 12px 10px}
+  .kval{font-size:24px}
+  .kval.sm{font-size:17px}
+  .klbl{font-size:9px;margin-bottom:5px;gap:4px}
+  .klbl i{font-size:12px}
+  .ksub{font-size:10px;margin-top:5px}
 
-  /* Expiry tiers */
-  .expiry-tier{padding:14px}
-  .expiry-item{padding:8px 10px}
+  /* ── Section cards ── */
+  .scard,.rcard,.bchcard{padding:14px 14px}
+  .chcard{padding:14px 14px 10px}
+  .scardtitle,.rcardtitle,.chtitle{font-size:10px;margin-bottom:10px}
+  .srname{width:80px;font-size:10px}
+  .sc{font-size:10px}
+
+  /* ── Charts ── */
+  /* Monthly bar chart needs more height to be readable */
+  .chart-wrap.bar{height:220px}
+  /* Donuts: slightly smaller but still readable */
+  .chart-wrap.donut{max-width:180px}
+  /* Board chart */
+  .board-chart-wrap.bar{height:180px}
+  .board-chart-wrap.donut{max-width:160px}
+
+  /* ── Pipeline velocity funnel ── */
+  .fh-stage,.fd-stage{width:80px;font-size:10px}
+  .fh-count,.fd-count{width:36px;font-size:10px}
+  .fh-conv,.fd-conv{width:52px;font-size:10px}
+  .fd-bar{height:24px}
+  .fd-bar-lbl{font-size:10px}
+  .funnel-gap-line{padding-left:88px}
+  .funnel-total-lbl{font-size:10px}
+  .funnel-total-val{font-size:13px;width:52px}
+
+  /* ── Highlights strip ── */
+  .hlc{padding:12px 14px;gap:10px}
+  .hlic{width:32px;height:32px;font-size:16px;border-radius:8px}
+  .hlval{font-size:15px}
+  .hllbl{font-size:10px}
+
+  /* ── Action / loss / infra rows ── */
+  .action-row{padding:8px}
+  .action-co{font-size:12px}
+  .action-meta{font-size:10px}
+  .infra-row,.loss-row{padding:5px 0}
+  .infra-row-label,.loss-label{width:80px;font-size:11px}
+
+  /* ── Expiry tiers ── */
+  .expiry-tier{padding:12px}
+  .expiry-tier-title{font-size:11px}
+  .expiry-item{padding:7px 10px}
   .expiry-item-name{font-size:12px}
-  .expiry-days{font-size:12px}
+  .expiry-days{font-size:11px}
 
-  /* Modal: full screen bottom sheet on mobile */
+  /* ── Funnel gap arrow ── */
+  .funnel-arrow{padding-left:88px}
+
+  /* ── Modal: bottom sheet ── */
   .mbg{align-items:flex-end;z-index:500}
   .modal{
     width:100%;max-width:100%;
     border-radius:20px 20px 0 0;
     padding:20px 18px calc(20px + env(safe-area-inset-bottom));
-    max-height:92vh;
-    overflow-y:auto;
-    -webkit-overflow-scrolling:touch;
+    max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
   }
   .mgrid{grid-template-columns:1fr}
   .mgrid .full{grid-column:1}
-  /* Ensure tab bar never overlaps open modal */
-  .mbg.open ~ * .mob-tabs,
   body:has(.mbg.open) .mob-tabs{display:none}
 
-  /* Lock screen */
-  .lbox{padding:0 8px}
+  /* ── Lock screen ── */
+  #lock::before{background:none}
+  .lbox{padding:0 12px}
   .ltitle{font-size:22px}
+  .lsub{font-size:11px;margin-bottom:20px}
 
-  /* Highlights row */
-  .hlrow{grid-template-columns:1fr}
-  .hlrow .hlc{padding:14px}
+  /* ── Board view mobile ── */
+  .board-hero{grid-template-columns:1fr 1fr}
+  .board-2col,.board-3col{grid-template-columns:1fr}
+  .board-highlights{grid-template-columns:1fr 1fr}
+  .bhc{padding:14px 12px 12px}
+  .bhc-val{font-size:28px}
+  .bhc-val.sm{font-size:18px}
+  .bhc-label{font-size:9px}
+  .bhc-sub{font-size:10px}
+  .board-section{margin-bottom:20px}
+  .board-section-title{font-size:13px;margin-bottom:10px}
+  .board-co{font-size:20px}
+  .board-export-row{flex-direction:column}
+  .board-export-btn,.board-theme-toggle{width:100%}
+  .board-lic-grid{grid-template-columns:1fr 1fr}
 
-  /* Hide note column on mobile — too cramped */
+  /* ── Alert banners ── */
+  .alert-banner{font-size:12px;padding:9px 12px}
+  .alert-banner i{font-size:14px}
+
+  /* ── Mobile project/license cards ── */
+  .mob-card{padding:12px}
+  .mob-card-name{font-size:13px}
+  .mob-card-grid{gap:5px 10px}
+  .mob-card-field-label{font-size:9px}
+  .mob-card-field-val{font-size:11px}
+
+  /* ── Misc ── */
   .cnote,.col-note{display:none}
+  .board-footer{flex-direction:column;gap:4px;text-align:center}
+  .board-confidential{font-size:9px}
 }
 
-/* Medium screens (681–1024px) */
+/* ── Medium screens (681–1024px) ── */
 @media(min-width:681px) and (max-width:1024px){
   .r4{grid-template-columns:repeat(2,1fr)}
   .r3{grid-template-columns:repeat(3,1fr)}
-  .page{padding:24px 18px 50px}
+  .page{padding:24px 20px 50px}
   .mob-tabs{display:none}
+  .chart-wrap.bar{height:200px}
 }
 
+/* Medium screens (681–1024px) */
 @media(min-width:1025px){
   .mob-tabs{display:none}
 }
@@ -1118,7 +1169,7 @@ function fmtDate(d){
   return new Date(n+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"});
 }
 function stg(k){return STAGES.find(s=>s.k===k)||STAGES[0];}
-const INFRA_LABELS={datacenter:"Data Center",foodbev:"Food and Beverage",municipal:"Municipal",oilgas:"Oil and Gas",lithium:"Lithium",minerals:"Critical Minerals",mining:"Mining",industrial:"Industrial",chipfab:"Chip Fabrication",power:"Power"};
+const INFRA_LABELS={datacenter:"Data Center",foodbev:"Food and Beverage",municipal:"Municipal",oilgas:"Oil and Gas",lithium:"Lithium Concentration",minerals:"Critical Minerals",mining:"Mining",industrial:"Industrial",chipfab:"Chip Fabrication",power:"Power"};
 function infraLabelShort(k){return k==="foodbev"?"F&B":infraLabel(k);}
 function infraLabel(k){return INFRA_LABELS[k]||k;}
 
