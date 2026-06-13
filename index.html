@@ -1502,18 +1502,22 @@ function renderDash(){
   const hsCol = healthScore >= 75 ? "#30d090" : healthScore >= 50 ? "#f0b030" : "#f05060";
   const hsBg  = healthScore >= 75 ? "rgba(48,208,144,0.12)" : healthScore >= 50 ? "rgba(240,176,48,0.12)" : "rgba(240,80,96,0.12)";
   const _aLen = Math.max(active.length, 1);
+  const _pctContact   = Math.round(active.filter(r=>{const d=daysSince(r.last);return d!==null&&d<=30;}).length/_aLen*100);
+  const _pctFollowup  = Math.round(active.filter(r=>r.followUpDate).length/_aLen*100);
+  const _pctProgressed= Math.round(active.filter(r=>r.stage!=="prospect").length/_aLen*100);
+  const _pctGreen     = Math.round(greens/_aLen*100);
   const hsFactors = [
-    {label:"Health",    pct:Math.round(greens/_aLen*100),                                                                    col:"var(--green)"},
-    {label:"Contact",   pct:Math.round(active.filter(r=>{const d=daysSince(r.last);return d!==null&&d<=30;}).length/_aLen*100), col:"var(--blue)"},
-    {label:"Follow-ups",pct:Math.round(active.filter(r=>r.followUpDate).length/_aLen*100),                                    col:"var(--purple)"},
-    {label:"Progressed",pct:Math.round(active.filter(r=>r.stage!=="prospect").length/_aLen*100),                               col:"var(--teal)"},
+    {label:"Health",     pct:_pctGreen,      col:"#30d090", tip:"% of active deals with green health"},
+    {label:"Contact",    pct:_pctContact,    col:"#5090ff", tip:"% contacted within 30 days"},
+    {label:"Follow-ups", pct:_pctFollowup,   col:"#a070f0", tip:"% with a follow-up date set"},
+    {label:"Progressed", pct:_pctProgressed, col:"#30d0d0", tip:"% past prospect stage"},
   ];
   const hsBreakdown = hsFactors.map(f=>
-    '<div style="display:flex;align-items:center;gap:6px">' +
-    '<div style="font-size:10px;color:var(--text3);width:64px;flex-shrink:0">'+f.label+'</div>' +
-    '<div style="flex:1;background:var(--bg4);border-radius:3px;height:4px;overflow:hidden">' +
-    '<div style="width:'+f.pct+'%;height:100%;background:'+f.col+'88;border-radius:3px"></div></div>' +
-    '<div style="font-size:10px;font-family:var(--fnum);color:var(--text3);width:28px;text-align:right">'+f.pct+'%</div>' +
+    '<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px" title="'+f.tip+'">' +
+    '<div style="font-size:10px;color:#9090a8;width:70px;flex-shrink:0">'+f.label+'</div>' +
+    '<div style="flex:1;background:#1e1e28;border-radius:3px;height:5px;overflow:hidden">' +
+    '<div style="width:'+f.pct+'%;height:100%;background:'+f.col+';border-radius:3px;transition:width 0.6s ease"></div></div>' +
+    '<div style="font-size:10px;font-family:JetBrains Mono,monospace;color:'+f.col+';width:32px;text-align:right;font-weight:600">'+f.pct+'%</div>' +
     '</div>'
   ).join("");
 
