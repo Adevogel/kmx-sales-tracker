@@ -1118,7 +1118,7 @@ function fmtDate(d){
   return new Date(n+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"});
 }
 function stg(k){return STAGES.find(s=>s.k===k)||STAGES[0];}
-const INFRA_LABELS={datacenter:"Data Center",foodbev:"Food and Beverage",municipal:"Municipal",oilgas:"Oil and Gas",lithium:"Lithium Concentration",minerals:"Critical Minerals",mining:"Mining",industrial:"Industrial",chipfab:"Chip Fabrication",power:"Power"};
+const INFRA_LABELS={datacenter:"Data Center",foodbev:"Food and Beverage",municipal:"Municipal",oilgas:"Oil and Gas",lithium:"Lithium",minerals:"Critical Minerals",mining:"Mining",industrial:"Industrial",chipfab:"Chip Fabrication",power:"Power"};
 function infraLabelShort(k){return k==="foodbev"?"F&B":infraLabel(k);}
 function infraLabel(k){return INFRA_LABELS[k]||k;}
 
