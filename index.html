@@ -957,10 +957,7 @@ body.light-theme .kcard,.light-theme .scard,.body.light-theme .rcard,.body.light
 </div>
 
 <!-- ─── PIPELINE DASHBOARD ────────────────────────────── -->
-<div class="page" id="page-dash">
-  <div id="dsub" style="display:none"></div>
-  <div id="dcontent"></div>
-</div>
+<div class="page" id="page-dash"></div>
 
 <!-- ─── LICENSE REGISTRY ──────────────────────────────── -->
 <div class="page" id="page-licenses">
@@ -1006,10 +1003,7 @@ body.light-theme .kcard,.light-theme .scard,.body.light-theme .rcard,.body.light
 </div>
 
 <!-- ─── LICENSE ANALYTICS ─────────────────────────────── -->
-<div class="page" id="page-licdash">
-  <div id="ldsub" style="display:none"></div>
-  <div id="ldcontent"></div>
-</div>
+<div class="page" id="page-licdash"></div>
 
 <!-- ─── BOARD VIEW ────────────────────────────────────── -->
 <div class="page" id="page-board">
@@ -1571,10 +1565,6 @@ function renderDash(){
     return d.getFullYear()===m.year&&d.getMonth()===m.month;
   }).length);
 
-  document.getElementById("dsub").textContent=
-    new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})+
-    " · "+rows.length+" total project"+(rows.length!==1?"s":"");
-
   // ── Pipeline coverage ratio ────────────────────
   const PIPELINE_TARGET = getPipelineTarget();
   const totalPipe = pipe + estMid;
@@ -1653,7 +1643,12 @@ function renderDash(){
   // ── Alert banners ────────────────────────────────
   const urgent=rows.filter(r=>{const ra=dateAlert(r.renewal);const da=dateAlert(r.deadline);return(ra&&(ra.cls==="danger"||ra.cls==="overdue"))||(da&&(da.cls==="danger"||da.cls==="overdue"));});
 
-  document.getElementById("dcontent").innerHTML=`
+  const _dashSub = new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})
+    + " · " + rows.length + " total project" + (rows.length!==1?"s":"");
+  document.getElementById("page-dash").innerHTML=`
+  <div style="padding:24px 28px 60px">
+  <div style="font-family:var(--fm);font-size:10px;color:var(--t2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:18px">${_dashSub}</div>
+
 
     <!-- Daily briefing -->
     <div class="briefing-card">
@@ -1933,7 +1928,8 @@ function renderDash(){
       <div class="hlc"><div class="hlic ${stale.length>0?"y":"g"}"><i class="ti ti-clock"></i></div><div><div class="hllbl">Stale 30+ days</div><div class="hlval ${stale.length>0?"r":"g"}">${stale.length} project${stale.length!==1?"s":""}</div></div></div>
       <div class="hlc"><div class="hlic ${stuck.length>0?"r":"g"}"><i class="ti ti-freeze-row"></i></div><div><div class="hllbl">Stuck 60+ days</div><div class="hlval ${stuck.length>0?"r":"g"}">${stuck.length} deal${stuck.length!==1?"s":""}</div></div></div>
     </div>
-  `;
+    </div>
+  </div>`;
 
   // ── Sync target input to current value (in case it was loaded from sheet) ───
   setTimeout(()=>{
@@ -2382,11 +2378,11 @@ function renderLicDash(){
     </div>`;
   }
 
-  document.getElementById("ldsub").textContent =
-    new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}) +
-    " · " + total + " license" + (total!==1?"s":"");
-
-  document.getElementById("ldcontent").innerHTML = `
+  const _licDate = new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})
+    + " · " + total + " license" + (total!==1?"s":"");
+  document.getElementById("page-licdash").innerHTML = `<div style="padding:24px 28px 60px">
+  <div style="font-family:var(--fm);font-size:10px;color:var(--t2);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:20px">${_licDate}</div>
+  
 
     ${(tier30.length>0||expired.length>0)?`<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--r);margin-bottom:14px;background:rgba(240,80,96,0.09);border:1px solid rgba(240,80,96,0.28);color:#f08090;font-size:13px;animation:tierpulse 2.5s ease-in-out infinite"><i class="ti ti-bell-ringing" style="font-size:18px;flex-shrink:0"></i><span><strong style="color:var(--red)">${tier30.length+expired.length} license${tier30.length+expired.length!==1?"s":""}</strong> require immediate attention — expiring within 30 days or already expired.</span></div>`:""}
 
