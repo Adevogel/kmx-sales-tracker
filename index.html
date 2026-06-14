@@ -831,6 +831,127 @@ body.light-theme .kcard,.light-theme .scard,.body.light-theme .rcard,.body.light
   #page-board{display:block!important;position:static!important;margin:0!important;padding:16px 24px!important;width:100%!important}
   @page{size:A4 landscape;margin:8mm 10mm}
 }
+
+/* ── MISSING ALIASES — bridge old dashboard class names to new design tokens ── */
+
+/* Card colour top-line modifiers */
+.kcard.k-neon::after{background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.kcard.k-blue::after{background:linear-gradient(90deg,transparent,var(--blue),transparent)}
+.kcard.k-green::after{background:linear-gradient(90deg,transparent,var(--green),transparent)}
+.kcard.k-amber::after{background:linear-gradient(90deg,transparent,var(--amber),transparent)}
+.kcard.k-red::after{background:linear-gradient(90deg,transparent,var(--red),transparent)}
+.kcard.k-purple::after{background:linear-gradient(90deg,transparent,var(--purple),transparent)}
+.kcard.k-teal::after{background:linear-gradient(90deg,transparent,var(--teal),transparent)}
+
+/* Section cards — aliases for old names */
+.scard{background:var(--c1);border:1px solid var(--b0);border-radius:var(--r3);padding:20px}
+.rcard{background:var(--c1);border:1px solid var(--b0);border-radius:var(--r3);padding:20px}
+.chcard{background:var(--c1);border:1px solid var(--b0);border-radius:var(--r3);padding:20px}
+.scardtitle{font-size:10px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;font-family:var(--fm);display:flex;align-items:center;justify-content:space-between}
+.rcardtitle{font-size:10px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;font-family:var(--fm);display:flex;align-items:center;justify-content:space-between}
+.chtitle{font-size:10px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;font-family:var(--fm)}
+
+/* Chart wraps */
+.chart-wrap{position:relative}
+.chart-wrap.bar{height:200px}
+.chart-wrap.donut{max-width:240px;margin:0 auto}
+
+/* kval colour aliases */
+.kval.v-gold,.kval.ca{color:var(--gold)}
+.kval.v-blue,.kval.cb{color:var(--blue)}
+.kval.v-green,.kval.cg{color:var(--green)}
+.kval.v-amber,.kval.cy{color:var(--amber)}
+.kval.v-red,.kval.cr{color:var(--red)}
+.kval.v-purple{color:var(--purple)}
+.kval.v-teal{color:var(--teal)}
+
+/* kgrid aliases */
+.kgrid{display:grid;gap:12px}
+.kgrid.k4{grid-template-columns:repeat(4,1fr)}
+.kgrid.k3{grid-template-columns:repeat(3,1fr)}
+.kgrid.k2{grid-template-columns:repeat(2,1fr)}
+.kgrid.gap{margin-top:12px}
+
+/* Action/loss/infra rows */
+.action-row{display:flex;align-items:center;gap:0;padding:9px 10px;border-radius:var(--r2);transition:background 0.08s;border-bottom:1px solid var(--b0)}
+.action-row:last-child{border-bottom:none}
+.action-row:hover{background:var(--c2)}
+.action-co{font-size:13px;font-weight:500;color:var(--t0);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--fd)}
+.action-meta{font-size:10px;color:var(--t2);margin-top:1px;font-family:var(--fm)}
+.action-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;margin-left:10px}
+.action-date-overdue{font-family:var(--fm);font-size:11px;font-weight:600;color:var(--red)}
+.action-date-soon{font-family:var(--fm);font-size:11px;font-weight:600;color:var(--amber)}
+.loss-row,.infra-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--b0)}
+.loss-row:last-child,.infra-row:last-child{border-bottom:none}
+.loss-label,.infra-row-label{font-size:11px;color:var(--t1);width:110px;flex-shrink:0;font-family:var(--fm)}
+.loss-bar-wrap,.infra-bar-wrap{flex:1;background:var(--c0);border-radius:2px;height:4px;overflow:hidden}
+.loss-bar{height:100%;border-radius:2px;background:var(--red)}
+.infra-bar{height:100%;border-radius:2px}
+.loss-count,.infra-count{font-family:var(--fm);font-size:11px;color:var(--t2);width:20px;text-align:right;flex-shrink:0}
+
+/* Owner table */
+.owner-table{width:100%;border-collapse:collapse;font-size:12px}
+.owner-table th{font-size:9px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:0.1em;padding:6px 8px;border-bottom:1px solid var(--b0);text-align:left;font-family:var(--fm)}
+.owner-table td{padding:9px 8px;border-bottom:1px solid var(--b0);color:var(--t0);font-family:var(--fm)}
+.owner-table tbody tr:last-child td{border-bottom:none}
+.owner-table tbody tr:hover td{background:var(--c2)}
+.owner-table .num{text-align:right;color:var(--t1)}
+
+/* Coverage bar */
+.coverage-bar-wrap{background:var(--c0);border-radius:2px;height:8px;overflow:hidden;margin-bottom:4px}
+.coverage-bar{height:100%;border-radius:2px;transition:width 0.6s cubic-bezier(.22,1,.36,1)}
+
+/* Briefing card */
+.briefing-card{background:linear-gradient(135deg,rgba(200,240,96,0.04) 0%,rgba(46,114,210,0.03) 100%);border:1px solid var(--b1);border-radius:var(--r3);padding:18px 20px;margin-bottom:12px;display:flex;align-items:flex-start;gap:14px}
+.briefing-icon{width:36px;height:36px;border-radius:var(--r2);background:rgba(200,240,96,0.12);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--gold);flex-shrink:0}
+.briefing-title{font-family:var(--fd);font-size:14px;font-weight:600;color:var(--t0);margin-bottom:5px;letter-spacing:-0.01em}
+.briefing-body{font-size:12px;color:var(--t1);line-height:1.6;font-family:var(--fm)}
+.briefing-body b{color:var(--t0)}
+.hi-red{color:var(--red);font-weight:600}
+.hi-gold{color:var(--gold);font-weight:600}
+.hi-green{color:var(--green);font-weight:600}
+.hi-amber{color:var(--amber);font-weight:600}
+
+/* Alert banner */
+.alert-banner{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--r2);margin-bottom:12px;font-size:12px;font-family:var(--fm);background:var(--red-dim);border:1px solid rgba(217,64,64,0.25);color:#FF8080}
+.alert-banner i{font-size:15px;flex-shrink:0;color:var(--red)}
+
+/* Nodata */
+.nodata{text-align:center;padding:2.5rem;color:var(--t2);font-size:12px;opacity:0.5;font-family:var(--fm)}
+
+/* Stuck badge */
+.stuck-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 7px;border-radius:3px;background:var(--red-dim);color:var(--red);font-weight:600;font-family:var(--fm)}
+
+/* Highlights row */
+.hlrow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.hlc{background:var(--c1);border:1px solid var(--b0);border-radius:var(--r3);padding:18px;display:flex;align-items:center;gap:12px}
+.hlic{width:36px;height:36px;border-radius:var(--r2);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.hlic.a{background:rgba(200,240,96,0.12);color:var(--gold)}.hlic.g{background:var(--green-dim);color:var(--green)}
+.hlic.b{background:var(--blue-dim);color:var(--blue)}.hlic.y{background:var(--amber-dim);color:var(--amber)}
+.hlic.r{background:var(--red-dim);color:var(--red)}
+.hllbl{font-size:10px;color:var(--t2);margin-bottom:3px;font-family:var(--fm);text-transform:uppercase;letter-spacing:0.08em}
+.hlval{font-family:var(--fd);font-size:17px;font-weight:600;letter-spacing:-0.02em;color:var(--t0)}
+.hlval.a{color:var(--gold)}.hlval.g{color:var(--green)}.hlval.r{color:var(--red)}
+
+/* rrows / rrow / rname / rdetail / rbadge */
+.rrows{display:flex;flex-direction:column;gap:1px}
+.rrow{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border-radius:var(--r2);transition:background 0.08s}
+.rrow:hover{background:var(--c2)}
+.rname{font-size:13px;font-weight:500;color:var(--t0);font-family:var(--fd)}
+.rdetail{font-size:11px;color:var(--t2);margin-top:1px;font-family:var(--fm)}
+.rbadge{font-size:10px;padding:2px 7px;border-radius:3px;background:var(--red-dim);color:var(--red);font-weight:600;font-family:var(--fm)}
+
+/* Mobile responsive overrides for new classes */
+@media(max-width:680px){
+  .kgrid.k4,.kgrid.k3{grid-template-columns:1fr 1fr}
+  .kgrid.k2{grid-template-columns:1fr}
+  .hlrow{grid-template-columns:1fr 1fr}
+  .chart-wrap.bar{height:220px}
+  .chart-wrap.donut{max-width:180px}
+}
+@media(min-width:681px) and (max-width:1024px){
+  .kgrid.k4{grid-template-columns:repeat(2,1fr)}
+}
 </style>
 </head>
 <body>
