@@ -163,6 +163,8 @@ html,body{height:100%;font-family:var(--f-ui);background:var(--s0);color:var(--t
 .si-inp::placeholder{color:var(--t3)}
 .sel{padding:7px 10px;background:var(--s2);border:1px solid var(--b0);border-radius:var(--r2);color:var(--t1);font-size:13px;font-family:var(--f-ui);outline:none;cursor:pointer}
 .sel option{background:var(--s2)}
+.fsel{padding:7px 10px;background:var(--s2);border:1px solid var(--b0);border-radius:var(--r2);color:var(--t1);font-size:13px;font-family:var(--f-ui);outline:none;cursor:pointer}
+.fsel option{background:var(--s2)}
 
 /* ── TABLE ─────────────────────────────── */
 .tbl-card{background:var(--s1);border:1px solid var(--b0);border-radius:var(--r3);overflow:hidden}
@@ -1154,7 +1156,7 @@ function buildSelects(){
   document.getElementById("fst").innerHTML=STAGES.map(s=>`<option value="${s.k}">${s.l}</option>`).join("");
   const fs=document.getElementById("fs");
   fs.innerHTML=`<option value="">All stages</option>`+STAGES.map(s=>`<option value="${s.k}">${s.l}</option>`).join("");
-  fs.onchange=renderTable; fs.className="fsel";
+  fs.onchange=renderTable; fs.className="sel";
 }
 
 // ── Pages ─────────────────────────────────────
