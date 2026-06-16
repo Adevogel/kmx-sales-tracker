@@ -763,6 +763,210 @@ thead th.sorted .sort-i{opacity:1;color:var(--lime)}
 .dl-tag.overdue{background:rgba(224,82,82,.2);color:#ff8080;border:1px solid rgba(224,82,82,.4)}
 @keyframes flash{0%,100%{opacity:1}50%{opacity:.5}}
 .lic-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+
+/* ── Global theme toggle button ── */
+.theme-toggle-btn{
+  display:inline-flex;align-items:center;gap:7px;
+  height:34px;padding:0 14px;
+  background:var(--s2);border:1px solid var(--b1);
+  border-radius:var(--r2);font-size:12px;font-weight:500;
+  font-family:var(--f-ui);color:var(--t1);cursor:pointer;
+  transition:all .12s;white-space:nowrap;
+}
+.theme-toggle-btn:hover{background:var(--s3);color:var(--t0);border-color:var(--b2)}
+.theme-toggle-btn i{font-size:15px}
+/* Keep old board toggle working */
+.board-theme-toggle{display:none}
+
+/* ════════════════════════════════════════════
+   LIGHT THEME — COASTAL MORNING
+   Full component readability pass
+════════════════════════════════════════════ */
+body.light-theme{color:var(--t0)}
+
+/* Nav */
+body.light-theme .ni{color:var(--t2)}
+body.light-theme .ni:hover{background:var(--s2);color:var(--t1)}
+body.light-theme .ni.on,body.light-theme .ni.active{color:var(--lime);background:var(--lime-a10)}
+body.light-theme .nav-name{color:var(--t0)}
+body.light-theme .topbar-crumb{color:var(--t2)}
+body.light-theme .topbar-sep{color:var(--t3)}
+body.light-theme .topbar-title{color:var(--t0)}
+body.light-theme .topbar-date{color:var(--t2);border-color:var(--b0)}
+body.light-theme .sync-lbl{color:var(--t2)}
+body.light-theme .sync-btn{color:var(--t2)}
+body.light-theme .sync-btn:hover{color:var(--t0);background:var(--s2)}
+
+/* Tables */
+body.light-theme table{color:var(--t0)}
+body.light-theme td{color:var(--t0)}
+body.light-theme tbody tr:hover{background:var(--s2)}
+body.light-theme tbody tr:hover td:first-child{box-shadow:inset 2px 0 0 var(--lime)}
+body.light-theme thead th{color:var(--t2)}
+body.light-theme thead th:hover{color:var(--t1)}
+body.light-theme thead th.sorted{color:var(--lime)}
+
+/* KPI cards */
+body.light-theme .kcard,body.light-theme .kc{background:#FFFFFF;border-color:var(--b0)}
+body.light-theme .klbl{color:var(--t2)}
+body.light-theme .kval{color:var(--t0)}
+body.light-theme .ksub{color:var(--t2)}
+body.light-theme .ksub b{color:var(--t1)}
+
+/* Section cards */
+body.light-theme .scard,body.light-theme .rcard,
+body.light-theme .chcard,body.light-theme .bchcard{background:#FFFFFF;border-color:var(--b0)}
+body.light-theme .scardtitle,body.light-theme .rcardtitle,
+body.light-theme .chtitle,body.light-theme .bchcard-title{color:var(--t2)}
+body.light-theme .rbadge{background:var(--red-a12);color:var(--red)}
+
+/* Stage bars */
+body.light-theme .sbw{background:var(--s2)}
+body.light-theme .srname{color:var(--t1)}
+body.light-theme .sc{color:var(--t2)}
+
+/* Attention rows */
+body.light-theme .rrow:hover{background:var(--s2)}
+body.light-theme .rname{color:var(--t0)}
+body.light-theme .rdetail{color:var(--t2)}
+body.light-theme .nodata{color:var(--t2)}
+
+/* Stage pills */
+body.light-theme .sp{background:rgba(0,0,0,.03)}
+
+/* Health dots */
+body.light-theme .hb{color:var(--t1)}
+
+/* Highlights */
+body.light-theme .hlc{background:#FFFFFF;border-color:var(--b0)}
+body.light-theme .hllbl{color:var(--t2)}
+body.light-theme .hlval{color:var(--t0)}
+
+/* Briefing */
+body.light-theme .briefing-title{color:var(--t0)}
+body.light-theme .briefing-body{color:var(--t1)}
+body.light-theme .briefing-icon{background:var(--lime-a18);color:var(--lime)}
+
+/* Alert banners */
+body.light-theme .alert-banner{color:#8A1A1A;background:rgba(184,48,48,.07);border-color:rgba(184,48,48,.2)}
+body.light-theme .alert-banner i{color:var(--red)}
+
+/* Action rows */
+body.light-theme .action-row{border-color:var(--b0)}
+body.light-theme .action-row:hover{background:var(--s2)}
+body.light-theme .action-co{color:var(--t0)}
+body.light-theme .action-meta{color:var(--t2)}
+
+/* Loss / infra rows */
+body.light-theme .loss-row,body.light-theme .infra-row{border-color:var(--b0)}
+body.light-theme .loss-label,body.light-theme .infra-row-label{color:var(--t1)}
+body.light-theme .loss-count,body.light-theme .infra-count{color:var(--t2)}
+body.light-theme .loss-bar-wrap,body.light-theme .infra-bar-wrap{background:var(--s2)}
+
+/* Funnel */
+body.light-theme .funnel-header{border-color:var(--b0)}
+body.light-theme .fh-stage,.fh-count,.fh-conv{color:var(--t2)}
+body.light-theme .fd-count{color:var(--t1)}
+body.light-theme .fd-conv{color:var(--t2)}
+body.light-theme .funnel-total{border-color:var(--b0)}
+body.light-theme .funnel-total-lbl{color:var(--t2)}
+body.light-theme .funnel-total-val{color:var(--lime)}
+body.light-theme .fd-bar-lbl{color:rgba(6,10,18,.85)}
+body.light-theme .funnel-gap-line.flow-grey .funnel-gap-arrow,
+body.light-theme .funnel-gap-line.flow-grey .funnel-gap-text{color:var(--t3)}
+
+/* Owner table */
+body.light-theme .owner-table th{color:var(--t2)}
+body.light-theme .owner-table td{color:var(--t0)}
+body.light-theme .owner-table tbody tr:hover td{background:var(--s2)}
+body.light-theme .owner-table .num{color:var(--t1)}
+
+/* Coverage bar */
+body.light-theme .coverage-bar-wrap{background:var(--s2)}
+
+/* Stuck badge */
+body.light-theme .stuck-badge{background:var(--red-a12);color:var(--red)}
+
+/* DL tags */
+body.light-theme .dl-tag.ok{color:var(--t2)}
+body.light-theme .dl-tag.amber{background:var(--amber-a12);color:var(--amber)}
+body.light-theme .dl-tag.danger{background:var(--red-a12);color:var(--red)}
+body.light-theme .dl-tag.overdue{color:var(--red)}
+
+/* Follow-up states */
+body.light-theme .fu-ok{color:var(--t2)}
+
+/* Empty states */
+body.light-theme .empty{color:var(--t2)}
+
+/* Toolbar inputs */
+body.light-theme .si-inp{background:#FFFFFF;border-color:var(--b0);color:var(--t0)}
+body.light-theme .si-inp::placeholder{color:var(--t3)}
+body.light-theme .sel,.light-theme .filter-sel,.light-theme .fsel{background:#FFFFFF;border-color:var(--b0);color:var(--t1)}
+body.light-theme .sel option{background:#FFFFFF}
+
+/* Buttons */
+body.light-theme .btn{background:var(--s2);border-color:var(--b1);color:var(--t1)}
+body.light-theme .btn:hover{background:var(--s3);color:var(--t0)}
+body.light-theme .btn-p{background:var(--lime);color:#060A12;border-color:transparent}
+body.light-theme .btn-g{background:none;color:var(--t2)}
+body.light-theme .theme-toggle-btn{background:var(--s2);border-color:var(--b1);color:var(--t1)}
+body.light-theme .theme-toggle-btn:hover{background:var(--s3);color:var(--t0)}
+
+/* Modals */
+body.light-theme .mbg{background:rgba(10,26,40,.6)}
+body.light-theme .field label{color:var(--t2)}
+body.light-theme .field input,body.light-theme .field select,body.light-theme .field textarea{background:#FFFFFF;border-color:var(--b0);color:var(--t0)}
+body.light-theme .field input::placeholder,body.light-theme .field textarea::placeholder{color:var(--t3)}
+body.light-theme .vmb{background:var(--s2);border-color:var(--b0);color:var(--t2)}
+body.light-theme .vmb.active{border-color:var(--lime);background:var(--lime-a18);color:var(--lime)}
+body.light-theme .mhdr h3{color:var(--t0)}
+body.light-theme .mfooter{border-color:var(--b0)}
+
+/* Expiry tiers */
+body.light-theme .expiry-tier-title{font-weight:600}
+body.light-theme .expiry-item-name{color:var(--t0)}
+body.light-theme .expiry-item-meta{color:var(--t2)}
+body.light-theme .tier-empty{color:var(--t2)}
+
+/* License pills */
+body.light-theme .lic-type{background:var(--blue-a12);color:var(--blue)}
+body.light-theme .lic-status.active{background:var(--green-a12);color:var(--green)}
+body.light-theme .lic-status.expiring{background:var(--amber-a12);color:var(--amber)}
+body.light-theme .lic-status.expired{background:var(--red-a12);color:var(--red)}
+
+/* Infra pills */
+body.light-theme .infra-pill{opacity:.9}
+body.light-theme .sp.won{color:var(--col-won)}
+
+/* Board view */
+body.light-theme .board-co{color:var(--t0)}
+body.light-theme .board-tagline{color:var(--t2)}
+body.light-theme .board-date{color:var(--t2)}
+body.light-theme .board-prepared{color:var(--t3)}
+body.light-theme .board-section-title{color:var(--t2);border-color:var(--b0)}
+body.light-theme .bhc{background:#FFFFFF;border-color:var(--b0)}
+body.light-theme .bhc-label{color:var(--t2)}
+body.light-theme .bhc-sub{color:var(--t2)}
+body.light-theme .board-table thead th{color:var(--t2);border-color:var(--b0)}
+body.light-theme .board-table tbody tr{border-color:var(--b0)}
+body.light-theme .board-table td{color:var(--t0)}
+body.light-theme .board-table tbody tr:hover{background:var(--s2)}
+body.light-theme .board-footer-left,body.light-theme .board-footer-right{color:var(--t2)}
+body.light-theme .board-confidential{color:var(--t3)}
+body.light-theme .board-footer{border-color:var(--b0)}
+body.light-theme .bchcard{background:#FFFFFF;border-color:var(--b0)}
+
+/* Scrollbar */
+body.light-theme ::-webkit-scrollbar-thumb{background:var(--b1)}
+body.light-theme ::-webkit-scrollbar-thumb:hover{background:var(--b2)}
+
+/* Lock screen light */
+body.light-theme .lock-co{color:var(--t0)}
+body.light-theme .lock-sub{color:var(--t2)}
+body.light-theme .lock-footer{color:var(--t3)}
+body.light-theme #lpass{background:#FFFFFF;border-color:var(--b1);color:var(--t0)}
+body.light-theme .lock-btn{background:var(--lime);color:#060A12}
 </style>
 </head>
 <body>
@@ -820,6 +1024,7 @@ thead th.sorted .sort-i{opacity:1;color:var(--lime)}
   </div>
   <div class="topbar-right">
     <span class="topbar-date" id="date-tag"></span>
+    <button class="theme-toggle-btn" onclick="toggleBoardTheme()"><i class="ti ti-sun theme-icon"></i><span class="theme-label">Light theme</span></button>
     <button class="btn btn-p" id="header-new-btn" onclick="openModal()"><i class="ti ti-plus"></i>New Project</button>
   </div>
 </div>
@@ -2410,9 +2615,7 @@ function renderBoard(){
         <div class="board-prepared">Confidential — For board use only</div>
         <div class="board-export-row">
           <button class="board-export-btn" id="export-btn" onclick="doPrint()"><i class="ti ti-file-type-pdf" id="export-icon"></i><span id="export-label">Download PDF</span></button>
-          <button class="board-theme-toggle" id="theme-toggle" onclick="toggleBoardTheme()">
-            <i class="ti ti-sun" id="theme-icon"></i><span id="theme-label">Professional theme</span>
-          </button>
+          <!-- theme toggle now in topbar -->
         </div>
       </div>
     </div>
@@ -2606,14 +2809,7 @@ function renderBoard(){
 }
 
 // ── Board print & theme ──────────────────────────────────────────────────────
-let boardLightTheme = false;
-
-function toggleBoardTheme(){
-  boardLightTheme = !boardLightTheme;
-  document.body.classList.toggle("light-theme", boardLightTheme);
-  document.getElementById("theme-icon").className = boardLightTheme ? "ti ti-moon" : "ti ti-sun";
-  document.getElementById("theme-label").textContent = boardLightTheme ? "Dark theme" : "Professional theme";
-}
+// boardLightTheme declared in glue script
 
 async function doPrint(){
   const btn   = document.getElementById("export-btn");
@@ -2839,10 +3035,13 @@ let boardLightTheme = false;
 function toggleBoardTheme() {
   boardLightTheme = !boardLightTheme;
   document.body.classList.toggle("light-theme", boardLightTheme);
-  const icon = document.getElementById("theme-icon");
-  const lbl  = document.getElementById("theme-label");
-  if (icon) icon.className = boardLightTheme ? "ti ti-moon" : "ti ti-sun";
-  if (lbl)  lbl.textContent = boardLightTheme ? "Dark mode" : "Professional";
+  // Update ALL theme toggles across all pages
+  document.querySelectorAll(".theme-icon").forEach(el => {
+    el.className = boardLightTheme ? "ti ti-moon" : "ti ti-sun";
+  });
+  document.querySelectorAll(".theme-label").forEach(el => {
+    el.textContent = boardLightTheme ? "Dark theme" : "Light theme";
+  });
 }
 
 // PDF export
