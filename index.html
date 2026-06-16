@@ -19,28 +19,33 @@
 
 /* ── TOKENS ─────────────────────────────── */
 :root{
-  /* Surfaces */
-  --s0:#07090D; --s1:#0D1117; --s2:#131920; --s3:#1A2230;
-  /* Borders */
-  --b0:#1E2A38; --b1:#253347; --b2:#2E3F57;
-  /* Text */
-  --t0:#EDF2F7; --t1:#8BA3BF; --t2:#4A6280; --t3:#2A3D52;
-  /* Accent — electric lime */
-  --lime:#C8F060; --lime2:#A0C840;
-  --lime-a10:rgba(200,240,96,.10); --lime-a18:rgba(200,240,96,.18);
-  --lime-a30:rgba(200,240,96,.30);
+  /* ── DARK THEME: Deep Ocean ── */
+  /* Surfaces — deep water blacks with blue undertone */
+  --s0:#060A12; --s1:#0A1628; --s2:#0F1E36; --s3:#162540;
+  /* Borders — blue-tinted */
+  --b0:#1A2E48; --b1:#1E3858; --b2:#264870;
+  /* Text — crisp coastal whites */
+  --t0:#E8F4FF; --t1:#7AACCF; --t2:#3D6A8A; --t3:#1E3D55;
+  /* Accent — cyan aqua (water surface light) */
+  --lime:#38E8C8; --lime2:#20C4A8;
+  --lime-a10:rgba(56,232,200,.10); --lime-a18:rgba(56,232,200,.18);
+  --lime-a30:rgba(56,232,200,.30);
   /* Semantic */
-  --green:#22C47A; --green-a12:rgba(34,196,122,.12);
-  --red:#E05252;   --red-a12:rgba(224,82,82,.12);
-  --amber:#E09832; --amber-a12:rgba(224,152,50,.12);
-  --blue:#3E85E8;  --blue-a12:rgba(62,133,232,.12);
-  --purple:#8B5CF6;--purple-a12:rgba(139,92,246,.12);
-  --teal:#22C4C4;  --teal-a12:rgba(34,196,196,.12);
-  /* Stage colours */
-  --col-prospect:#4A6280; --col-scoping:#3E85E8;
-  --col-proposal:#8B5CF6; --col-lab:#E09832;
-  --col-demo:#D4608A;     --col-negotiation:#22C4C4;
-  --col-won:#C8F060;      --col-lost:#E05252;
+  --green:#22D47A;  --green-a12:rgba(34,212,122,.12);
+  --red:#E05A5A;    --red-a12:rgba(224,90,90,.12);
+  --amber:#E8A030;  --amber-a12:rgba(232,160,48,.12);
+  --blue:#4E9EF0;   --blue-a12:rgba(78,158,240,.12);
+  --purple:#7B6CF6; --purple-a12:rgba(123,108,246,.12);
+  --teal:#20D4E8;   --teal-a12:rgba(32,212,232,.12);
+  /* Stage colours — water spectrum: shallow to deep */
+  --col-prospect:#3D6A8A;  /* deep slate water */
+  --col-scoping:#4E9EF0;   /* open sky blue */
+  --col-proposal:#7B6CF6;  /* deep reef purple */
+  --col-lab:#E8A030;       /* sunset amber */
+  --col-demo:#E8609A;      /* coral pink */
+  --col-negotiation:#20D4E8; /* bright teal surf */
+  --col-won:#38E8C8;        /* aqua — glowing */
+  --col-lost:#E05A5A;       /* warning red */
   /* Fonts */
   --f-ui:'Inter',sans-serif;
   --f-disp:'Space Grotesk',sans-serif;
@@ -55,10 +60,10 @@ html,body{height:100%;font-family:var(--f-ui);background:var(--s0);color:var(--t
 
 /* ── LOCK ──────────────────────────────── */
 #lock{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--s0);overflow:hidden}
-#lock::before{content:'';position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(200,240,96,.06) 0%,transparent 65%);top:50%;left:50%;transform:translate(-50%,-58%);pointer-events:none}
+#lock::before{content:'';position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(56,232,200,.07) 0%,transparent 65%);top:50%;left:50%;transform:translate(-50%,-58%);pointer-events:none}
 .lock-box{position:relative;z-index:1;width:360px;max-width:92vw;display:flex;flex-direction:column;align-items:center}
 .lock-logo{width:52px;height:52px;border-radius:var(--r3);background:var(--lime);display:flex;align-items:center;justify-content:center;margin-bottom:22px;box-shadow:0 0 40px var(--lime-a30)}
-.lock-logo svg{width:24px;height:24px;fill:none;stroke:#07090D;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.lock-logo svg{width:24px;height:24px;fill:none;stroke:#060A12;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 .lock-co{font-family:var(--f-disp);font-size:22px;font-weight:700;letter-spacing:-.01em;color:var(--t0);margin-bottom:4px}
 .lock-sub{font-size:11px;color:var(--t2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:28px;font-family:var(--f-mono)}
 .lock-field{width:100%;position:relative;margin-bottom:10px}
@@ -94,7 +99,7 @@ html,body{height:100%;font-family:var(--f-ui);background:var(--s0);color:var(--t
   background:var(--lime);display:flex;align-items:center;justify-content:center;
   flex-shrink:0;box-shadow:0 0 10px var(--lime-a30);
 }
-.nav-logo svg{width:14px;height:14px;fill:none;stroke:#07090D;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.nav-logo svg{width:14px;height:14px;fill:none;stroke:#060A12;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 .nav-name{font-family:var(--f-disp);font-size:14px;font-weight:700;color:var(--t0);white-space:nowrap;letter-spacing:-.01em}
 .nav-divider{width:1px;height:20px;background:var(--b1);margin:0 8px;flex-shrink:0}
 .nav-body{display:flex;align-items:center;gap:2px;flex:1}
@@ -191,7 +196,7 @@ td{padding:12px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;c
 .sp.demo{color:var(--col-demo)}         .sp.negotiation{color:var(--col-negotiation)}
 .sp.won{color:var(--col-won);animation:wonpulse 2.2s ease-in-out infinite}
 .sp.lost{color:var(--col-lost)}
-@keyframes wonpulse{0%,100%{border-color:rgba(200,240,96,.35);box-shadow:none}50%{border-color:var(--lime);box-shadow:0 0 8px var(--lime-a30)}}
+@keyframes wonpulse{0%,100%{border-color:rgba(56,232,200,.35);box-shadow:none}50%{border-color:var(--lime);box-shadow:0 0 8px var(--lime-a30)}}
 
 /* Health dots */
 .hb{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--t1)}
@@ -309,7 +314,7 @@ td{padding:12px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;c
 .sbw{flex:1;background:var(--s0);border-radius:2px;height:4px;overflow:hidden}
 .sb{height:100%;border-radius:2px;transition:width .5s cubic-bezier(.22,1,.36,1)}
 .sb.won-bar{animation:wonbar 2.2s ease-in-out infinite}
-@keyframes wonbar{0%,100%{opacity:.6}50%{opacity:1;filter:drop-shadow(0 0 4px rgba(200,240,96,.5))}}
+@keyframes wonbar{0%,100%{opacity:.6}50%{opacity:1;filter:drop-shadow(0 0 4px rgba(56,232,200,.5))}}
 .sc{font-family:var(--f-mono);font-size:11px;color:var(--t2);width:24px;text-align:right;flex-shrink:0}
 
 /* Attention rows */
@@ -326,7 +331,7 @@ td{padding:12px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;c
 .chart-wrap.donut{max-width:240px;margin:0 auto}
 
 /* ── BRIEFING ───────────────────────────── */
-.briefing-card{background:linear-gradient(135deg,rgba(200,240,96,.04),rgba(62,133,232,.03));border:1px solid var(--b1);border-radius:var(--r3);padding:18px 20px;margin-bottom:12px;display:flex;align-items:flex-start;gap:14px}
+.briefing-card{background:linear-gradient(135deg,rgba(56,232,200,.05),rgba(78,158,240,.04));border:1px solid var(--b1);border-radius:var(--r3);padding:18px 20px;margin-bottom:12px;display:flex;align-items:flex-start;gap:14px}
 .briefing-icon{width:36px;height:36px;border-radius:var(--r2);background:var(--lime-a18);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--lime);flex-shrink:0}
 .briefing-title{font-family:var(--f-disp);font-size:14px;font-weight:600;color:var(--t0);margin-bottom:5px;letter-spacing:-.01em}
 .briefing-body{font-size:12px;color:var(--t1);line-height:1.7;font-family:var(--f-mono)}
@@ -467,7 +472,7 @@ td{padding:12px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;c
 .board-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--b1);flex-wrap:wrap;gap:16px}
 .board-brand{display:flex;align-items:center;gap:14px}
 .board-logo{width:44px;height:44px;border-radius:var(--r2);background:var(--lime);display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px var(--lime-a30)}
-.board-logo svg{width:22px;height:22px;fill:none;stroke:#07090D;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.board-logo svg{width:22px;height:22px;fill:none;stroke:#060A12;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 .board-co{font-family:var(--f-disp);font-size:26px;font-weight:700;letter-spacing:-.02em;color:var(--t0)}
 .board-tagline{font-size:11px;color:var(--t2);margin-top:3px;font-family:var(--f-mono);letter-spacing:.08em;text-transform:uppercase}
 .board-meta{text-align:right}
@@ -512,18 +517,39 @@ td{padding:12px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;c
 
 /* Light theme */
 body.light-theme{
-  --s0:#F2F5F8;--s1:#FFFFFF;--s2:#E8EDF2;--s3:#D8E0EA;
-  --b0:#CDD6E0;--b1:#B8C4D0;--b2:#9AAABB;
-  --t0:#0A1020;--t1:#3A4A60;--t2:#6A7A90;--t3:#9AABB8;
-  --lime:#2E7A20;--lime2:#1E5A14;--lime-a10:rgba(46,122,32,.08);--lime-a18:rgba(46,122,32,.14);--lime-a30:rgba(46,122,32,.2);
-  --green:#0E6E44;--green-a12:rgba(14,110,68,.1);
-  --red:#A02020;--red-a12:rgba(160,32,32,.1);
-  --amber:#7A4E00;--amber-a12:rgba(122,78,0,.1);
-  --blue:#1850A0;--blue-a12:rgba(24,80,160,.1);
+  /* ── LIGHT THEME: Coastal Morning ── */
+  --s0:#EEF5FB;--s1:#FFFFFF;--s2:#DFF0F8;--s3:#C8E4F4;
+  --b0:#A8CCE4;--b1:#80AACC;--b2:#5A88AA;
+  --t0:#0A1A28;--t1:#1E4A6A;--t2:#4A7A9A;--t3:#7AAABB;
+  --lime:#0898A0;--lime2:#067078;
+  --lime-a10:rgba(8,152,160,.08);--lime-a18:rgba(8,152,160,.14);--lime-a30:rgba(8,152,160,.25);
+  --green:#0A7A50;--green-a12:rgba(10,122,80,.1);
+  --red:#B83030;--red-a12:rgba(184,48,48,.1);
+  --amber:#8A5A00;--amber-a12:rgba(138,90,0,.1);
+  --blue:#1862B8;--blue-a12:rgba(24,98,184,.1);
+  --purple:#5040B0;--purple-a12:rgba(80,64,176,.1);
+  --teal:#0878A0;--teal-a12:rgba(8,120,160,.1);
+  --col-prospect:#4A7A9A;
+  --col-scoping:#1862B8;
+  --col-proposal:#5040B0;
+  --col-lab:#8A5A00;
+  --col-demo:#A04878;
+  --col-negotiation:#0878A0;
+  --col-won:#0898A0;
+  --col-lost:#B83030;
 }
-body.light-theme .nav,.light-theme .topbar,.light-theme .tbl-card,.light-theme .kcard,.light-theme .kc,.light-theme .scard,.light-theme .rcard,.light-theme .chcard,.light-theme .modal{background:#FFFFFF}
+body.light-theme{background:var(--s0)}
+body.light-theme .nav{background:rgba(255,255,255,.95);border-bottom-color:var(--b0);backdrop-filter:blur(12px)}
+body.light-theme .topbar{background:rgba(238,245,251,.9);border-bottom-color:var(--b0)}
+body.light-theme .tbl-card{background:#FFFFFF;border-color:var(--b0)}
+body.light-theme thead{background:var(--s2)}
+body.light-theme .kcard,.light-theme .kc{background:#FFFFFF;border-color:var(--b0)}
+body.light-theme .scard,.light-theme .rcard,.light-theme .chcard{background:#FFFFFF;border-color:var(--b0)}
+body.light-theme .modal{background:#FFFFFF;border-color:var(--b1)}
 body.light-theme #lock{background:var(--s0)}
-body.light-theme .modal{border-color:var(--b2)}
+body.light-theme #lock::before{background:radial-gradient(circle,rgba(8,152,160,.08) 0%,transparent 65%)}
+body.light-theme .briefing-card{background:linear-gradient(135deg,rgba(8,152,160,.05),rgba(24,98,184,.03));border-color:var(--b0)}
+body.light-theme .expiry-item{background:rgba(0,0,0,.02);border-color:var(--b0)}
 
 /* ── MOBILE CARDS ──────────────────────── */
 .mob-card-list{display:none}
@@ -683,7 +709,7 @@ tbody tr:hover td:first-child{box-shadow:inset 2px 0 0 var(--lime)}
 .ni.on:hover .ni-lbl{color:var(--lime)}
 
 /* Briefing card accent border */
-.briefing-card{border-left:3px solid var(--lime)}
+.briefing-card{border-left:3px solid var(--lime);border-radius:var(--r3)}
 
 /* KPI card number breathing room */
 .kval{padding-top:2px}
