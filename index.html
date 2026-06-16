@@ -79,6 +79,7 @@ html,body{height:100%;font-family:var(--f-ui);background:var(--s0);color:var(--t
 /* ── SHELL ─────────────────────────────── */
 #app{display:none;min-height:100vh}
 .shell{display:flex;min-height:100vh}
+.pg{display:none}.pg.on{display:block}
 
 /* ── TOP NAV ─────────────────────────────── */
 .nav{
@@ -1393,21 +1394,41 @@ function buildSelects(){
 
 // ── Pages ─────────────────────────────────────
 function showPage(p){
-  // Support both old (.page/.active) and new (.pg/.on) class names
-  document.querySelectorAll(".page,.pg").forEach(el=>el.classList.remove("active","on"));
-  document.querySelectorAll(".ntab,.ni").forEach(el=>el.classList.remove("active","on"));
-  document.querySelectorAll(".mob-tab").forEach(el=>el.classList.remove("active","on"));
+  // Hide all pages, deactivate all nav items
+  document.querySelectorAll(".pg").forEach(el=>el.classList.remove("on"));
+  document.querySelectorAll(".ni").forEach(el=>el.classList.remove("on","active"));
+  document.querySelectorAll(".mob-tab").forEach(el=>el.classList.remove("on","active"));
+
+  // Show target page
   const pg = document.getElementById("page-"+p);
-  if(pg){ pg.classList.add("active"); pg.classList.add("on"); }
+  if(pg) pg.classList.add("on");
+
+  // Activate nav item
   const tab = document.getElementById("tab-"+p);
-  if(tab){ tab.classList.add("active"); tab.classList.add("on"); }
+  if(tab){ tab.classList.add("on","active"); }
   const mtab = document.getElementById("mtab-"+p);
-  if(mtab){ mtab.classList.add("active"); mtab.classList.add("on"); }
+  if(mtab){ mtab.classList.add("on","active"); }
+
+  // Update topbar breadcrumb + title + action button
+  const meta = typeof PAGE_META !== "undefined" ? PAGE_META[p] : null;
+  if(meta){
+    const crumb = document.getElementById("ph-crumb");
+    const title = document.getElementById("ph-title");
+    const hb    = document.getElementById("header-new-btn");
+    if(crumb) crumb.textContent = meta.crumb;
+    if(title) title.textContent = meta.title;
+    if(hb){
+      hb.style.display = meta.btn ? "inline-flex" : "none";
+      if(meta.btnFn) hb.onclick = new Function(meta.btnFn);
+    }
+  }
+
+  // Render page content
   if(p==="dash") renderDash();
   if(p==="licenses"||p==="licdash") renderLicenses();
   if(p==="licdash") renderLicDash();
   if(p==="board") renderBoard();
-  // Scroll to top on page change
+
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -3004,31 +3025,6 @@ const PAGE_META = {
   licdash:  {crumb:"Licenses",  title:"Analytics",        btn:false},
   board:    {crumb:"Executive", title:"Board View",       btn:false},
 };
-
-// Patch showPage to also update topbar + tabs
-const _origShow = showPage;
-function showPage(p) {
-  _origShow(p);
-  const m = PAGE_META[p] || {};
-  if (m.crumb) document.getElementById("ph-crumb").textContent = m.crumb;
-  if (m.title) document.getElementById("ph-title").textContent = m.title;
-  const hb = document.getElementById("header-new-btn");
-  hb.style.display = m.btn ? "inline-flex" : "none";
-  if (m.btnFn) hb.onclick = new Function(m.btnFn);
-  // Sidebar
-  document.querySelectorAll(".ni").forEach(el => el.classList.remove("on"));
-  const tab = document.getElementById("tab-" + p);
-  if (tab) tab.classList.add("on");
-  // Mobile tabs
-  document.querySelectorAll(".mob-tab").forEach(el => el.classList.remove("on"));
-  const mtab = document.getElementById("mtab-" + p);
-  if (mtab) mtab.classList.add("on");
-  // Page class uses "pg on" not "page active"
-  document.querySelectorAll(".pg").forEach(el => el.classList.remove("on"));
-  const pg = document.getElementById("page-" + p);
-  if (pg) pg.classList.add("on");
-  window.scrollTo({top:0,behavior:"smooth"});
-}
 
 // Light theme
 let boardLightTheme = false;
