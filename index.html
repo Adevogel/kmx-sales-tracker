@@ -1730,22 +1730,14 @@ function renderDash(){
 
   const _dashSub = new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})
     + " · " + rows.length + " total project" + (rows.length!==1?"s":"");
-  // ── Render charts ────────────────────────────
+  // ── Chart styling constants (used after innerHTML is set) ────────────────
   const CHART_FONT = {family:"'IBM Plex Mono',monospace",size:11};
   const LEGEND_OPTS = {labels:{color:"rgba(240,240,245,0.6)",font:CHART_FONT,padding:12,boxWidth:10,boxHeight:10}};
   const TOOLTIP_OPTS = {backgroundColor:"#0D1117",titleColor:"#EDF2F7",bodyColor:"#4A6280",borderColor:"#1E2A38",borderWidth:1,padding:10,titleFont:CHART_FONT,bodyFont:CHART_FONT};
 
-  // Health donut
-  mkChart("chart-health",{type:"doughnut",data:{
-    labels:["Green","Yellow","Red"],
-    datasets:[{data:[greens,yellows,reds],backgroundColor:["rgba(48,208,144,0.85)","rgba(240,176,48,0.85)","rgba(240,80,96,0.85)"],borderColor:["#30d090","#f0b030","#f05060"],borderWidth:1.5,hoverOffset:6}]
-  },options:{cutout:"68%",plugins:{legend:LEGEND_OPTS,tooltip:{...TOOLTIP_OPTS}},animation:{animateRotate:true,duration:700}}});
-
-  // Monthly activity bar chart
-
   document.getElementById("page-dash").innerHTML=`
   <div class="pg-inner">
-  <div class="pg-date">${_dashDate}</div>
+  <div class="pg-date">${_dashSub}</div>
 
   <!-- BRIEFING -->
   <div class="briefing-card">
@@ -1993,6 +1985,14 @@ function renderDash(){
   }, 0);
 
 
+  // Health donut (rendered after innerHTML so the canvas exists)
+  destroyChart("chart-health");
+  mkChart("chart-health",{type:"doughnut",data:{
+    labels:["Green","Yellow","Red"],
+    datasets:[{data:[greens,yellows,reds],backgroundColor:["rgba(48,208,144,0.85)","rgba(240,176,48,0.85)","rgba(240,80,96,0.85)"],borderColor:["#30d090","#f0b030","#f05060"],borderWidth:1.5,hoverOffset:6}]
+  },options:{cutout:"68%",plugins:{legend:LEGEND_OPTS,tooltip:{...TOOLTIP_OPTS}},animation:{animateRotate:true,duration:700}}});
+
+  // Monthly activity bar chart
   destroyChart("chart-monthly");
   mkChart("chart-monthly",{type:"bar",data:{
     labels:months.map(m=>m.label),
