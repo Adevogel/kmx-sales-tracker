@@ -58,24 +58,6 @@
 
 html,body{height:100%;font-family:var(--f-ui);background:var(--s0);color:var(--t0);font-size:14px;line-height:1.5;overflow-x:hidden}
 
-/* ── LOCK ──────────────────────────────── */
-#lock{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--s0);overflow:hidden}
-#lock::before{content:'';position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(56,232,200,.07) 0%,transparent 65%);top:50%;left:50%;transform:translate(-50%,-58%);pointer-events:none}
-.lock-box{position:relative;z-index:1;width:360px;max-width:92vw;display:flex;flex-direction:column;align-items:center}
-.lock-logo{width:52px;height:52px;border-radius:var(--r3);background:var(--lime);display:flex;align-items:center;justify-content:center;margin-bottom:22px;box-shadow:0 0 40px var(--lime-a30)}
-.lock-logo svg{width:24px;height:24px;fill:none;stroke:#060A12;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
-.lock-co{font-family:var(--f-disp);font-size:22px;font-weight:700;letter-spacing:-.01em;color:var(--t0);margin-bottom:4px}
-.lock-sub{font-size:11px;color:var(--t2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:28px;font-family:var(--f-mono)}
-.lock-field{width:100%;position:relative;margin-bottom:10px}
-.lock-field i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--t2);font-size:16px;pointer-events:none}
-#lpass{width:100%;padding:13px 13px 13px 42px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r2);color:var(--t0);font-size:14px;font-family:var(--f-ui);outline:none;letter-spacing:.04em;transition:border-color .15s,box-shadow .15s}
-#lpass:focus{border-color:var(--lime);box-shadow:0 0 0 3px var(--lime-a10)}
-#lpass::placeholder{color:var(--t3);letter-spacing:0}
-.lock-btn{width:100%;height:46px;background:var(--lime);color:#07090D;border:none;border-radius:var(--r2);font-family:var(--f-disp);font-size:14px;font-weight:600;letter-spacing:.04em;cursor:pointer;transition:all .15s;margin-top:2px}
-.lock-btn:hover{background:var(--lime2);box-shadow:0 4px 20px var(--lime-a30)}
-#lerr{font-size:12px;color:var(--red);text-align:center;margin-top:10px;height:16px;opacity:0;transition:opacity .2s;font-family:var(--f-mono)}
-.lock-footer{margin-top:36px;font-size:10px;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;text-align:center;font-family:var(--f-mono)}
-
 /* ── SHELL ─────────────────────────────── */
 #app{display:none;min-height:100vh}
 .shell{display:flex;min-height:100vh}
@@ -189,6 +171,8 @@ td{padding:12px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;c
 .ca{white-space:normal;vertical-align:top;padding-top:10px;text-align:right}
 .cn{width:18%}.co{width:8%}.cst{width:13%}.ch{width:8%}.cv{width:11%}.cl{width:9%}.cage{width:7%}.cfu{width:8%}.ca{width:6%;text-align:right}
 .ce,.cdl,.cinfra,.cnote{display:none}
+.cdep{width:8%}
+.cn{width:14%}.co{width:7%}.cst{width:11%}.ch{width:7%}.cv{width:10%}.cl{width:8%}.cage{width:6%}.cfu{width:7%}.cdep{width:8%}.ca{width:6%;text-align:right}
 
 /* Stage pills */
 .sp{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 8px;border-radius:var(--r1);font-weight:500;white-space:nowrap;font-family:var(--f-mono);border-left:2px solid currentColor;background:rgba(255,255,255,.03)}
@@ -608,6 +592,8 @@ body.light-theme .expiry-item{background:rgba(0,0,0,.02);border-color:var(--b0)}
   .board-export-btn,.board-theme-toggle{width:100%}
   .board-lic-grid{grid-template-columns:1fr 1fr}
   .ce,.cdl,.cinfra,.cnote{display:none}
+.cdep{width:8%}
+.cn{width:14%}.co{width:7%}.cst{width:11%}.ch{width:7%}.cv{width:10%}.cl{width:8%}.cage{width:6%}.cfu{width:7%}.cdep{width:8%}.ca{width:6%;text-align:right}
   /* Card padding tightening */
   .briefing-card{padding:14px;gap:10px}
   .briefing-icon{width:30px;height:30px;font-size:15px}
@@ -966,30 +952,22 @@ body.light-theme ::-webkit-scrollbar-thumb:hover{background:var(--b2)}
 body.light-theme .lock-co{color:var(--t0)}
 body.light-theme .lock-sub{color:var(--t2)}
 body.light-theme .lock-footer{color:var(--t3)}
-body.light-theme #lpass{background:#FFFFFF;border-color:var(--b1);color:var(--t0)}
-body.light-theme .lock-btn{background:var(--lime);color:#060A12}
+
+/* Deployment type pills */
+.deploy-pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:3px 8px;border-radius:var(--r1);font-weight:600;white-space:nowrap;font-family:var(--f-mono);letter-spacing:.04em}
+.deploy-pill.pilot{background:rgba(123,108,246,.12);color:#7B6CF6;border:1px solid rgba(123,108,246,.25)}
+.deploy-pill.demo{background:rgba(232,160,48,.12);color:#E8A030;border:1px solid rgba(232,160,48,.25)}
+.deploy-pill.commercial{background:rgba(34,212,122,.12);color:#22D47A;border:1px solid rgba(34,212,122,.25)}
+.deploy-pill::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+body.light-theme .deploy-pill.pilot{background:rgba(80,64,176,.08);color:#5040B0}
+body.light-theme .deploy-pill.demo{background:rgba(138,90,0,.08);color:#8A5A00}
+body.light-theme .deploy-pill.commercial{background:rgba(10,122,80,.08);color:#0A7A50}
 </style>
 </head>
 <body>
 
-<!-- LOCK -->
-<div id="lock">
-  <div class="lock-box">
-    <div class="lock-logo"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
-    <div class="lock-co">KMX Technologies</div>
-    <div class="lock-sub">Operations Platform</div>
-    <div class="lock-field">
-      <i class="ti ti-lock"></i>
-      <input id="lpass" type="password" placeholder="Enter access code" onkeydown="if(event.key==='Enter')doUnlock()" autocomplete="current-password">
-    </div>
-    <button class="lock-btn" onclick="doUnlock()">Unlock</button>
-    <div id="lerr">Incorrect code — try again</div>
-    <div class="lock-footer">Confidential · Authorized access only</div>
-  </div>
-</div>
-
 <!-- APP -->
-<div id="app">
+<div id="app" style="display:block">
 <div class="shell">
 
 <!-- Sidebar -->
@@ -1053,6 +1031,7 @@ body.light-theme .lock-btn{background:var(--lime);color:#060A12}
         <th class="cl" onclick="doSort('last')">Last contact<span class="sort-i" id="si-last">↕</span></th>
         <th class="cage" onclick="doSort('created')">Age<span class="sort-i" id="si-created">↕</span></th>
         <th class="cfu" onclick="doSort('followUpDate')">Follow-up<span class="sort-i" id="si-followUpDate">↕</span></th>
+        <th class="cdep" onclick="doSort('deploymentType')">Type<span class="sort-i" id="si-deploymentType">'</span></th>
         <th class="ca">Actions</th>
       </tr></thead>
       <tbody id="tbody"></tbody>
@@ -1146,6 +1125,14 @@ body.light-theme .lock-btn{background:var(--lime);color:#060A12}
           <option value="chipfab">Chip Fabrication</option><option value="power">Power</option>
         </select>
       </div>
+      <div class="field"><label>Deployment type</label>
+        <select id="fdeploytype">
+          <option value="">-- Select type --</option>
+          <option value="pilot">Pilot</option>
+          <option value="demo">Demonstration</option>
+          <option value="commercial">Commercial</option>
+        </select>
+      </div>
       <div class="field" id="loss-reason-field" style="display:none"><label>Loss reason</label>
         <select id="flossreason">
           <option value="">— Select reason —</option>
@@ -1214,7 +1201,6 @@ body.light-theme .lock-btn{background:var(--lime);color:#060A12}
 
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyelyzFYo_GuAkhXaKP_V1E17ZbPIwqMcj14xQrc_HrD2m74C9NCbwvbmug8NX5cIhTrQ/exec";
 // Sheet names: "Sheet1" for projects, "Licenses" for licenses
-const PASS = "KMXTechnologies";
 const STAGES = [
   {k:"prospect",   l:"Prospect",      c:"#4A6280"},
   {k:"scoping",    l:"Scoping",       c:"#5090ff"},
@@ -1231,18 +1217,7 @@ let rows=[], editId=null, sk="name", sd=1, vm="tbd";
 let chartInstances = {};
 
 // ── Lock ──────────────────────────────────────
-function doUnlock(){
-  if(document.getElementById("lpass").value===PASS){
-    document.getElementById("lock").style.display="none";
-    document.getElementById("app").style.display="block";
-    boot();
-  } else {
-    const e=document.getElementById("lerr");
-    e.style.opacity="1";
-    document.getElementById("lpass").value="";
-    setTimeout(()=>e.style.opacity="0",2000);
-  }
-}
+
 
 // ── Boot ──────────────────────────────────────
 async function boot(){
@@ -1276,7 +1251,8 @@ function syncNow(){
         renewal:normaliseDate(r[10]), deadline:normaliseDate(r[11]),
         created:normaliseDate(r[12]), stageChanged:normaliseDate(r[13]),
         infraType:r[14]||"", lossReason:r[15]||"",
-        nextAction:r[16]||"", followUpDate:normaliseDate(r[17])
+        nextAction:r[16]||"", followUpDate:normaliseDate(r[17]),
+        deploymentType:r[18]||""
       }));
       renderTable();
       setSyncState("ok","Synced "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}));
@@ -1370,7 +1346,7 @@ function daysSince(d){
   return Math.round((Date.now()-new Date(n+"T00:00:00"))/86400000);
 }
 function toRow(r){
-  return[r.name,r.owner,r.stage,r.health,r.tbd?"TRUE":"FALSE",r.value||"",r.estLow||"",r.estHigh||"",r.last,r.note,r.renewal||"",r.deadline||"",r.created||"",r.stageChanged||"",r.infraType||"",r.lossReason||"",r.nextAction||"",r.followUpDate||""];
+  return[r.name,r.owner,r.stage,r.health,r.tbd?"TRUE":"FALSE",r.value||"",r.estLow||"",r.estHigh||"",r.last,r.note,r.renewal||"",r.deadline||"",r.created||"",r.stageChanged||"",r.infraType||"",r.lossReason||"",r.nextAction||"",r.followUpDate||"",r.deploymentType||""];
 }
 
 // Returns {label, cls} for a date: null=none, amber=60days, danger=30days, overdue=past
@@ -1446,6 +1422,7 @@ function getFiltered(){
     if(sk==="value"){av=a.tbd?-1:(a.value||0);bv=b.tbd?-1:(b.value||0);}
     if(sk==="renewal"){av=a.renewal||"9999";bv=b.renewal||"9999";}
     if(sk==="created"){av=a.created||"9999";bv=b.created||"9999";}
+    if(sk==="deploymentType"){av=a.deploymentType||"";bv=b.deploymentType||"";}
     if(sk==="infraType"){av=a.infraType||"";bv=b.infraType||"";}
     if(sk==="followUpDate"){av=a.followUpDate||"9999";bv=b.followUpDate||"9999";}
     return av<bv?-sd:av>bv?sd:0;
@@ -1481,6 +1458,7 @@ function renderTable(){
       <td class="cl" style="color:var(--t1);font-size:12px">${fmtDate(r.last)}</td>
 
       <td class="cage">${r.created?(()=>{const d=daysSince(r.created);return d===0?"Today":d+"d";})():"—"}</td>
+      <td class="cdep">${r.deploymentType?'<span class="deploy-pill '+r.deploymentType+'">'+{pilot:"Pilot",demo:"Demo",commercial:"Commercial"}[r.deploymentType]+'</span>':"—"}</td>
       <td class="cfu">${(()=>{
         if(!r.followUpDate) return '<span class="fu-ok">—</span>';
         const d=Math.round((new Date(r.followUpDate+"T00:00:00")-Date.now())/86400000);
@@ -1703,6 +1681,24 @@ function renderDash(){
   // ── Deal momentum — stuck deals ─────────────────
   const stuck = active.filter(r=>r.stageChanged&&daysSince(r.stageChanged)>60);
 
+  // ── Deployment type breakdown ────────────────────
+  const dtypes = {pilot:[], demo:[], commercial:[]};
+  rows.forEach(r => {
+    if(r.deploymentType && dtypes[r.deploymentType]) dtypes[r.deploymentType].push(r);
+  });
+  const dtActive = {
+    pilot:      dtypes.pilot.filter(r=>r.stage!=="won"&&r.stage!=="lost"),
+    demo:       dtypes.demo.filter(r=>r.stage!=="won"&&r.stage!=="lost"),
+    commercial: dtypes.commercial.filter(r=>r.stage!=="won"&&r.stage!=="lost"),
+  };
+  const dtVal = (arr) => arr.filter(r=>!r.tbd&&r.value).reduce((s,r)=>s+r.value,0);
+  const dtWon = {
+    pilot:      dtypes.pilot.filter(r=>r.stage==="won").length,
+    demo:       dtypes.demo.filter(r=>r.stage==="won").length,
+    commercial: dtypes.commercial.filter(r=>r.stage==="won").length,
+  };
+  const totalTyped = dtypes.pilot.length + dtypes.demo.length + dtypes.commercial.length;
+
   // ── Owner performance ────────────────────────────
   const ownerMap = {};
   rows.forEach(r=>{
@@ -1875,6 +1871,75 @@ function renderDash(){
         <div class="chtitle">Month-by-month activity</div>
         <div class="chart-wrap bar" style="height:200px"><canvas id="chart-monthly"></canvas></div>
       </div>
+    </div>
+
+    <!-- Deployment type tracker -->
+    <div class="kgrid k3 gap">
+      <div class="kc k-purple">
+        <div class="klbl"><i class="ti ti-flask"></i>Pilots</div>
+        <div class="kval v-purple">${dtActive.pilot.length}</div>
+        <div class="ksub"><b>${dtypes.pilot.length}</b> total &middot; ${dtWon.pilot} won${dtVal(dtActive.pilot)?` &middot; ${fmtMoney(dtVal(dtActive.pilot),true)} active`:""}</div>
+      </div>
+      <div class="kc k-amber">
+        <div class="klbl"><i class="ti ti-presentation"></i>Demonstrations</div>
+        <div class="kval v-amber">${dtActive.demo.length}</div>
+        <div class="ksub"><b>${dtypes.demo.length}</b> total &middot; ${dtWon.demo} won${dtVal(dtActive.demo)?` &middot; ${fmtMoney(dtVal(dtActive.demo),true)} active`:""}</div>
+      </div>
+      <div class="kc k-green">
+        <div class="klbl"><i class="ti ti-rocket"></i>Commercial</div>
+        <div class="kval v-green">${dtActive.commercial.length}</div>
+        <div class="ksub"><b>${dtypes.commercial.length}</b> total &middot; ${dtWon.commercial} won${dtVal(dtActive.commercial)?` &middot; ${fmtMoney(dtVal(dtActive.commercial),true)} active`:""}</div>
+      </div>
+    </div>
+    <div class="scard gap">
+      <div class="scardtitle">Deployment type breakdown</div>
+      ${totalTyped === 0
+        ? `<div class="nodata"><i class="ti ti-flask" style="font-size:22px;display:block;margin-bottom:6px;opacity:.2"></i>Set deployment type on projects to see breakdown</div>`
+        : `<div>
+          ${[
+            {key:"pilot",      label:"Pilot",         col:"#7B6CF6"},
+            {key:"demo",       label:"Demonstration", col:"#E8A030"},
+            {key:"commercial", label:"Commercial",    col:"#22D47A"},
+          ].map(dt => {
+            const all    = dtypes[dt.key];
+            const act    = dtActive[dt.key];
+            const val    = dtVal(act);
+            const won2   = dtWon[dt.key];
+            const pct    = totalTyped > 0 ? Math.round(all.length/totalTyped*100) : 0;
+            const stages = {};
+            act.forEach(r => { stages[r.stage] = (stages[r.stage]||0)+1; });
+            const stageStr = Object.entries(stages)
+              .sort((a,b)=>b[1]-a[1])
+              .map(([s,n]) => stg(s).l+": "+n)
+              .join(", ");
+            return all.length === 0 ? "" :
+              `<div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--b0)">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                  <span class="deploy-pill ${dt.key}">${dt.label}</span>
+                  <div style="flex:1;background:var(--s0);border-radius:2px;height:4px;overflow:hidden">
+                    <div style="width:${pct}%;height:100%;background:${dt.col};border-radius:2px"></div>
+                  </div>
+                  <span style="font-family:var(--f-mono);font-size:11px;color:var(--t2)">${all.length} project${all.length!==1?"s":""} (${pct}%)</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                  <div style="background:var(--s0);border-radius:var(--r2);padding:8px 10px">
+                    <div style="font-size:9px;color:var(--t2);font-family:var(--f-mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Active</div>
+                    <div style="font-family:var(--f-disp);font-size:18px;font-weight:600;color:${dt.col}">${act.length}</div>
+                  </div>
+                  <div style="background:var(--s0);border-radius:var(--r2);padding:8px 10px">
+                    <div style="font-size:9px;color:var(--t2);font-family:var(--f-mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Won</div>
+                    <div style="font-family:var(--f-disp);font-size:18px;font-weight:600;color:var(--lime)">${won2}</div>
+                  </div>
+                  <div style="background:var(--s0);border-radius:var(--r2);padding:8px 10px">
+                    <div style="font-size:9px;color:var(--t2);font-family:var(--f-mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Pipeline</div>
+                    <div style="font-family:var(--f-disp);font-size:16px;font-weight:600;color:var(--t0)">${val?fmtMoney(val,true):"—"}</div>
+                  </div>
+                </div>
+                ${stageStr?`<div style="font-size:10px;color:var(--t2);font-family:var(--f-mono);margin-top:6px">${stageStr}</div>`:""}
+              </div>`;
+          }).join("")}
+        </div>`
+      }
     </div>
 
     <!-- Row 5: Pipeline velocity -->
@@ -2195,6 +2260,7 @@ function openModal(id=null){
   document.getElementById("frenewal").value=r.renewal||"";
   document.getElementById("fdeadline").value=r.deadline||"";
   document.getElementById("finfra").value=r.infraType||"";
+  document.getElementById("fdeploytype").value=r.deploymentType||"";
   document.getElementById("flossreason").value=r.lossReason||"";
   document.getElementById("fnextaction").value=r.nextAction||"";
   document.getElementById("ffollowup").value=r.followUpDate||"";
@@ -2216,7 +2282,7 @@ function saveProject(){
   const existingRow = editId!==null ? rows.find(r=>r.id===editId) : null;
   const newStage = document.getElementById("fst").value;
   const stageChanged = existingRow && existingRow.stage !== newStage ? today : (existingRow?.stageChanged||today);
-  const data={name,owner:document.getElementById("fo").value.trim(),stage:newStage,health:document.getElementById("fh2").value,last:document.getElementById("fl").value,note:document.getElementById("fnote").value.trim(),tbd,value:tbd?null:(parseFloat(document.getElementById("fv").value)||null),estLow:tbd?(parseFloat(document.getElementById("fel").value)||null):null,estHigh:tbd?(parseFloat(document.getElementById("feh").value)||null):null,renewal:document.getElementById("frenewal").value,deadline:document.getElementById("fdeadline").value,created:existingRow?.created||today,stageChanged,infraType:document.getElementById("finfra").value,lossReason:document.getElementById("flossreason").value,nextAction:document.getElementById("fnextaction").value.trim(),followUpDate:document.getElementById("ffollowup").value};
+  const data={name,owner:document.getElementById("fo").value.trim(),stage:newStage,health:document.getElementById("fh2").value,last:document.getElementById("fl").value,note:document.getElementById("fnote").value.trim(),tbd,value:tbd?null:(parseFloat(document.getElementById("fv").value)||null),estLow:tbd?(parseFloat(document.getElementById("fel").value)||null):null,estHigh:tbd?(parseFloat(document.getElementById("feh").value)||null):null,renewal:document.getElementById("frenewal").value,deadline:document.getElementById("fdeadline").value,created:existingRow?.created||today,stageChanged,infraType:document.getElementById("finfra").value,deploymentType:document.getElementById("fdeploytype").value,lossReason:document.getElementById("flossreason").value,nextAction:document.getElementById("fnextaction").value.trim(),followUpDate:document.getElementById("ffollowup").value};
   if(editId!==null){
     const i=rows.findIndex(r=>r.id===editId);
     rows[i]={...rows[i],...data};
@@ -3015,6 +3081,9 @@ function renderMobileLicenses(data){
 
 <script>
 // SHELL WIRING
+// Boot immediately — password handled by Netlify
+document.addEventListener("DOMContentLoaded", () => boot());
+
 document.getElementById("date-tag").textContent =
   new Date().toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",year:"numeric"});
 
