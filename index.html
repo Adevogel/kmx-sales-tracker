@@ -12,7 +12,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 /* ═══════════════════════════════════════════
-   KMX TECHNOLOGIES — DESIGN SYSTEM v3
+   KMX TECHNOLOGIES - DESIGN SYSTEM v3
    One file. One source of truth. Zero patches.
 ═══════════════════════════════════════════ */
 *{box-sizing:border-box;margin:0;padding:0}
@@ -20,13 +20,13 @@
 /* ── TOKENS ─────────────────────────────── */
 :root{
   /* ── DARK THEME: Deep Ocean ── */
-  /* Surfaces — deep water blacks with blue undertone */
+  /* Surfaces - deep water blacks with blue undertone */
   --s0:#060A12; --s1:#0A1628; --s2:#0F1E36; --s3:#162540;
-  /* Borders — blue-tinted */
+  /* Borders - blue-tinted */
   --b0:#1A2E48; --b1:#1E3858; --b2:#264870;
-  /* Text — crisp coastal whites */
+  /* Text - crisp coastal whites */
   --t0:#E8F4FF; --t1:#7AACCF; --t2:#3D6A8A; --t3:#1E3D55;
-  /* Accent — cyan aqua (water surface light) */
+  /* Accent - cyan aqua (water surface light) */
   --lime:#38E8C8; --lime2:#20C4A8;
   --lime-a10:rgba(56,232,200,.10); --lime-a18:rgba(56,232,200,.18);
   --lime-a30:rgba(56,232,200,.30);
@@ -37,14 +37,14 @@
   --blue:#4E9EF0;   --blue-a12:rgba(78,158,240,.12);
   --purple:#7B6CF6; --purple-a12:rgba(123,108,246,.12);
   --teal:#20D4E8;   --teal-a12:rgba(32,212,232,.12);
-  /* Stage colours — water spectrum: shallow to deep */
+  /* Stage colours - water spectrum: shallow to deep */
   --col-prospect:#3D6A8A;  /* deep slate water */
   --col-scoping:#4E9EF0;   /* open sky blue */
   --col-proposal:#7B6CF6;  /* deep reef purple */
   --col-lab:#E8A030;       /* sunset amber */
   --col-demo:#E8609A;      /* coral pink */
   --col-negotiation:#20D4E8; /* bright teal surf */
-  --col-won:#38E8C8;        /* aqua — glowing */
+  --col-won:#38E8C8;        /* aqua - glowing */
   --col-lost:#E05A5A;       /* warning red */
   /* Fonts */
   --f-ui:'Inter',sans-serif;
@@ -198,6 +198,7 @@ td{padding:12px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;c
 .ib{background:none;border:none;cursor:pointer;color:var(--t3);padding:5px;border-radius:var(--r1);font-size:14px;display:inline-flex;align-items:center;transition:all .1s}
 .ib:hover{color:var(--t0);background:var(--s3)}
 .ib.del:hover{color:var(--red);background:var(--red-a12)}
+.ib.win:hover{color:var(--green);background:var(--green-a12)}
 .fu-over{font-family:var(--f-mono);font-size:11px;font-weight:600;color:var(--red)}
 .fu-soon{font-family:var(--f-mono);font-size:11px;font-weight:600;color:var(--amber)}
 .fu-ok{font-family:var(--f-mono);font-size:11px;color:var(--t2)}
@@ -275,7 +276,7 @@ td{padding:12px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;c
 .klbl i{font-size:13px}
 .kval{font-family:var(--f-disp);font-size:36px;font-weight:700;letter-spacing:-.03em;line-height:1;color:var(--t0)}
 .kval.sm{font-size:22px}
-/* Value colour classes — all aliases covered */
+/* Value colour classes - all aliases covered */
 .kval.ca,.kval.v-gold,.kval.v-lime{color:var(--lime)}
 .kval.cb,.kval.v-blue{color:var(--blue)}
 .kval.cg,.kval.v-green{color:var(--green)}
@@ -643,7 +644,7 @@ body.light-theme .expiry-item{background:rgba(0,0,0,.02);border-color:var(--b0)}
 .td-note{font-size:12px;color:var(--t2);font-family:var(--f-mono);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .td-val{font-family:var(--f-mono);font-size:12px}
 
-/* pg-inner — license dashboard wrapper */
+/* pg-inner - license dashboard wrapper */
 .pg-inner{padding:0}
 .pg-date{font-family:var(--f-mono);font-size:10px;color:var(--t2);letter-spacing:.1em;text-transform:uppercase;margin-bottom:18px}
 /* kval aliases that may appear in lic dash */
@@ -654,6 +655,7 @@ body.light-theme .expiry-item{background:rgba(0,0,0,.02);border-color:var(--b0)}
 .kval.cr{color:var(--red)}
 /* del alias */
 .ib.del:hover{color:var(--red);background:var(--red-a12)}
+.ib.win:hover{color:var(--green);background:var(--green-a12)}
 /* accent alias */
 .accent{color:var(--lime)}
 /* ga/gg glow aliases */
@@ -704,7 +706,7 @@ tbody tr:hover td:first-child{box-shadow:inset 2px 0 0 var(--lime)}
 /* scard/rcard subtle top border */
 .scard::before,.rcard::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:var(--b0);display:none}
 
-/* Funnel total row — lime accent */
+/* Funnel total row - lime accent */
 .funnel-total-val{font-size:15px}
 
 /* Board section title has icon spacing */
@@ -766,7 +768,7 @@ thead th.sorted .sort-i{opacity:1;color:var(--lime)}
 .board-theme-toggle{display:none}
 
 /* ════════════════════════════════════════════
-   LIGHT THEME — COASTAL MORNING
+   LIGHT THEME - COASTAL MORNING
    Full component readability pass
 ════════════════════════════════════════════ */
 body.light-theme{color:var(--t0)}
@@ -1117,7 +1119,7 @@ body.light-theme .deploy-pill.commercial{background:rgba(10,122,80,.08);color:#0
       </div>
       <div class="field"><label>Infrastructure sector</label>
         <select id="finfra">
-          <option value="">— Select sector —</option>
+          <option value="">Select sector</option>
           <option value="datacenter">Data Center</option><option value="foodbev">Food and Beverage</option>
           <option value="municipal">Municipal</option><option value="oilgas">Oil and Gas</option>
           <option value="lithium">Lithium</option><option value="minerals">Critical Minerals</option>
@@ -1127,7 +1129,7 @@ body.light-theme .deploy-pill.commercial{background:rgba(10,122,80,.08);color:#0
       </div>
       <div class="field"><label>Deployment type</label>
         <select id="fdeploytype">
-          <option value="">-- Select type --</option>
+          <option value="">Select type</option>
           <option value="pilot">Pilot</option>
           <option value="demo">Demonstration</option>
           <option value="commercial">Commercial</option>
@@ -1135,12 +1137,13 @@ body.light-theme .deploy-pill.commercial{background:rgba(10,122,80,.08);color:#0
       </div>
       <div class="field" id="loss-reason-field" style="display:none"><label>Loss reason</label>
         <select id="flossreason">
-          <option value="">— Select reason —</option>
+          <option value="">Select reason</option>
           <option value="price">Price</option><option value="competitor">Competitor</option>
           <option value="timing">Timing</option><option value="scope">Scope</option>
           <option value="relationship">Relationship</option><option value="nodecision">No decision</option>
         </select>
       </div>
+      <div class="field full" id="loss-notes-field" style="display:none"><label>Lessons learned / why we lost</label><textarea id="flossnotes" placeholder="What happened, what we would do differently, feedback for the team..."></textarea></div>
       <div class="field"><label>Last contact</label><input id="fl" type="date"></div>
       <div class="field"><label>Renewal date</label><input id="frenewal" type="date"></div>
       <div class="field"><label>Project deadline</label><input id="fdeadline" type="date"></div>
@@ -1252,7 +1255,7 @@ function syncNow(){
         created:normaliseDate(r[12]), stageChanged:normaliseDate(r[13]),
         infraType:r[14]||"", lossReason:r[15]||"",
         nextAction:r[16]||"", followUpDate:normaliseDate(r[17]),
-        deploymentType:r[18]||""
+        deploymentType:r[18]||"", lossNotes:r[19]||""
       }));
       renderTable();
       setSyncState("ok","Synced "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}));
@@ -1324,7 +1327,7 @@ function normaliseDate(d){
 }
 function fmtDate(d){
   const n = normaliseDate(d);
-  if(!n) return "—";
+  if(!n) return "-";
   return new Date(n+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"});
 }
 function stg(k){return STAGES.find(s=>s.k===k)||STAGES[0];}
@@ -1337,8 +1340,11 @@ const STAGE_WEIGHTS={prospect:0.05,scoping:0.15,proposal:0.30,lab:0.45,demo:0.55
 
 function toggleLossReason(){
   const stage=document.getElementById("fst")?.value;
+  const show=stage==="lost"?"block":"none";
   const field=document.getElementById("loss-reason-field");
-  if(field) field.style.display=stage==="lost"?"block":"none";
+  const notes=document.getElementById("loss-notes-field");
+  if(field) field.style.display=show;
+  if(notes) notes.style.display=show;
 }
 function daysSince(d){
   const n = normaliseDate(d);
@@ -1346,7 +1352,7 @@ function daysSince(d){
   return Math.round((Date.now()-new Date(n+"T00:00:00"))/86400000);
 }
 function toRow(r){
-  return[r.name,r.owner,r.stage,r.health,r.tbd?"TRUE":"FALSE",r.value||"",r.estLow||"",r.estHigh||"",r.last,r.note,r.renewal||"",r.deadline||"",r.created||"",r.stageChanged||"",r.infraType||"",r.lossReason||"",r.nextAction||"",r.followUpDate||"",r.deploymentType||""];
+  return[r.name,r.owner,r.stage,r.health,r.tbd?"TRUE":"FALSE",r.value||"",r.estLow||"",r.estHigh||"",r.last,r.note,r.renewal||"",r.deadline||"",r.created||"",r.stageChanged||"",r.infraType||"",r.lossReason||"",r.nextAction||"",r.followUpDate||"",r.deploymentType||"",r.lossNotes||""];
 }
 
 // Returns {label, cls} for a date: null=none, amber=60days, danger=30days, overdue=past
@@ -1405,7 +1411,7 @@ function showPage(p){
   if(p==="licdash") renderLicDash();
   if(p==="board") renderBoard();
 
-  window.scrollTo({top:0,behavior:"smooth"});
+  try{ window.scrollTo({top:0,behavior:"smooth"}); }catch(e){}
 }
 
 // ── Table ─────────────────────────────────────
@@ -1439,7 +1445,7 @@ function renderTable(){
   const data=getFiltered();
   const tbody=document.getElementById("tbody");
   if(!data.length){
-    tbody.innerHTML=`<tr><td colspan="9"><div class="empty"><i class="ti ti-building-factory-2"></i>${rows.length===0?"No projects yet — click New project to get started":"No projects match your filters"}</div></td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="9"><div class="empty"><i class="ti ti-building-factory-2"></i>${rows.length===0?"No projects yet - click New project to get started":"No projects match your filters"}</div></td></tr>`;
     return;
   }
   renderMobileProjects(data);
@@ -1447,20 +1453,20 @@ function renderTable(){
     const s=stg(r.stage);
     const v=r.tbd?null:fmtMoney(r.value);
     const rng=fmtRange(r);
-    const np=r.note?(r.note.length>26?r.note.slice(0,26)+"…":r.note):"—";
+    const np=r.note?(r.note.length>26?r.note.slice(0,26)+"…":r.note):"-";
     return `<tr>
       <td class="cn"><span class="cname">${r.name}</span></td>
-      <td class="co" style="color:var(--t1)">${r.owner||"—"}</td>
+      <td class="co" style="color:var(--t1)">${r.owner||"-"}</td>
       <td class="cst"><span class="sp ${r.stage}">${s.l}</span></td>
       <td class="ch"><span class="hb"><span class="hd ${r.health}"></span>${r.health[0].toUpperCase()+r.health.slice(1)}</span></td>
       <td class="cv">${v?`<span class="vk">${v}</span>`:`<span class="vtbd">TBD</span>`}</td>
-      <td class="ce"><span class="vr">${r.tbd?(rng||"—"):"—"}</span></td>
+      <td class="ce"><span class="vr">${r.tbd?(rng||"-"):"-"}</span></td>
       <td class="cl" style="color:var(--t1);font-size:12px">${fmtDate(r.last)}</td>
 
-      <td class="cage">${r.created?(()=>{const d=daysSince(r.created);return d===0?"Today":d+"d";})():"—"}</td>
-      <td class="cdep">${r.deploymentType?'<span class="deploy-pill '+r.deploymentType+'">'+{pilot:"Pilot",demo:"Demo",commercial:"Commercial"}[r.deploymentType]+'</span>':"—"}</td>
+      <td class="cage">${r.created?(()=>{const d=daysSince(r.created);return d===0?"Today":d+"d";})():"-"}</td>
+      <td class="cdep">${r.deploymentType?'<span class="deploy-pill '+r.deploymentType+'">'+{pilot:"Pilot",demo:"Demo",commercial:"Commercial"}[r.deploymentType]+'</span>':"-"}</td>
       <td class="cfu">${(()=>{
-        if(!r.followUpDate) return '<span class="fu-ok">—</span>';
+        if(!r.followUpDate) return '<span class="fu-ok">-</span>';
         const d=Math.round((new Date(r.followUpDate+"T00:00:00")-Date.now())/86400000);
         if(d<0) return '<span class="fu-overdue">'+Math.abs(d)+'d overdue</span>';
         if(d<=7) return '<span class="fu-soon">In '+d+'d</span>';
@@ -1468,6 +1474,7 @@ function renderTable(){
       })()}</td>
       <td class="ca">
         <div class="raction">
+          ${r.stage!=="won"&&r.stage!=="lost"?`<button class="ib win" onclick="markWon(${r.id})" title="Mark as Won"><i class="ti ti-trophy"></i></button><button class="ib del" onclick="markLost(${r.id})" title="Mark as Lost"><i class="ti ti-flag-x"></i></button>`:""}
           <button class="ib" onclick="openModal(${r.id})" title="Edit"><i class="ti ti-edit"></i></button>
           <button class="ib del" onclick="delRow(${r.id})" title="Delete"><i class="ti ti-trash"></i></button>
         </div>
@@ -1678,7 +1685,7 @@ function renderDash(){
     '</div>'
   ).join("");
 
-  // ── Deal momentum — stuck deals ─────────────────
+  // ── Deal momentum - stuck deals ─────────────────
   const stuck = active.filter(r=>r.stageChanged&&daysSince(r.stageChanged)>60);
 
   // ── Deployment type breakdown ────────────────────
@@ -1744,7 +1751,7 @@ function renderDash(){
     <div class="briefing-icon"><i class="ti ti-sun-high"></i></div>
     <div>
       <div class="briefing-title">${greeting}. Here is your pipeline summary.</div>
-      <div class="briefing-body">${briefText}${active.length>0?" You have <b>"+active.length+" active project"+(active.length!==1?"s":"")+"</b> with <b>"+(fmtMoney(pipe+estMid,true)||"—")+"</b> total pipeline exposure.":""}</div>
+      <div class="briefing-body">${briefText}${active.length>0?" You have <b>"+active.length+" active project"+(active.length!==1?"s":"")+"</b> with <b>"+(fmtMoney(pipe+estMid,true)||"-")+"</b> total pipeline exposure.":""}</div>
     </div>
   </div>
 
@@ -1755,17 +1762,17 @@ function renderDash(){
   <div class="kgrid k4 gap">
     <div class="kc tb">
       <div class="klbl"><i class="ti ti-currency-dollar"></i>Confirmed pipeline</div>
-      <div class="kval cb sm">${pipe?fmtMoney(pipe,true):"—"}</div>
+      <div class="kval cb sm">${pipe?fmtMoney(pipe,true):"-"}</div>
       <div class="ksub">Known contract value</div>
     </div>
     <div class="kc" style="border-top:2px solid var(--lime)">
       <div class="klbl"><i class="ti ti-calculator"></i>Weighted pipeline</div>
-      <div class="kval sm" style="color:var(--lime)">${totalWeighted?fmtMoney(totalWeighted,true):"—"}</div>
+      <div class="kval sm" style="color:var(--lime)">${totalWeighted?fmtMoney(totalWeighted,true):"-"}</div>
       <div class="ksub">Probability-adjusted</div>
     </div>
     <div class="kc ta">
       <div class="klbl"><i class="ti ti-chart-line"></i>Est. upside</div>
-      <div class="kval ca sm">${estMid?fmtMoney(estMid,true):"—"}</div>
+      <div class="kval ca sm">${estMid?fmtMoney(estMid,true):"-"}</div>
       <div class="ksub">TBD deals mid-range</div>
     </div>
     <div class="kc tg gg">
@@ -1780,7 +1787,7 @@ function renderDash(){
     <div class="kc tb">
       <div class="klbl"><i class="ti ti-percentage"></i>Pipeline coverage ratio</div>
       <div style="display:flex;align-items:baseline;gap:12px;margin:6px 0 8px">
-        <div class="kval sm" style="color:${coverageCol}">${coverageRatio!==null?coverageRatio.toFixed(1)+"x":"—"}</div>
+        <div class="kval sm" style="color:${coverageCol}">${coverageRatio!==null?coverageRatio.toFixed(1)+"x":"-"}</div>
         <div style="font-size:12px;font-weight:600;padding:2px 8px;border-radius:20px;background:${coverageColDim};color:${coverageCol};border:1px solid ${coverageCol}44;white-space:nowrap">${coverageRatio===null?"No target":coverageRatio>=3?"Strong":coverageRatio>=1.5?"Adequate":"Low"}</div>
       </div>
       <div class="coverage-bar-wrap" style="margin-bottom:4px">
@@ -1961,6 +1968,30 @@ function renderDash(){
     </div>
   </div>
 
+  <!-- Lost deals and lessons learned -->
+  ${lost.length>0?`
+  <div class="scard gap">
+    <div class="scardtitle">
+      <span>Lost deals and lessons learned</span>
+      <span style="font-family:var(--f-mono);font-size:10px;color:var(--t2)">${lost.length} lost${wr!==null?" / "+wr+"% win rate":""}</span>
+    </div>
+    ${Object.keys(lossCounts).length>0?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+      ${Object.entries(lossCounts).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;padding:3px 9px;border-radius:var(--r1);background:var(--red-a12);color:var(--red);font-weight:600;font-family:var(--f-mono)">${LOSS_LABELS[k]||k}<span style="opacity:.7">${v}</span></span>`).join("")}
+    </div>`:""}
+    <div>${lost.slice().sort((a,b)=>(b.stageChanged||"").localeCompare(a.stageChanged||"")).slice(0,6).map(r=>`
+      <div style="padding:10px 0;border-bottom:1px solid var(--b0)">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:13px;font-weight:500;color:var(--t0);font-family:var(--f-disp)">${r.name}</span>
+          ${r.lossReason?`<span style="font-size:9px;padding:2px 7px;border-radius:var(--r1);background:var(--red-a12);color:var(--red);font-weight:600;font-family:var(--f-mono)">${LOSS_LABELS[r.lossReason]||r.lossReason}</span>`:""}
+          ${r.infraType?`<span class="infra-pill ${r.infraType}">${infraLabel(r.infraType)}</span>`:""}
+          ${r.stageChanged?`<span style="font-size:10px;color:var(--t2);font-family:var(--f-mono);margin-left:auto">${fmtDate(r.stageChanged)}</span>`:""}
+        </div>
+        ${r.lossNotes?`<div style="font-size:12px;color:var(--t1);line-height:1.6;margin-top:5px;padding-left:10px;border-left:2px solid var(--b1)">${r.lossNotes}</div>`:`<div style="font-size:11px;color:var(--t3);font-style:italic;margin-top:4px">No lessons recorded yet. Edit the project to add them.</div>`}
+      </div>`).join("")}
+      ${lost.length>6?`<div style="font-size:11px;color:var(--t2);text-align:center;padding:8px 0;font-family:var(--f-mono)">+${lost.length-6} more in Projects (filter by Closed Lost)</div>`:""}
+    </div>
+  </div>`:""}
+
   <!-- ROW 8: Stuck deals -->
   ${stuck.length>0?`
   <div class="rcard gap">
@@ -2015,7 +2046,7 @@ function renderFunnelInto(targetId){
   const el = document.getElementById(targetId);
   if(!el) return;
 
-  // Active pipeline stages only — won/lost are outcomes shown separately
+  // Active pipeline stages only - won/lost are outcomes shown separately
   const funnelStages = STAGES.filter(s=>s.k!=="won"&&s.k!=="lost");
   const counts = funnelStages.map(s=>rows.filter(r=>r.stage===s.k).length);
   const maxCount = Math.max(...counts, 1);
@@ -2027,7 +2058,7 @@ function renderFunnelInto(targetId){
   const winRate   = totalClosed > 0 ? Math.round(totalWon / totalClosed * 100) : null;
   const lostRate  = totalClosed > 0 ? Math.round(totalLost / totalClosed * 100) : null;
 
-  // Header — remove the "% vs prev. stage" column since it was misleading
+  // Header - remove the "% vs prev. stage" column since it was misleading
   // Replace with a simple "Active" label
   let html = `<div class="funnel-header">
     <div class="fh-stage">Stage</div>
@@ -2042,7 +2073,7 @@ function renderFunnelInto(targetId){
     const cnt    = counts[i];
     const barPct = Math.round(cnt / maxCount * 100);
     // Show each stage's share of total active pipeline
-    const ofTotal = totalActive > 0 ? Math.round(cnt / totalActive * 100) + "%" : "—";
+    const ofTotal = totalActive > 0 ? Math.round(cnt / totalActive * 100) + "%" : "-";
     const ofTotalCol = "var(--t2)";
 
     // Coloured flow arrow between stages
@@ -2097,7 +2128,7 @@ function renderFunnelInto(targetId){
     </div>`;
   });
 
-  // Outcomes section — this is where real win/loss data lives
+  // Outcomes section - this is where real win/loss data lives
   html += `<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--b0)">
     <div style="font-size:10px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px">Deal outcomes (closed deals only)</div>
     <div style="display:flex;gap:8px;margin-bottom:10px">
@@ -2106,14 +2137,14 @@ function renderFunnelInto(targetId){
           <div style="font-size:10px;color:#D4AF37;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px">Closed Won</div>
           <div style="font-family:var(--fm);font-size:20px;font-weight:600;color:#D4AF37">${totalWon}</div>
         </div>
-        <div style="font-family:var(--fm);font-size:22px;font-weight:600;color:#D4AF37;opacity:0.7">${winRate!==null?winRate+"%":"—"}</div>
+        <div style="font-family:var(--fm);font-size:22px;font-weight:600;color:#D4AF37;opacity:0.7">${winRate!==null?winRate+"%":"-"}</div>
       </div>
       <div style="flex:1;background:var(--rdim);border:1px solid rgba(240,80,96,0.2);border-radius:var(--r);padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
         <div>
           <div style="font-size:10px;color:var(--red);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px">Closed Lost</div>
           <div style="font-family:var(--fm);font-size:20px;font-weight:600;color:var(--red)">${totalLost}</div>
         </div>
-        <div style="font-family:var(--fm);font-size:22px;font-weight:600;color:var(--red);opacity:0.7">${lostRate!==null?lostRate+"%":"—"}</div>
+        <div style="font-family:var(--fm);font-size:22px;font-weight:600;color:var(--red);opacity:0.7">${lostRate!==null?lostRate+"%":"-"}</div>
       </div>
     </div>
     ${totalClosed > 0 ? `
@@ -2152,6 +2183,7 @@ function openModal(id=null){
   document.getElementById("finfra").value=r.infraType||"";
   document.getElementById("fdeploytype").value=r.deploymentType||"";
   document.getElementById("flossreason").value=r.lossReason||"";
+  document.getElementById("flossnotes").value=r.lossNotes||"";
   document.getElementById("fnextaction").value=r.nextAction||"";
   document.getElementById("ffollowup").value=r.followUpDate||"";
   document.getElementById("fnote").value=r.note||"";
@@ -2172,7 +2204,7 @@ function saveProject(){
   const existingRow = editId!==null ? rows.find(r=>r.id===editId) : null;
   const newStage = document.getElementById("fst").value;
   const stageChanged = existingRow && existingRow.stage !== newStage ? today : (existingRow?.stageChanged||today);
-  const data={name,owner:document.getElementById("fo").value.trim(),stage:newStage,health:document.getElementById("fh2").value,last:document.getElementById("fl").value,note:document.getElementById("fnote").value.trim(),tbd,value:tbd?null:(parseFloat(document.getElementById("fv").value)||null),estLow:tbd?(parseFloat(document.getElementById("fel").value)||null):null,estHigh:tbd?(parseFloat(document.getElementById("feh").value)||null):null,renewal:document.getElementById("frenewal").value,deadline:document.getElementById("fdeadline").value,created:existingRow?.created||today,stageChanged,infraType:document.getElementById("finfra").value,deploymentType:document.getElementById("fdeploytype").value,lossReason:document.getElementById("flossreason").value,nextAction:document.getElementById("fnextaction").value.trim(),followUpDate:document.getElementById("ffollowup").value};
+  const data={name,owner:document.getElementById("fo").value.trim(),stage:newStage,health:document.getElementById("fh2").value,last:document.getElementById("fl").value,note:document.getElementById("fnote").value.trim(),tbd,value:tbd?null:(parseFloat(document.getElementById("fv").value)||null),estLow:tbd?(parseFloat(document.getElementById("fel").value)||null):null,estHigh:tbd?(parseFloat(document.getElementById("feh").value)||null):null,renewal:document.getElementById("frenewal").value,deadline:document.getElementById("fdeadline").value,created:existingRow?.created||today,stageChanged,infraType:document.getElementById("finfra").value,deploymentType:document.getElementById("fdeploytype").value,lossReason:document.getElementById("flossreason").value,lossNotes:document.getElementById("flossnotes").value.trim(),nextAction:document.getElementById("fnextaction").value.trim(),followUpDate:document.getElementById("ffollowup").value};
   if(editId!==null){
     const i=rows.findIndex(r=>r.id===editId);
     rows[i]={...rows[i],...data};
@@ -2192,6 +2224,25 @@ function delRow(id){
   rows.splice(i,1);
   rows.forEach((r,i)=>r.id=i);
   renderTable();
+}
+
+function markWon(id){
+  const i=rows.findIndex(r=>r.id===id);
+  if(i<0) return;
+  if(!confirm("Mark \""+rows[i].name+"\" as Closed Won?")) return;
+  const today=new Date().toISOString().split("T")[0];
+  rows[i].stage="won";
+  rows[i].stageChanged=today;
+  sheetWrite("update",toRow(rows[i]),i);
+  renderTable();
+}
+
+function markLost(id){
+  // Open the edit modal preset to Lost so reason and lessons can be captured
+  openModal(id);
+  document.getElementById("fst").value="lost";
+  toggleLossReason();
+  setTimeout(()=>{const el=document.getElementById("flossreason");if(el)el.focus();},50);
 }
 // ══════════════════════════════════════════════
 //  LICENSES
@@ -2286,22 +2337,22 @@ function renderLicenses(){
   const data = getLicFiltered();
   const tbody = document.getElementById("lictbody");
   if(!data.length){
-    tbody.innerHTML=`<tr><td colspan="8"><div class="empty"><i class="ti ti-certificate"></i>${licenses.length===0?"No licenses yet — click New license to add one":"No licenses match your filters"}</div></td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="8"><div class="empty"><i class="ti ti-certificate"></i>${licenses.length===0?"No licenses yet - click New license to add one":"No licenses match your filters"}</div></td></tr>`;
     return;
   }
   tbody.innerHTML = data.map(l=>{
     const alert = dateAlert(l.expiry);
     const expiryHtml = alert
       ? `<span class="dl-tag ${alert.cls==="ok"?"":""+alert.cls}">${fmtDate(l.expiry)}</span>`
-      : `<span style="color:var(--t2);font-size:12px">—</span>`;
-    const notePreview = l.note?(l.note.length>28?l.note.slice(0,28)+"…":l.note):"—";
+      : `<span style="color:var(--t2);font-size:12px">-</span>`;
+    const notePreview = l.note?(l.note.length>28?l.note.slice(0,28)+"…":l.note):"-";
     return `<tr>
       <td><span class="cname">${l.name}</span></td>
       <td><span class="lic-type">${l.type}</span></td>
-      <td style="color:var(--t1)">${l.company||"—"}</td>
+      <td style="color:var(--t1)">${l.company||"-"}</td>
       <td><span class="lic-status ${l.status}">${l.status[0].toUpperCase()+l.status.slice(1)}</span></td>
       <td>${expiryHtml}</td>
-      <td><span class="vk">${l.cost?"$"+Number(l.cost).toLocaleString():"—"}</span></td>
+      <td><span class="vk">${l.cost?"$"+Number(l.cost).toLocaleString():"-"}</span></td>
       <td class="nt" title="${l.note||""}">${notePreview}</td>
       <td><div class="raction">
         <button class="ib" onclick="openLicModal(${l.id})" title="Edit"><i class="ti ti-edit"></i></button>
@@ -2373,7 +2424,7 @@ function renderLicDash(){
   const maxType   = Math.max(...Object.values(byType),1);
   const typeColors= {Software:"#5090ff",Hardware:"#30d0d0",Regulatory:"#a070f0",Compliance:"#f0b030",Operational:"#30d090",Other:"#4A6280"};
 
-  // Expiry tier buckets — only active/expiring licenses with an expiry date
+  // Expiry tier buckets - only active/expiring licenses with an expiry date
   function daysToExpiry(l){
     if(!l.expiry) return null;
     return Math.round((new Date(l.expiry+"T00:00:00") - Date.now()) / 86400000);
@@ -2429,7 +2480,7 @@ function renderLicDash(){
   <div class="pg-date">${_licDate}</div>
   
 
-    ${(tier30.length>0||expired.length>0)?`<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--r2);margin-bottom:14px;background:rgba(240,80,96,0.09);border:1px solid rgba(240,80,96,0.28);color:#f08090;font-size:13px;animation:tierpulse 2.5s ease-in-out infinite"><i class="ti ti-bell-ringing" style="font-size:18px;flex-shrink:0"></i><span><strong style="color:var(--red)">${tier30.length+expired.length} license${tier30.length+expired.length!==1?"s":""}</strong> require immediate attention — expiring within 30 days or already expired.</span></div>`:""}
+    ${(tier30.length>0||expired.length>0)?`<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:var(--r2);margin-bottom:14px;background:rgba(240,80,96,0.09);border:1px solid rgba(240,80,96,0.28);color:#f08090;font-size:13px;animation:tierpulse 2.5s ease-in-out infinite"><i class="ti ti-bell-ringing" style="font-size:18px;flex-shrink:0"></i><span><strong style="color:var(--red)">${tier30.length+expired.length} license${tier30.length+expired.length!==1?"s":""}</strong> require immediate attention - expiring within 30 days or already expired.</span></div>`:""}
 
     <div class="dgrid r4">
       <div class="kc ta ga">
@@ -2444,7 +2495,7 @@ function renderLicDash(){
       </div>
       <div class="kc tb">
         <div class="klbl"><i class="ti ti-currency-dollar"></i>License Revenue</div>
-        <div class="kval cb sm">${totalCost?"$"+Math.round(totalCost).toLocaleString():"—"}</div>
+        <div class="kval cb sm">${totalCost?"$"+Math.round(totalCost).toLocaleString():"-"}</div>
         <div class="ksub">all licenses</div>
       </div>
       <div class="kc ${expired.length>0?"tr gr":"tg"}">
@@ -2483,9 +2534,9 @@ function renderLicDash(){
             </div>
             <div class="expiry-items">${expired.map(l=>`<div class="expiry-item"><div class="expiry-item-left"><div class="expiry-item-name">${l.name}</div><div class="expiry-item-meta">${l.type}${l.company?" &middot; "+l.company:""}</div></div><div class="expiry-item-right"><div class="expiry-days" style="color:var(--red)">Expired</div><div class="expiry-date">${fmtDate(l.expiry)}</div>${l.cost?`<div class="expiry-cost">$${Number(l.cost).toLocaleString()}</div>`:""}</div></div>`).join("")}</div>
           </div>`:""}
-          ${tierHTML("t30","t30","ti-flame","Critical — Expiring within 30 days",tier30,tierCost30)}
-          ${tierHTML("t90","t90","ti-clock-exclamation","Warning — Expiring within 90 days",tier90,tierCost90)}
-          ${tierHTML("t180","t180","ti-clock","Upcoming — Expiring within 180 days",tier180,tierCost180)}`
+          ${tierHTML("t30","t30","ti-flame","Critical - Expiring within 30 days",tier30,tierCost30)}
+          ${tierHTML("t90","t90","ti-clock-exclamation","Warning - Expiring within 90 days",tier90,tierCost90)}
+          ${tierHTML("t180","t180","ti-clock","Upcoming - Expiring within 180 days",tier180,tierCost180)}`
       }
     </div>
 
@@ -2584,12 +2635,12 @@ function renderBoard(){
         <div class="board-logo"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
         <div>
           <div class="board-co">KMX Technologies</div>
-          <div class="board-tagline">Infrastructure Pipeline — Board Summary</div>
+          <div class="board-tagline">Infrastructure Pipeline / Board Summary</div>
         </div>
       </div>
       <div class="board-meta">
         <div class="board-date">${new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"})}</div>
-        <div class="board-prepared">Confidential — For board use only</div>
+        <div class="board-prepared">Confidential / For board use only</div>
         <div class="board-export-row">
           <button class="board-export-btn" id="export-btn" onclick="doPrint()"><i class="ti ti-file-type-pdf" id="export-icon"></i><span id="export-label">Download PDF</span></button>
           <!-- theme toggle now in topbar -->
@@ -2608,7 +2659,7 @@ function renderBoard(){
         </div>
         <div class="bhc blue">
           <div class="bhc-label">Confirmed Pipeline</div>
-          <div class="bhc-val blue">${pipe?fmtMoney(pipe,true):"—"}</div>
+          <div class="bhc-val blue">${pipe?fmtMoney(pipe,true):"-"}</div>
           <div class="bhc-sub">Contracted value only</div>
         </div>
         <div class="bhc gold">
@@ -2618,14 +2669,14 @@ function renderBoard(){
         </div>
         <div class="bhc ${wr!==null?(wr>=50?"green":"red"):"purple"}">
           <div class="bhc-label">Win Rate</div>
-          <div class="bhc-val ${wr!==null?(wr>=50?"green":"red"):"purple"}">${wr!==null?wr+"%":"—"}</div>
+          <div class="bhc-val ${wr!==null?(wr>=50?"green":"red"):"purple"}">${wr!==null?wr+"%":"-"}</div>
           <div class="bhc-sub">${won.length} won · ${lost.length} lost</div>
         </div>
       </div>
       <div class="board-hero" style="margin-bottom:0">
         <div class="bhc green">
           <div class="bhc-label">Est. Upside</div>
-          <div class="bhc-val green">${estMid?fmtMoney(estMid,true):"—"}</div>
+          <div class="bhc-val green">${estMid?fmtMoney(estMid,true):"-"}</div>
           <div class="bhc-sub">Mid-range estimate</div>
         </div>
         <div class="bhc ${reds>0?"red":"green"}">
@@ -2714,13 +2765,13 @@ function renderBoard(){
                 const rng=fmtRange(r);
                 return `<tr>
                   <td class="td-name">${r.name}</td>
-                  <td style="color:var(--t1)">${r.owner||"—"}</td>
+                  <td style="color:var(--t1)">${r.owner||"-"}</td>
                   <td><span class="sp ${r.stage}">${s.l}</span></td>
                   <td><span class="hb"><span class="hd ${r.health}"></span>${r.health[0].toUpperCase()+r.health.slice(1)}</span></td>
                   <td class="td-val">${v||'<span style="color:var(--t2);font-style:italic">TBD</span>'}</td>
-                  <td class="td-val" style="color:var(--t2)">${r.tbd?(rng||"—"):"—"}</td>
+                  <td class="td-val" style="color:var(--t2)">${r.tbd?(rng||"-"):"-"}</td>
                   <td style="color:var(--t1);font-size:12px">${fmtDate(r.last)}</td>
-                  <td class="td-note">${r.note||"—"}</td>
+                  <td class="td-note">${r.note||"-"}</td>
                 </tr>`;
               }).join("")
             }
@@ -2740,7 +2791,7 @@ function renderBoard(){
     <!-- License summary -->
     <div class="board-section">
       <div class="board-section-title"><i class="ti ti-certificate"></i>License Portfolio</div>
-      ${expiredLic.length>0||expiringLic.length>0?`<div class="board-lic-alert"><i class="ti ti-bell-ringing"></i><span><strong style="color:var(--red)">${expiredLic.length+expiringLic.length} license${expiredLic.length+expiringLic.length!==1?"s":""}</strong> require attention — ${expiredLic.length} expired, ${expiringLic.length} expiring soon.</span></div>`:""}
+      ${expiredLic.length>0||expiringLic.length>0?`<div class="board-lic-alert"><i class="ti ti-bell-ringing"></i><span><strong style="color:var(--red)">${expiredLic.length+expiringLic.length} license${expiredLic.length+expiringLic.length!==1?"s":""}</strong> require attention - ${expiredLic.length} expired, ${expiringLic.length} expiring soon.</span></div>`:""}
       <div class="board-lic-grid">
         <div class="bhc accent">
           <div class="bhc-label">Total Licenses</div>
@@ -2759,7 +2810,7 @@ function renderBoard(){
         </div>
         <div class="bhc blue">
           <div class="bhc-label">License Revenue</div>
-          <div class="bhc-val blue sm">${totalLicCost?fmtMoney(totalLicCost,true):"—"}</div>
+          <div class="bhc-val blue sm">${totalLicCost?fmtMoney(totalLicCost,true):"-"}</div>
           <div class="bhc-sub">recurring &amp; one-time fees</div>
         </div>
       </div>
@@ -2844,7 +2895,7 @@ async function doPrint(){
       format: [targetWidthMm, contentHeightMm]
     });
 
-    // Place the full canvas image on the single page — no slicing, no pagination
+    // Place the full canvas image on the single page - no slicing, no pagination
     const imgData = canvas.toDataURL("image/jpeg", 0.95);
     pdf.addImage(imgData, "JPEG", 0, 0, targetWidthMm, contentHeightMm);
 
@@ -2853,7 +2904,7 @@ async function doPrint(){
 
   } catch(err) {
     console.error("PDF export error:", err);
-    alert("PDF export failed — please try again.");
+    alert("PDF export failed - please try again.");
   }
 
   btn.disabled = false;
@@ -2867,7 +2918,7 @@ function renderMobileProjects(data){
   const el = document.getElementById("mob-projects");
   if(!el) return;
   if(!data.length){
-    el.innerHTML = `<div class="empty"><i class="ti ti-building-factory-2"></i>${rows.length===0?"No projects yet — tap New project to add one":"No projects match your filters"}</div>`;
+    el.innerHTML = `<div class="empty"><i class="ti ti-building-factory-2"></i>${rows.length===0?"No projects yet - tap New project to add one":"No projects match your filters"}</div>`;
     return;
   }
   el.innerHTML = data.map(r=>{
@@ -2891,7 +2942,7 @@ function renderMobileProjects(data){
       <div class="mob-card-grid">
         <div class="mob-card-field">
           <span class="mob-card-field-label">Owner</span>
-          <span class="mob-card-field-val">${r.owner||"—"}</span>
+          <span class="mob-card-field-val">${r.owner||"-"}</span>
         </div>
         <div class="mob-card-field">
           <span class="mob-card-field-label">Contract</span>
@@ -2899,11 +2950,11 @@ function renderMobileProjects(data){
         </div>
         <div class="mob-card-field">
           <span class="mob-card-field-label">Sector</span>
-          <span class="mob-card-field-val">${r.infraType?infraLabel(r.infraType):"—"}</span>
+          <span class="mob-card-field-val">${r.infraType?infraLabel(r.infraType):"-"}</span>
         </div>
         <div class="mob-card-field">
           <span class="mob-card-field-label">Deal age</span>
-          <span class="mob-card-field-val">${r.created?(daysSince(r.created)===0?"Today":daysSince(r.created)+"d"):"—"}</span>
+          <span class="mob-card-field-val">${r.created?(daysSince(r.created)===0?"Today":daysSince(r.created)+"d"):"-"}</span>
         </div>
         <div class="mob-card-field">
           <span class="mob-card-field-label">Last contact</span>
@@ -2911,7 +2962,7 @@ function renderMobileProjects(data){
         </div>
         <div class="mob-card-field">
           <span class="mob-card-field-label">Follow-up</span>
-          <span class="mob-card-field-val">${r.followUpDate?fmtDate(r.followUpDate):"—"}</span>
+          <span class="mob-card-field-val">${r.followUpDate?fmtDate(r.followUpDate):"-"}</span>
         </div>
       </div>
       ${ra&&ra.cls!=="ok"?`<div class="mob-card-dl"><span class="dl-tag ${ra.cls}"><i class="ti ti-refresh" style="font-size:9px"></i>Renewal: ${ra.label}</span></div>`:""}
@@ -2925,7 +2976,7 @@ function renderMobileLicenses(data){
   const el = document.getElementById("mob-licenses");
   if(!el) return;
   if(!data.length){
-    el.innerHTML = `<div class="empty"><i class="ti ti-certificate"></i>${licenses.length===0?"No licenses yet — tap New license to add one":"No licenses match your filters"}</div>`;
+    el.innerHTML = `<div class="empty"><i class="ti ti-certificate"></i>${licenses.length===0?"No licenses yet - tap New license to add one":"No licenses match your filters"}</div>`;
     return;
   }
   el.innerHTML = data.map(l=>{
@@ -2945,15 +2996,15 @@ function renderMobileLicenses(data){
       <div class="mob-card-grid">
         <div class="mob-card-field">
           <span class="mob-card-field-label">Assigned to</span>
-          <span class="mob-card-field-val">${l.company||"—"}</span>
+          <span class="mob-card-field-val">${l.company||"-"}</span>
         </div>
         <div class="mob-card-field">
           <span class="mob-card-field-label">Revenue</span>
-          <span class="mob-card-field-val">${l.cost?"$"+Number(l.cost).toLocaleString():"—"}</span>
+          <span class="mob-card-field-val">${l.cost?"$"+Number(l.cost).toLocaleString():"-"}</span>
         </div>
         <div class="mob-card-field">
           <span class="mob-card-field-label">Expiry</span>
-          <span class="mob-card-field-val ${alert&&alert.cls!=="ok"?alert.cls:""}">${l.expiry?fmtDate(l.expiry):"—"}</span>
+          <span class="mob-card-field-val ${alert&&alert.cls!=="ok"?alert.cls:""}">${l.expiry?fmtDate(l.expiry):"-"}</span>
         </div>
         <div class="mob-card-field">
           <span class="mob-card-field-label">Status</span>
@@ -2971,7 +3022,7 @@ function renderMobileLicenses(data){
 
 <script>
 // SHELL WIRING
-// Boot immediately — password handled by Netlify
+// Boot immediately - password handled by Netlify
 document.addEventListener("DOMContentLoaded", () => boot());
 
 document.getElementById("date-tag").textContent =
@@ -3032,7 +3083,7 @@ async function doPrint() {
     });
     pdf.addImage(canvas.toDataURL("image/jpeg",.95),"JPEG",0,0,W,H);
     pdf.save("KMX-Board-Pack-" + new Date().toLocaleDateString("en-GB").replace(/\//g,"-") + ".pdf");
-  } catch(e) { console.error(e); alert("PDF export failed — try again."); }
+  } catch(e) { console.error(e); alert("PDF export failed - try again."); }
   btn.disabled = false;
   icon.className = "ti ti-file-type-pdf";
   icon.style.animation = "";
