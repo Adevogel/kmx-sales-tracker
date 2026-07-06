@@ -10,6 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <style>
 /* ═══════════════════════════════════════════
    KMX TECHNOLOGIES - DESIGN SYSTEM v3
@@ -1050,7 +1051,7 @@ body.light-theme .kb-card{background:var(--s2)}
       <option value="red">🔴 Red</option>
     </select>
     <select class="sel" id="fs"></select>
-    <button class="btn" onclick="exportCSV()" title="Export filtered view to CSV"><i class="ti ti-download"></i>CSV</button>
+    <button class="btn" onclick="exportExcel()" title="Export filtered view as formatted Excel"><i class="ti ti-file-spreadsheet"></i>Excel</button>
   </div>
   <div class="tbl-card">
     <table>
@@ -2314,6 +2315,78 @@ function dupRow(id){
   rows.push(copy);
   sheetWrite("append",toRow(copy),null);
   renderTable();
+}
+
+async function exportExcel(){
+  if(typeof ExcelJS==="undefined"){exportCSV();return;}
+  const q=document.getElementById("search").value.toLowerCase();
+  const fhv=document.getElementById("fh").value;
+  const fsv=document.getElementById("fs").value;
+  const list=rows.filter(r=>(!q||r.name.toLowerCase().includes(q)||(r.owner||"").toLowerCase().includes(q))&&(!fhv||r.health===fhv)&&(!fsv||r.stage===fsv));
+  const wb=new ExcelJS.Workbook();
+  wb.creator="KMX Technologies";
+  const ws=wb.addWorksheet("Pipeline",{views:[{state:"frozen",ySplit:4}]});
+  const NAVY="FF0A1628", AQUA="FF0898A0", GREY="FF6A7A8E", ZEBRA="FFF2F7FB", LINE="FFD5E0EA";
+  const STG_HEX={prospect:"FF4A6280",scoping:"FF1862B8",proposal:"FF5040B0",lab:"FF8A5A00",demo:"FFA04878",negotiation:"FF0878A0",won:"FF0A7A50",lost:"FFB83030"};
+  const HP_HEX={green:"FF0A7A50",yellow:"FF8A5A00",red:"FFB83030"};
+  const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):"";
+  const heads=["Company","Owner","Contact","Email","Phone","Stage","Health","Deployment","Value ($)","Est Low ($)","Est High ($)","Last Contact","Follow-up","Next Action","Deadline","Renewal","Sector","Created","Stage Changed","Loss Reason","Lessons Learned","Notes"];
+  const widths=[28,14,18,24,15,13,10,13,13,12,12,12,12,28,12,12,16,12,13,13,38,38];
+  ws.columns=widths.map(w=>({width:w}));
+  ws.mergeCells(1,1,1,6);
+  const t1=ws.getCell(1,1);
+  t1.value="KMX Technologies";
+  t1.font={name:"Arial",size:14,bold:true,color:{argb:NAVY}};
+  ws.mergeCells(2,1,2,8);
+  const t2=ws.getCell(2,1);
+  t2.value="Pipeline export / "+new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})+" / "+list.length+" project"+(list.length!==1?"s":"");
+  t2.font={name:"Arial",size:9,color:{argb:GREY}};
+  const hr=ws.getRow(4);
+  heads.forEach((h,i)=>{
+    const cell=hr.getCell(i+1);
+    cell.value=h;
+    cell.font={name:"Arial",size:9,bold:true,color:{argb:"FFFFFFFF"}};
+    cell.fill={type:"pattern",pattern:"solid",fgColor:{argb:NAVY}};
+    cell.alignment={vertical:"middle",horizontal:i>=8&&i<=10?"right":"left"};
+    cell.border={bottom:{style:"medium",color:{argb:AQUA}}};
+  });
+  hr.height=20;
+  const MONEY='$#,##0;($#,##0);"-"';
+  list.forEach((r,ri)=>{
+    const row=ws.getRow(5+ri);
+    const vals=[r.name,r.owner||"",r.contactName||"",r.contactEmail||"",r.contactPhone||"",cap(r.stage),cap(r.health),cap(r.deploymentType||""),r.tbd?null:(r.value||null),r.tbd?(r.estLow||null):null,r.tbd?(r.estHigh||null):null,r.last||"",r.followUpDate||"",r.nextAction||"",r.deadline||"",r.renewal||"",r.infraType?infraLabel(r.infraType):"",r.created||"",r.stageChanged||"",r.lossReason||"",r.lossNotes||"",r.note||""];
+    vals.forEach((v,ci)=>{
+      const cell=row.getCell(ci+1);
+      cell.value=v;
+      cell.font={name:"Arial",size:10};
+      if(ri%2===1) cell.fill={type:"pattern",pattern:"solid",fgColor:{argb:ZEBRA}};
+      cell.border={bottom:{style:"hair",color:{argb:LINE}}};
+      if(ci>=8&&ci<=10){cell.numFmt=MONEY;cell.alignment={horizontal:"right"};}
+      if(ci===5&&r.stage) cell.font={name:"Arial",size:10,bold:true,color:{argb:STG_HEX[r.stage]||NAVY}};
+      if(ci===6&&r.health) cell.font={name:"Arial",size:10,bold:true,color:{argb:HP_HEX[r.health]||NAVY}};
+      if(ci===20||ci===21) cell.alignment={wrapText:true,vertical:"top"};
+    });
+  });
+  const totRow=ws.getRow(5+list.length);
+  const totLbl=totRow.getCell(8);
+  totLbl.value="Total";
+  totLbl.font={name:"Arial",size:10,bold:true,color:{argb:NAVY}};
+  ["I","J","K"].forEach(col=>{
+    const cell=totRow.getCell(col.charCodeAt(0)-64);
+    cell.value=list.length?{formula:"SUM("+col+"5:"+col+(4+list.length)+")"}:0;
+    cell.numFmt=MONEY;
+    cell.font={name:"Arial",size:10,bold:true,color:{argb:NAVY}};
+    cell.border={top:{style:"thin",color:{argb:NAVY}}};
+    cell.alignment={horizontal:"right"};
+  });
+  ws.autoFilter={from:{row:4,column:1},to:{row:4,column:heads.length}};
+  const buf=await wb.xlsx.writeBuffer();
+  const blob=new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="kmx-pipeline-"+new Date().toISOString().split("T")[0]+".xlsx";
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 function exportCSV(){
