@@ -553,15 +553,14 @@ body.light-theme .expiry-item{background:rgba(0,0,0,.02);border-color:var(--b0)}
 
 /* ── RESPONSIVE ────────────────────────── */
 @media(max-width:680px){
-  .nav{height:48px;padding:0 14px;overflow-x:auto;scrollbar-width:none}
-  .nav::-webkit-scrollbar{display:none}
-  .nav-name{display:none}
-  .ni-lbl{display:none}
-  .ni{padding:0 10px;height:32px}
-  .nav-divider{margin:0 4px}
+  .nav{height:48px;padding:0 14px;flex-direction:row;align-items:center}
+  .nav-name{display:inline}
+  .nav-divider{display:none}
+  .nav-foot{margin-left:auto;padding:0;border:none}
   .main{margin-top:48px}
-  .mob-tabs{display:none}
-  .pg{padding:16px 14px 90px}
+  .nav-body{display:none}
+  .nav-foot-mobile-keep{display:flex}
+  .pg{padding:16px 14px 96px}
   .topbar{padding:0 14px}
   .mob-tabs{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(7,9,13,.97);backdrop-filter:blur(16px);border-top:1px solid var(--b0);padding:6px 4px calc(6px + env(safe-area-inset-bottom)) 4px}
   .mob-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px 4px;border:none;background:none;color:var(--t3);cursor:pointer;font-family:var(--f-mono);font-size:9px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;transition:color .15s;border-radius:var(--r1)}
@@ -618,6 +617,16 @@ body.light-theme .expiry-item{background:rgba(0,0,0,.02);border-color:var(--b0)}
   .topbar-crumb,.topbar-sep,.topbar-date{display:none}
   /* Coverage bar */
   .coverage-bar-wrap{height:6px}
+  /* Undo toast clears the bottom tab bar */
+  #undo-toast{bottom:calc(84px + env(safe-area-inset-bottom))}
+  /* New Project button icon-only in topbar */
+  #header-new-btn{font-size:0;padding:0 10px;gap:0}
+  #header-new-btn i{font-size:16px}
+  .theme-toggle-btn .theme-label{display:none}
+  .theme-toggle-btn{padding:0 10px}
+  /* Deployment mini tiles stay 3 across */
+  .scard .kgrid.k3{grid-template-columns:repeat(3,1fr);gap:6px}
+  /* Kanban page hidden from mobile nav; page itself still renders if opened on tablet */
 }
 @media(min-width:681px){.mob-tabs{display:none}}
 @media(min-width:681px) and (max-width:1024px){
@@ -1000,8 +1009,8 @@ body.light-theme .kb-card{background:var(--s2)}
   <div class="nav-divider"></div>
   <div class="nav-body">
     <button class="ni on" id="tab-projects" onclick="showPage('projects')"><i class="ti ti-table"></i><span class="ni-lbl">Projects</span></button>
-    <button class="ni" id="tab-dash" onclick="showPage('dash')"><i class="ti ti-layout-dashboard"></i><span class="ni-lbl">Dashboard</span></button>
     <button class="ni" id="tab-kanban" onclick="showPage('kanban')"><i class="ti ti-layout-kanban"></i><span class="ni-lbl">Kanban</span></button>
+    <button class="ni" id="tab-dash" onclick="showPage('dash')"><i class="ti ti-layout-dashboard"></i><span class="ni-lbl">Dashboard</span></button>
     <div class="nav-divider"></div>
     <button class="ni" id="tab-licenses" onclick="showPage('licenses')"><i class="ti ti-certificate"></i><span class="ni-lbl">Licenses</span></button>
     <button class="ni" id="tab-licdash" onclick="showPage('licdash')"><i class="ti ti-chart-pie"></i><span class="ni-lbl">Analytics</span></button>
@@ -1973,7 +1982,7 @@ function renderDash(){
       <div class="scardtitle">Owner performance</div>
       ${owners.length===0
         ?`<div class="nodata">No owner data yet</div>`
-        :`<table class="owner-table">
+        :`<div class="owner-table-wrap"><table class="owner-table">
           <thead><tr>
             <th>Owner</th>
             <th class="num">Active</th>
@@ -3135,16 +3144,23 @@ function renderMobileProjects(data){
       <div class="mob-card-top">
         <div class="mob-card-name">${r.name}</div>
         <div class="mob-card-actions">
+          ${r.stage!=="won"&&r.stage!=="lost"?`<button class="ib win" onclick="markWon(${r.id})" title="Mark Won"><i class="ti ti-trophy"></i></button><button class="ib del" onclick="markLost(${r.id})" title="Mark Lost"><i class="ti ti-flag-x"></i></button>`:""}
           <button class="ib" onclick="logActivity(${r.id})" title="Log activity"><i class="ti ti-message-plus"></i></button>
           <button class="ib" onclick="openModal(${r.id})" title="Edit"><i class="ti ti-edit"></i></button>
-          <button class="ib" onclick="dupRow(${r.id})" title="Duplicate"><i class="ti ti-copy"></i></button>
           <button class="ib del" onclick="delRow(${r.id})" title="Delete"><i class="ti ti-trash"></i></button>
         </div>
       </div>
       <div class="mob-card-pills">
         <span class="sp ${r.stage}">${s.l}</span>
         <span class="hb"><span class="hd ${r.health}"></span>${r.health[0].toUpperCase()+r.health.slice(1)}</span>
+        ${r.deploymentType?`<span class="deploy-pill ${r.deploymentType}">${{pilot:"Pilot",demo:"Demo",commercial:"Commercial"}[r.deploymentType]}</span>`:""}
       </div>
+      ${r.contactName||r.contactPhone||r.contactEmail?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 10px;background:var(--s0);border-radius:var(--r2)">
+        <i class="ti ti-user" style="color:var(--t2);font-size:14px"></i>
+        <span style="flex:1;font-size:12px;color:var(--t1);font-family:var(--f-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.contactName||"Contact"}</span>
+        ${r.contactPhone?`<a href="tel:${r.contactPhone}" class="ib" style="color:var(--green)" title="Call"><i class="ti ti-phone"></i></a>`:""}
+        ${r.contactEmail?`<a href="mailto:${r.contactEmail}" class="ib" style="color:var(--blue)" title="Email"><i class="ti ti-mail"></i></a>`:""}
+      </div>`:""}
       <div class="mob-card-grid">
         <div class="mob-card-field">
           <span class="mob-card-field-label">Owner</span>
