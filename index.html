@@ -964,6 +964,25 @@ body.light-theme .lock-footer{color:var(--t3)}
 body.light-theme .deploy-pill.pilot{background:rgba(80,64,176,.08);color:#5040B0}
 body.light-theme .deploy-pill.demo{background:rgba(138,90,0,.08);color:#8A5A00}
 body.light-theme .deploy-pill.commercial{background:rgba(10,122,80,.08);color:#0A7A50}
+
+/* Kanban board */
+.kb-wrap{display:flex;gap:10px;overflow-x:auto;padding-bottom:16px;align-items:flex-start;-webkit-overflow-scrolling:touch}
+.kb-col{flex:0 0 240px;background:var(--s1);border:1px solid var(--b0);border-radius:var(--r3);padding:10px;min-height:120px;transition:border-color .15s,background .15s}
+.kb-col.drop-ok{border-color:var(--lime);background:var(--lime-a10)}
+.kb-col-hdr{display:flex;align-items:center;justify-content:space-between;padding:2px 4px 10px;font-family:var(--f-mono);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.kb-count{font-size:10px;padding:1px 7px;border-radius:10px;background:var(--s0);color:var(--t2)}
+.kb-card{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r2);padding:10px;margin-bottom:8px;cursor:grab;transition:border-color .12s,transform .12s,box-shadow .12s}
+.kb-card:hover{border-color:var(--b2)}
+.kb-card.dragging{opacity:.4}
+.kb-card.selected{border-color:var(--lime);box-shadow:0 0 0 2px var(--lime-a30)}
+.kb-name{font-size:13px;font-weight:600;color:var(--t0);font-family:var(--f-disp);margin-bottom:4px;line-height:1.3}
+.kb-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:10px;color:var(--t2);font-family:var(--f-mono)}
+.kb-val{font-family:var(--f-mono);font-size:11px;font-weight:600;color:var(--t1);margin-top:5px}
+.kb-hint{font-size:11px;color:var(--t2);font-family:var(--f-mono);margin-bottom:12px}
+.kb-empty{font-size:10px;color:var(--t3);text-align:center;padding:14px 0;font-family:var(--f-mono)}
+body.light-theme .kb-col{background:#FFFFFF}
+body.light-theme .kb-card{background:var(--s2)}
+@media(max-width:680px){.kb-col{flex:0 0 200px}}
 </style>
 </head>
 <body>
@@ -982,6 +1001,7 @@ body.light-theme .deploy-pill.commercial{background:rgba(10,122,80,.08);color:#0
   <div class="nav-body">
     <button class="ni on" id="tab-projects" onclick="showPage('projects')"><i class="ti ti-table"></i><span class="ni-lbl">Projects</span></button>
     <button class="ni" id="tab-dash" onclick="showPage('dash')"><i class="ti ti-layout-dashboard"></i><span class="ni-lbl">Dashboard</span></button>
+    <button class="ni" id="tab-kanban" onclick="showPage('kanban')"><i class="ti ti-layout-kanban"></i><span class="ni-lbl">Kanban</span></button>
     <div class="nav-divider"></div>
     <button class="ni" id="tab-licenses" onclick="showPage('licenses')"><i class="ti ti-certificate"></i><span class="ni-lbl">Licenses</span></button>
     <button class="ni" id="tab-licdash" onclick="showPage('licdash')"><i class="ti ti-chart-pie"></i><span class="ni-lbl">Analytics</span></button>
@@ -1021,6 +1041,7 @@ body.light-theme .deploy-pill.commercial{background:rgba(10,122,80,.08);color:#0
       <option value="red">🔴 Red</option>
     </select>
     <select class="sel" id="fs"></select>
+    <button class="btn" onclick="exportCSV()" title="Export filtered view to CSV"><i class="ti ti-download"></i>CSV</button>
   </div>
   <div class="tbl-card">
     <table>
@@ -1044,6 +1065,9 @@ body.light-theme .deploy-pill.commercial{background:rgba(10,122,80,.08);color:#0
 
 <!-- Pipeline Dashboard -->
 <div class="pg" id="page-dash"></div>
+
+<!-- Kanban -->
+<div class="pg" id="page-kanban"></div>
 
 <!-- License Registry -->
 <div class="pg" id="page-licenses">
@@ -1106,6 +1130,11 @@ body.light-theme .deploy-pill.commercial{background:rgba(10,122,80,.08);color:#0
   <button class="mob-tab" id="mtab-board" onclick="showPage('board')" style="color:var(--lime)"><i class="ti ti-presentation" style="color:var(--lime)"></i>Board</button>
 </div>
 
+<div id="undo-toast" style="display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:700;background:var(--s2);border:1px solid var(--b2);border-radius:var(--r2);padding:10px 14px;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.5)">
+  <span id="undo-msg" style="font-size:13px;color:var(--t0);font-family:var(--f-ui)"></span>
+  <button id="undo-btn" class="btn" style="height:28px;padding:0 12px;color:var(--lime);border-color:var(--lime)">Undo</button>
+</div>
+
 <!-- Project Modal -->
 <div class="mbg" id="mbg" onclick="if(event.target===this)closeModal()">
   <div class="modal">
@@ -1113,6 +1142,9 @@ body.light-theme .deploy-pill.commercial{background:rgba(10,122,80,.08);color:#0
     <div class="mgrid">
       <div class="field full"><label>Company name</label><input id="fn" type="text" placeholder="e.g. Northgate Rail Authority"></div>
       <div class="field"><label>Account owner</label><input id="fo" type="text" placeholder="Your name"></div>
+      <div class="field"><label>Primary contact</label><input id="fcontact" type="text" placeholder="e.g. Jane Rivera"></div>
+      <div class="field"><label>Contact email</label><input id="fcemail" type="email" placeholder="jane@company.com"></div>
+      <div class="field"><label>Contact phone</label><input id="fcphone" type="tel" placeholder="+1 555 000 0000"></div>
       <div class="field"><label>Deal stage</label><select id="fst" onchange="toggleLossReason()"></select></div>
       <div class="field"><label>Health</label>
         <select id="fh2"><option value="green">🟢 Green</option><option value="yellow">🟡 Yellow</option><option value="red">🔴 Red</option></select>
@@ -1163,7 +1195,11 @@ body.light-theme .deploy-pill.commercial{background:rgba(10,122,80,.08);color:#0
           <div class="field"><label>Value ($)</label><input id="fv" type="number" min="0" placeholder="e.g. 2500000"></div>
         </div>
       </div>
-      <div class="field full"><label>Notes</label><textarea id="fnote" placeholder="Infrastructure type, requirements, key contacts…"></textarea></div>
+      <div class="field full"><label>Notes</label><textarea id="fnote" placeholder="Infrastructure type, requirements, key context..."></textarea></div>
+      <div class="field full" id="activity-history-wrap" style="display:none">
+        <label>Activity history</label>
+        <div id="activity-history" style="max-height:140px;overflow-y:auto;background:var(--s0);border:1px solid var(--b0);border-radius:var(--r2);padding:8px 10px"></div>
+      </div>
     </div>
     <div class="mfooter">
       <button class="btn btn-g" onclick="closeModal()">Cancel</button>
@@ -1225,6 +1261,7 @@ let chartInstances = {};
 // ── Boot ──────────────────────────────────────
 async function boot(){
   buildSelects();
+  loadPrefs();
   renderTable();
   await loadSettings();
   syncNow();
@@ -1255,7 +1292,9 @@ function syncNow(){
         created:normaliseDate(r[12]), stageChanged:normaliseDate(r[13]),
         infraType:r[14]||"", lossReason:r[15]||"",
         nextAction:r[16]||"", followUpDate:normaliseDate(r[17]),
-        deploymentType:r[18]||"", lossNotes:r[19]||""
+        deploymentType:r[18]||"", lossNotes:r[19]||"",
+        contactName:r[20]||"", contactEmail:r[21]||"", contactPhone:r[22]||"",
+        activity:(()=>{try{return JSON.parse(r[23])||[];}catch(e){return [];}})()
       }));
       renderTable();
       setSyncState("ok","Synced "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}));
@@ -1273,13 +1312,15 @@ function syncNow(){
 }
 
 // ── Write via GET (no-cors fire-and-forget + resync) ──
+let _resyncT=null;
 function sheetWrite(action,rowData,rowIdx){
   let url=GAS_URL+"?action="+action;
   if(rowData) url+="&row="+encodeURIComponent(JSON.stringify(rowData));
   if(rowIdx!==undefined&&rowIdx!==null) url+="&idx="+rowIdx;
   url+="&t="+Date.now();
   fetch(url,{mode:"no-cors"}).catch(()=>{});
-  setTimeout(syncNow,2000);
+  clearTimeout(_resyncT);
+  _resyncT=setTimeout(syncNow,2500);
 }
 
 // ── Helpers ───────────────────────────────────
@@ -1352,7 +1393,7 @@ function daysSince(d){
   return Math.round((Date.now()-new Date(n+"T00:00:00"))/86400000);
 }
 function toRow(r){
-  return[r.name,r.owner,r.stage,r.health,r.tbd?"TRUE":"FALSE",r.value||"",r.estLow||"",r.estHigh||"",r.last,r.note,r.renewal||"",r.deadline||"",r.created||"",r.stageChanged||"",r.infraType||"",r.lossReason||"",r.nextAction||"",r.followUpDate||"",r.deploymentType||"",r.lossNotes||""];
+  return[r.name,r.owner,r.stage,r.health,r.tbd?"TRUE":"FALSE",r.value||"",r.estLow||"",r.estHigh||"",r.last,r.note,r.renewal||"",r.deadline||"",r.created||"",r.stageChanged||"",r.infraType||"",r.lossReason||"",r.nextAction||"",r.followUpDate||"",r.deploymentType||"",r.lossNotes||"",r.contactName||"",r.contactEmail||"",r.contactPhone||"",JSON.stringify(r.activity||[])];
 }
 
 // Returns {label, cls} for a date: null=none, amber=60days, danger=30days, overdue=past
@@ -1407,6 +1448,7 @@ function showPage(p){
 
   // Render page content
   if(p==="dash") renderDash();
+  if(p==="kanban") renderKanban();
   if(p==="licenses"||p==="licdash") renderLicenses();
   if(p==="licdash") renderLicDash();
   if(p==="board") renderBoard();
@@ -1434,8 +1476,11 @@ function getFiltered(){
     return av<bv?-sd:av>bv?sd:0;
   });
 }
+function savePrefs(){try{localStorage.setItem("kmx_prefs",JSON.stringify({sk,sd,fh:document.getElementById("fh").value,fs:document.getElementById("fs").value}));}catch(e){}}
+function loadPrefs(){try{const p=JSON.parse(localStorage.getItem("kmx_prefs")||"{}");if(p.sk)sk=p.sk;if(p.sd)sd=p.sd;if(p.fh)document.getElementById("fh").value=p.fh;if(p.fs)document.getElementById("fs").value=p.fs;}catch(e){}}
 function doSort(k){if(sk===k)sd*=-1;else{sk=k;sd=1;}renderTable();}
 function renderTable(){
+  try{savePrefs();}catch(e){}
   ["name","owner","stage","health","value","last"].forEach(k=>{
     const el=document.getElementById("si-"+k);
     if(!el) return;
@@ -1475,7 +1520,9 @@ function renderTable(){
       <td class="ca">
         <div class="raction">
           ${r.stage!=="won"&&r.stage!=="lost"?`<button class="ib win" onclick="markWon(${r.id})" title="Mark as Won"><i class="ti ti-trophy"></i></button><button class="ib del" onclick="markLost(${r.id})" title="Mark as Lost"><i class="ti ti-flag-x"></i></button>`:""}
+          <button class="ib" onclick="logActivity(${r.id})" title="Log activity"><i class="ti ti-message-plus"></i></button>
           <button class="ib" onclick="openModal(${r.id})" title="Edit"><i class="ti ti-edit"></i></button>
+          <button class="ib" onclick="dupRow(${r.id})" title="Duplicate"><i class="ti ti-copy"></i></button>
           <button class="ib del" onclick="delRow(${r.id})" title="Delete"><i class="ti ti-trash"></i></button>
         </div>
         ${(()=>{
@@ -2184,6 +2231,16 @@ function openModal(id=null){
   document.getElementById("fdeploytype").value=r.deploymentType||"";
   document.getElementById("flossreason").value=r.lossReason||"";
   document.getElementById("flossnotes").value=r.lossNotes||"";
+  document.getElementById("fcontact").value=r.contactName||"";
+  document.getElementById("fcemail").value=r.contactEmail||"";
+  document.getElementById("fcphone").value=r.contactPhone||"";
+  const ahw=document.getElementById("activity-history-wrap");
+  const ah=document.getElementById("activity-history");
+  const acts=(r.activity||[]).slice().reverse();
+  if(id!==null&&acts.length){
+    ahw.style.display="block";
+    ah.innerHTML=acts.map(a=>'<div style="padding:4px 0;border-bottom:1px solid var(--b0);font-size:12px"><span style="font-family:var(--f-mono);color:var(--t2);margin-right:8px">'+fmtDate(a.d)+'</span><span style="color:var(--t0)">'+a.t+'</span></div>').join("");
+  } else { ahw.style.display="none"; ah.innerHTML=""; }
   document.getElementById("fnextaction").value=r.nextAction||"";
   document.getElementById("ffollowup").value=r.followUpDate||"";
   document.getElementById("fnote").value=r.note||"";
@@ -2204,7 +2261,7 @@ function saveProject(){
   const existingRow = editId!==null ? rows.find(r=>r.id===editId) : null;
   const newStage = document.getElementById("fst").value;
   const stageChanged = existingRow && existingRow.stage !== newStage ? today : (existingRow?.stageChanged||today);
-  const data={name,owner:document.getElementById("fo").value.trim(),stage:newStage,health:document.getElementById("fh2").value,last:document.getElementById("fl").value,note:document.getElementById("fnote").value.trim(),tbd,value:tbd?null:(parseFloat(document.getElementById("fv").value)||null),estLow:tbd?(parseFloat(document.getElementById("fel").value)||null):null,estHigh:tbd?(parseFloat(document.getElementById("feh").value)||null):null,renewal:document.getElementById("frenewal").value,deadline:document.getElementById("fdeadline").value,created:existingRow?.created||today,stageChanged,infraType:document.getElementById("finfra").value,deploymentType:document.getElementById("fdeploytype").value,lossReason:document.getElementById("flossreason").value,lossNotes:document.getElementById("flossnotes").value.trim(),nextAction:document.getElementById("fnextaction").value.trim(),followUpDate:document.getElementById("ffollowup").value};
+  const data={name,owner:document.getElementById("fo").value.trim(),stage:newStage,health:document.getElementById("fh2").value,last:document.getElementById("fl").value,note:document.getElementById("fnote").value.trim(),tbd,value:tbd?null:(parseFloat(document.getElementById("fv").value)||null),estLow:tbd?(parseFloat(document.getElementById("fel").value)||null):null,estHigh:tbd?(parseFloat(document.getElementById("feh").value)||null):null,renewal:document.getElementById("frenewal").value,deadline:document.getElementById("fdeadline").value,created:existingRow?.created||today,stageChanged,infraType:document.getElementById("finfra").value,deploymentType:document.getElementById("fdeploytype").value,lossReason:document.getElementById("flossreason").value,lossNotes:document.getElementById("flossnotes").value.trim(),contactName:document.getElementById("fcontact").value.trim(),contactEmail:document.getElementById("fcemail").value.trim(),contactPhone:document.getElementById("fcphone").value.trim(),activity:existingRow?.activity||[],nextAction:document.getElementById("fnextaction").value.trim(),followUpDate:document.getElementById("ffollowup").value};
   if(editId!==null){
     const i=rows.findIndex(r=>r.id===editId);
     rows[i]={...rows[i],...data};
@@ -2216,14 +2273,131 @@ function saveProject(){
   }
   closeModal();
   renderTable();
+  if(document.getElementById("page-kanban").classList.contains("on")) renderKanban();
 }
+let _undoTimer=null;
 function delRow(id){
-  if(!confirm("Remove this project?")) return;
   const i=rows.findIndex(r=>r.id===id);
-  sheetWrite("delete",null,i);
-  rows.splice(i,1);
-  rows.forEach((r,i)=>r.id=i);
+  if(i<0) return;
+  const removed=rows.splice(i,1)[0];
+  rows.forEach((r,x)=>r.id=x);
   renderTable();
+  const toast=document.getElementById("undo-toast");
+  document.getElementById("undo-msg").textContent='"'+removed.name+'" removed';
+  toast.style.display="flex";
+  clearTimeout(_undoTimer);
+  const commit=()=>{toast.style.display="none";sheetWrite("delete",null,i);};
+  _undoTimer=setTimeout(commit,6000);
+  document.getElementById("undo-btn").onclick=()=>{
+    clearTimeout(_undoTimer);
+    toast.style.display="none";
+    rows.splice(i,0,removed);
+    rows.forEach((r,x)=>r.id=x);
+    renderTable();
+  };
+}
+
+function dupRow(id){
+  const r=rows.find(x=>x.id===id);
+  if(!r) return;
+  const today=new Date().toISOString().split("T")[0];
+  const copy={...r,name:r.name+" (copy)",stage:"prospect",created:today,stageChanged:today,activity:[],lossReason:"",lossNotes:"",id:rows.length};
+  rows.push(copy);
+  sheetWrite("append",toRow(copy),null);
+  renderTable();
+}
+
+function exportCSV(){
+  const q=document.getElementById("search").value.toLowerCase();
+  const fh=document.getElementById("fh").value;
+  const fs=document.getElementById("fs").value;
+  const list=rows.filter(r=>(!q||r.name.toLowerCase().includes(q)||(r.owner||"").toLowerCase().includes(q))&&(!fh||r.health===fh)&&(!fs||r.stage===fs));
+  const heads=["Company","Owner","Contact","Email","Phone","Stage","Health","Value","EstLow","EstHigh","LastContact","FollowUp","NextAction","Deadline","Renewal","Sector","DeploymentType","Created","StageChanged","LossReason","LossNotes","Notes"];
+  const esc=v=>{v=(v===null||v===undefined)?"":String(v);return '"'+v.replace(/"/g,'""')+'"';};
+  const lines=[heads.join(",")].concat(list.map(r=>[r.name,r.owner,r.contactName,r.contactEmail,r.contactPhone,r.stage,r.health,r.value,r.estLow,r.estHigh,r.last,r.followUpDate,r.nextAction,r.deadline,r.renewal,r.infraType,r.deploymentType,r.created,r.stageChanged,r.lossReason,r.lossNotes,r.note].map(esc).join(",")));
+  const blob=new Blob([lines.join("\n")],{type:"text/csv"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="kmx-pipeline-"+new Date().toISOString().split("T")[0]+".csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function logActivity(id){
+  const i=rows.findIndex(r=>r.id===id);
+  if(i<0) return;
+  const t=prompt("Log activity for "+rows[i].name+":\n(e.g. Called Jane, sent revised proposal)");
+  if(!t||!t.trim()) return;
+  const today=new Date().toISOString().split("T")[0];
+  if(!rows[i].activity) rows[i].activity=[];
+  rows[i].activity.push({d:today,t:t.trim()});
+  rows[i].last=today;
+  sheetWrite("update",toRow(rows[i]),i);
+  renderTable();
+}
+
+
+let _kbSelected=null;
+function renderKanban(){
+  const el=document.getElementById("page-kanban");
+  if(!el) return;
+  _kbSelected=null;
+  el.innerHTML='<div class="pg-inner">'
+    +'<div class="kb-hint">Drag a card to a new stage, or tap a card then tap the destination column. Changes save to Google Sheets.</div>'
+    +'<div class="kb-wrap">'
+    +STAGES.map(s=>{
+      const cards=rows.filter(r=>r.stage===s.k);
+      return '<div class="kb-col" data-stage="'+s.k+'" ondragover="kbOver(event)" ondragleave="kbLeave(event)" ondrop="kbDrop(event)" onclick="kbColClick(event,\''+s.k+'\')">'
+        +'<div class="kb-col-hdr" style="color:'+s.c+'">'+s.l+'<span class="kb-count">'+cards.length+'</span></div>'
+        +(cards.length===0?'<div class="kb-empty">Empty</div>':cards.map(r=>{
+          const val=r.tbd?((r.estLow||r.estHigh)?fmtMoney(((r.estLow||0)+(r.estHigh||0))/2,true)+" est":""):(r.value?fmtMoney(r.value,true):"");
+          return '<div class="kb-card" draggable="true" data-id="'+r.id+'" ondragstart="kbStart(event,'+r.id+')" ondragend="kbEnd(event)" onclick="kbCardClick(event,'+r.id+')">'
+            +'<div class="kb-name">'+r.name+'</div>'
+            +'<div class="kb-meta">'
+            +(r.owner?'<span>'+r.owner+'</span>':'')
+            +'<span class="hd '+(r.health||"green")+'" style="display:inline-block"></span>'
+            +(r.deploymentType?'<span class="deploy-pill '+r.deploymentType+'">'+({pilot:"Pilot",demo:"Demo",commercial:"Comm."}[r.deploymentType])+'</span>':'')
+            +'</div>'
+            +(val?'<div class="kb-val">'+val+'</div>':'')
+            +'</div>';
+        }).join(""))
+        +'</div>';
+    }).join("")
+    +'</div></div>';
+}
+function kbStart(e,id){e.dataTransfer.setData("text/plain",String(id));e.target.classList.add("dragging");}
+function kbEnd(e){e.target.classList.remove("dragging");}
+function kbOver(e){e.preventDefault();e.currentTarget.classList.add("drop-ok");}
+function kbLeave(e){e.currentTarget.classList.remove("drop-ok");}
+function kbDrop(e){
+  e.preventDefault();
+  e.currentTarget.classList.remove("drop-ok");
+  const id=parseInt(e.dataTransfer.getData("text/plain"));
+  kbMove(id,e.currentTarget.dataset.stage);
+}
+function kbCardClick(e,id){
+  e.stopPropagation();
+  const card=e.currentTarget;
+  if(_kbSelected===id){_kbSelected=null;card.classList.remove("selected");return;}
+  document.querySelectorAll(".kb-card.selected").forEach(x=>x.classList.remove("selected"));
+  _kbSelected=id;
+  card.classList.add("selected");
+}
+function kbColClick(e,stage){
+  if(_kbSelected===null) return;
+  const id=_kbSelected;
+  _kbSelected=null;
+  kbMove(id,stage);
+}
+function kbMove(id,newStage){
+  const i=rows.findIndex(r=>r.id===id);
+  if(i<0||rows[i].stage===newStage) return;
+  if(newStage==="lost"){renderKanban();markLost(id);return;}
+  const today=new Date().toISOString().split("T")[0];
+  rows[i].stage=newStage;
+  rows[i].stageChanged=today;
+  sheetWrite("update",toRow(rows[i]),i);
+  renderKanban();
 }
 
 function markWon(id){
@@ -2235,6 +2409,7 @@ function markWon(id){
   rows[i].stageChanged=today;
   sheetWrite("update",toRow(rows[i]),i);
   renderTable();
+  if(document.getElementById("page-kanban").classList.contains("on")) renderKanban();
 }
 
 function markLost(id){
@@ -2621,6 +2796,16 @@ function renderBoard(){
   const expiredLic  = licenses.filter(l=>l.status==="expired");
   const expiringLic = licenses.filter(l=>l.status==="expiring");
 
+  // Weighted pipeline (probability-adjusted)
+  const bWeighted = active.filter(r=>!r.tbd&&r.value).reduce((s,r)=>s+r.value*(STAGE_WEIGHTS[r.stage]||0),0)
+    + active.filter(r=>r.tbd&&(r.estLow||r.estHigh)).reduce((s,r)=>s+((r.estLow||0)+(r.estHigh||0))/2*(STAGE_WEIGHTS[r.stage]||0),0);
+  // Deployment mix
+  const bDt={pilot:rows.filter(r=>r.deploymentType==="pilot"),demo:rows.filter(r=>r.deploymentType==="demo"),commercial:rows.filter(r=>r.deploymentType==="commercial")};
+  const bDtAct=k=>bDt[k].filter(r=>r.stage!=="won"&&r.stage!=="lost").length;
+  const bDtWon=k=>bDt[k].filter(r=>r.stage==="won").length;
+  const bDtAny=bDt.pilot.length+bDt.demo.length+bDt.commercial.length>0;
+  const BLOSS={price:"Price",competitor:"Competitor",timing:"Timing",scope:"Scope",relationship:"Relationship",nodecision:"No decision"};
+
   // Top active deals sorted by value
   const topDeals = [...active]
     .sort((a,b)=>(b.value||0)-(a.value||0))
@@ -2660,7 +2845,7 @@ function renderBoard(){
         <div class="bhc blue">
           <div class="bhc-label">Confirmed Pipeline</div>
           <div class="bhc-val blue">${pipe?fmtMoney(pipe,true):"-"}</div>
-          <div class="bhc-sub">Contracted value only</div>
+          <div class="bhc-sub">Weighted: ${bWeighted?fmtMoney(bWeighted,true):"-"} probability-adjusted</div>
         </div>
         <div class="bhc gold">
           <div class="bhc-label">Closed Won</div>
@@ -2673,6 +2858,11 @@ function renderBoard(){
           <div class="bhc-sub">${won.length} won · ${lost.length} lost</div>
         </div>
       </div>
+      ${bDtAny?`<div class="board-hero" style="grid-template-columns:repeat(3,1fr)">
+        <div class="bhc purple"><div class="bhc-label">Pilots</div><div class="bhc-val purple sm">${bDtAct("pilot")}</div><div class="bhc-sub">${bDt.pilot.length} total / ${bDtWon("pilot")} won</div></div>
+        <div class="bhc gold"><div class="bhc-label">Demonstrations</div><div class="bhc-val gold sm">${bDtAct("demo")}</div><div class="bhc-sub">${bDt.demo.length} total / ${bDtWon("demo")} won</div></div>
+        <div class="bhc green"><div class="bhc-label">Commercial</div><div class="bhc-val green sm">${bDtAct("commercial")}</div><div class="bhc-sub">${bDt.commercial.length} total / ${bDtWon("commercial")} won</div></div>
+      </div>`:""}
       <div class="board-hero" style="margin-bottom:0">
         <div class="bhc green">
           <div class="bhc-label">Est. Upside</div>
@@ -2754,7 +2944,7 @@ function renderBoard(){
             <th>Contract value</th>
             <th>Est. range</th>
             <th>Last contact</th>
-            <th>Notes</th>
+            <th>Next step</th>
           </tr></thead>
           <tbody>
             ${topDeals.length===0
@@ -2771,7 +2961,7 @@ function renderBoard(){
                   <td class="td-val">${v||'<span style="color:var(--t2);font-style:italic">TBD</span>'}</td>
                   <td class="td-val" style="color:var(--t2)">${r.tbd?(rng||"-"):"-"}</td>
                   <td style="color:var(--t1);font-size:12px">${fmtDate(r.last)}</td>
-                  <td class="td-note">${r.note||"-"}</td>
+                  <td class="td-note">${r.nextAction||r.note||"-"}</td>
                 </tr>`;
               }).join("")
             }
@@ -2787,6 +2977,20 @@ function renderBoard(){
         <div id="board-funnel"></div>
       </div>
     </div>
+
+    ${lost.length>0?`
+    <div class="board-section">
+      <div class="board-section-title"><i class="ti ti-school"></i>Lessons From Lost Deals</div>
+      ${lost.slice().sort((a,b)=>(b.stageChanged||"").localeCompare(a.stageChanged||"")).slice(0,4).map(r=>`
+        <div style="padding:9px 0;border-bottom:1px solid var(--b0)">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:12px;font-weight:600;color:var(--t0);font-family:var(--f-disp)">${r.name}</span>
+            ${r.lossReason?`<span style="font-size:9px;padding:2px 7px;border-radius:var(--r1);background:var(--red-a12);color:var(--red);font-weight:600;font-family:var(--f-mono)">${BLOSS[r.lossReason]||r.lossReason}</span>`:""}
+            ${r.stageChanged?`<span style="font-size:10px;color:var(--t2);font-family:var(--f-mono);margin-left:auto">${fmtDate(r.stageChanged)}</span>`:""}
+          </div>
+          ${r.lossNotes?`<div style="font-size:11px;color:var(--t1);line-height:1.6;margin-top:4px;padding-left:9px;border-left:2px solid var(--b1)">${r.lossNotes}</div>`:""}
+        </div>`).join("")}
+    </div>`:""}
 
     <!-- License summary -->
     <div class="board-section">
@@ -2931,7 +3135,9 @@ function renderMobileProjects(data){
       <div class="mob-card-top">
         <div class="mob-card-name">${r.name}</div>
         <div class="mob-card-actions">
+          <button class="ib" onclick="logActivity(${r.id})" title="Log activity"><i class="ti ti-message-plus"></i></button>
           <button class="ib" onclick="openModal(${r.id})" title="Edit"><i class="ti ti-edit"></i></button>
+          <button class="ib" onclick="dupRow(${r.id})" title="Duplicate"><i class="ti ti-copy"></i></button>
           <button class="ib del" onclick="delRow(${r.id})" title="Delete"><i class="ti ti-trash"></i></button>
         </div>
       </div>
@@ -3031,6 +3237,7 @@ document.getElementById("date-tag").textContent =
 const PAGE_META = {
   projects: {crumb:"Pipeline",  title:"Projects",         btn:true,  btnFn:"openModal()"},
   dash:     {crumb:"Pipeline",  title:"Dashboard",        btn:false},
+  kanban:   {crumb:"Pipeline",  title:"Kanban",           btn:false},
   licenses: {crumb:"Licenses",  title:"License Registry", btn:false},
   licdash:  {crumb:"Licenses",  title:"Analytics",        btn:false},
   board:    {crumb:"Executive", title:"Board View",       btn:false},
