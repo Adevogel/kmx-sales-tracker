@@ -1308,16 +1308,17 @@ function syncNow(){
       }));
       renderTable();
       setSyncState("ok","Synced "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}));
-      if(document.getElementById("page-dash").classList.contains("active")){renderDash();renderFunnel();}
+      if(document.getElementById("page-dash").classList.contains("on")){renderDash();}
+      if(document.getElementById("page-kanban").classList.contains("on")){renderKanban();}
     })
     .catch(()=>setSyncState("err","Could not reach Google Sheets"))
     .finally(()=>{
       document.getElementById("sicon").className="ti ti-refresh";
-      if(document.getElementById("page-licdash").classList.contains("active")) renderLicDash();
+      if(document.getElementById("page-licdash").classList.contains("on")) renderLicDash();
     });
   // Reload settings in background on each sync
   loadSettings().then(()=>{
-    if(document.getElementById("page-dash").classList.contains("active")) renderDash();
+    if(document.getElementById("page-dash").classList.contains("on")) renderDash();
   });
 }
 
@@ -1519,7 +1520,6 @@ function renderTable(){
       <td class="cl" style="color:var(--t1);font-size:12px">${fmtDate(r.last)}</td>
 
       <td class="cage">${r.created?(()=>{const d=daysSince(r.created);return d===0?"Today":d+"d";})():"-"}</td>
-      <td class="cdep">${r.deploymentType?'<span class="deploy-pill '+r.deploymentType+'">'+{pilot:"Pilot",demo:"Demo",commercial:"Commercial"}[r.deploymentType]+'</span>':"-"}</td>
       <td class="cfu">${(()=>{
         if(!r.followUpDate) return '<span class="fu-ok">-</span>';
         const d=Math.round((new Date(r.followUpDate+"T00:00:00")-Date.now())/86400000);
@@ -1527,6 +1527,7 @@ function renderTable(){
         if(d<=7) return '<span class="fu-soon">In '+d+'d</span>';
         return '<span class="fu-ok">'+fmtDate(r.followUpDate)+'</span>';
       })()}</td>
+      <td class="cdep">${r.deploymentType?'<span class="deploy-pill '+r.deploymentType+'">'+{pilot:"Pilot",demo:"Demo",commercial:"Commercial"}[r.deploymentType]+'</span>':"-"}</td>
       <td class="ca">
         <div class="raction">
           ${r.stage!=="won"&&r.stage!=="lost"?`<button class="ib win" onclick="markWon(${r.id})" title="Mark as Won"><i class="ti ti-trophy"></i></button><button class="ib del" onclick="markLost(${r.id})" title="Mark as Lost"><i class="ti ti-flag-x"></i></button>`:""}
@@ -1582,7 +1583,7 @@ function setPipelineTarget(val){
     // Re-read from sheet after short delay to confirm it saved
     setTimeout(()=>{
       loadSettings().then(()=>{
-        if(document.getElementById("page-dash").classList.contains("active")) renderDash();
+        if(document.getElementById("page-dash").classList.contains("on")) renderDash();
       });
     }, 2000);
   }
@@ -2291,19 +2292,22 @@ function delRow(id){
   if(i<0) return;
   const removed=rows.splice(i,1)[0];
   rows.forEach((r,x)=>r.id=x);
+  sheetWrite("delete",null,i);
   renderTable();
+  if(document.getElementById("page-kanban").classList.contains("on")) renderKanban();
   const toast=document.getElementById("undo-toast");
   document.getElementById("undo-msg").textContent='"'+removed.name+'" removed';
   toast.style.display="flex";
   clearTimeout(_undoTimer);
-  const commit=()=>{toast.style.display="none";sheetWrite("delete",null,i);};
-  _undoTimer=setTimeout(commit,6000);
+  _undoTimer=setTimeout(()=>{toast.style.display="none";},6000);
   document.getElementById("undo-btn").onclick=()=>{
     clearTimeout(_undoTimer);
     toast.style.display="none";
-    rows.splice(i,0,removed);
-    rows.forEach((r,x)=>r.id=x);
+    removed.id=rows.length;
+    rows.push(removed);
+    sheetWrite("append",toRow(removed),null);
     renderTable();
+    if(document.getElementById("page-kanban").classList.contains("on")) renderKanban();
   };
 }
 
