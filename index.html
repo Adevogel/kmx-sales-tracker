@@ -11,6 +11,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 <style>
 /* ═══════════════════════════════════════════
    KMX TECHNOLOGIES - DESIGN SYSTEM v3
@@ -1035,6 +1036,7 @@ body.light-theme .kb-card{background:var(--s2)}
   </div>
   <div class="topbar-right">
     <span class="topbar-date" id="date-tag"></span>
+    <button class="theme-toggle-btn" id="summary-btn" onclick="manualSummary()" title="Generate executive summary"><i class="ti ti-file-text"></i><span class="theme-label" style="display:none"></span></button>
     <button class="theme-toggle-btn" onclick="toggleBoardTheme()"><i class="ti ti-sun theme-icon"></i><span class="theme-label">Light theme</span></button>
     <button class="btn btn-p" id="header-new-btn" onclick="openModal()"><i class="ti ti-plus"></i>New Project</button>
   </div>
@@ -1138,6 +1140,20 @@ body.light-theme .kb-card{background:var(--s2)}
   <button class="mob-tab l" id="mtab-licdash" onclick="showPage('licdash')"><i class="ti ti-chart-pie"></i>Analytics</button>
   <div class="mob-tab-div"></div>
   <button class="mob-tab" id="mtab-board" onclick="showPage('board')" style="color:var(--lime)"><i class="ti ti-presentation" style="color:var(--lime)"></i>Board</button>
+</div>
+
+<div id="summary-pop" style="display:none;position:fixed;top:64px;right:16px;z-index:650;max-width:340px;background:var(--s1);border:1px solid var(--b2);border-left:3px solid var(--lime);border-radius:var(--r3);padding:16px;box-shadow:0 12px 40px rgba(0,0,0,.55)">
+  <div style="display:flex;gap:12px;align-items:flex-start">
+    <div style="width:34px;height:34px;border-radius:var(--r2);background:var(--lime-a18);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-file-text" style="color:var(--lime);font-size:17px"></i></div>
+    <div style="flex:1;min-width:0">
+      <div id="summary-pop-title" style="font-family:var(--f-disp);font-size:14px;font-weight:600;color:var(--t0);margin-bottom:3px">Your daily briefing is ready</div>
+      <div id="summary-pop-sub" style="font-size:12px;color:var(--t1);line-height:1.5;margin-bottom:12px">Pipeline summary covering recent updates.</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-p" style="height:30px;padding:0 12px;font-size:12px" onclick="downloadSummaryFromPop()"><i class="ti ti-download"></i>Download DOCX</button>
+        <button class="btn btn-g" style="height:30px;padding:0 10px;font-size:12px" onclick="hideSummaryPop()">Later</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="undo-toast" style="display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:700;background:var(--s2);border:1px solid var(--b2);border-radius:var(--r2);padding:10px 14px;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.5)">
@@ -1269,11 +1285,278 @@ let chartInstances = {};
 
 
 // ── Boot ──────────────────────────────────────
+
+// ══ EXECUTIVE SUMMARY (daily Mon-Thu, weekly Fri, popup from 7am) ══
+let _popSnoozeDate = null;
+
+function summaryTypeFor(d){
+  const day = d.getDay();
+  if(day === 0 || day === 6) return null;
+  return day === 5 ? "weekly" : "daily";
+}
+
+function checkSummaryDue(nowOpt){
+  const now = nowOpt || new Date();
+  const type = summaryTypeFor(now);
+  if(!type) return false;
+  if(now.getHours() < 7) return false;
+  const today = localISO(now);
+  if(_settings.summary_last === today) return false;
+  if(_popSnoozeDate === today) return false;
+  showSummaryPop(type);
+  return true;
+}
+
+function showSummaryPop(type){
+  const pop = document.getElementById("summary-pop");
+  document.getElementById("summary-pop-title").textContent =
+    type === "weekly" ? "Your weekly summary is ready" : "Your daily briefing is ready";
+  document.getElementById("summary-pop-sub").textContent =
+    type === "weekly"
+      ? "Full recap of this week's pipeline movement, notes and next week's setup."
+      : "New opportunities, momentum, notes and today's actions.";
+  pop.dataset.type = type;
+  pop.style.display = "block";
+}
+
+function hideSummaryPop(){
+  _popSnoozeDate = localISO(new Date());
+  document.getElementById("summary-pop").style.display = "none";
+}
+
+function downloadSummaryFromPop(){
+  const type = document.getElementById("summary-pop").dataset.type || "daily";
+  document.getElementById("summary-pop").style.display = "none";
+  generateSummary(type);
+}
+
+function manualSummary(){
+  const t = summaryTypeFor(new Date());
+  generateSummary(t || "daily");
+}
+
+function _isWorkday(d){ const x = d.getDay(); return x >= 1 && x <= 5; }
+
+function _notesInLastNWorkdays(r, n){
+  if(!r.activity || !r.activity.length) return 0;
+  const days = [];
+  const d = new Date();
+  while(days.length < n){
+    if(_isWorkday(d)) days.push(localISO(d));
+    d.setDate(d.getDate() - 1);
+  }
+  return r.activity.filter(a => days.includes(a.d)).length;
+}
+
+function buildSummaryData(sinceISO, type){
+  const today = localISO(new Date());
+  const active = rows.filter(r => r.stage !== "won" && r.stage !== "lost");
+  const won = rows.filter(r => r.stage === "won");
+  const lost = rows.filter(r => r.stage === "lost");
+  const pipe = active.filter(r => !r.tbd && r.value).reduce((s,r) => s + r.value, 0);
+  const estMid = active.filter(r => r.tbd && (r.estLow || r.estHigh)).reduce((s,r) => s + ((r.estLow||0) + (r.estHigh||0)) / 2, 0);
+  const weighted = active.filter(r => !r.tbd && r.value).reduce((s,r) => s + r.value * (STAGE_WEIGHTS[r.stage]||0), 0)
+    + active.filter(r => r.tbd && (r.estLow || r.estHigh)).reduce((s,r) => s + ((r.estLow||0)+(r.estHigh||0))/2 * (STAGE_WEIGHTS[r.stage]||0), 0);
+  const target = getPipelineTarget();
+  const coverage = target > 0 ? (pipe + estMid) / target : null;
+
+  const inWin = d => d && d >= sinceISO;
+  const newOpps = rows.filter(r => inWin(r.created));
+  const wonWin  = won.filter(r => inWin(r.stageChanged));
+  const lostWin = lost.filter(r => inWin(r.stageChanged));
+  const progressing = active.filter(r => {
+    if(inWin(r.created)) return false;
+    const advanced = inWin(r.stageChanged) && r.stageChanged !== r.created;
+    const notesWin = (r.activity||[]).filter(a => inWin(a.d));
+    return advanced || notesWin.length > 0 || _notesInLastNWorkdays(r, 5) >= 2;
+  }).map(r => ({
+    r,
+    advanced: inWin(r.stageChanged) && r.stageChanged !== r.created,
+    notes: (r.activity||[]).filter(a => inWin(a.d)).sort((a,b) => a.d.localeCompare(b.d))
+  }));
+
+  const plus7 = new Date(); plus7.setDate(plus7.getDate() + 7);
+  const plus14 = new Date(); plus14.setDate(plus14.getDate() + 14);
+  const followups = active.filter(r => r.followUpDate && r.followUpDate <= today)
+    .sort((a,b) => a.followUpDate.localeCompare(b.followUpDate));
+  const deadlines = active.filter(r => r.deadline && r.deadline <= localISO(plus7))
+    .sort((a,b) => a.deadline.localeCompare(b.deadline));
+  const watchRed = active.filter(r => r.health === "red");
+  const watchStuck = active.filter(r => { const d = daysSince(r.stageChanged); return d !== null && d > 60; });
+
+  const data = { type, sinceISO, today,
+    snapshot: { pipe, weighted, estMid, activeCount: active.length, coverage, wonCount: won.length, lostCount: lost.length,
+      wonVal: won.filter(r => r.value).reduce((s,r) => s + r.value, 0) },
+    newOpps, progressing, wonWin, lostWin, followups, deadlines, watchRed, watchStuck };
+
+  if(type === "weekly"){
+    let prev = null;
+    try { prev = JSON.parse(_settings.week_snap || "null"); } catch(e){}
+    data.prevSnap = prev;
+    data.stageMoves = active.filter(r => inWin(r.stageChanged) && r.stageChanged !== r.created);
+    data.nextWeek = {
+      followups: active.filter(r => r.followUpDate && r.followUpDate > today && r.followUpDate <= localISO(plus7)),
+      deadlines: active.filter(r => r.deadline && r.deadline > today && r.deadline <= localISO(plus14))
+    };
+  }
+  return data;
+}
+
+function _sinceForType(type){
+  if(_settings.summary_last_ts){
+    return _settings.summary_last_ts.split("T")[0];
+  }
+  const d = new Date();
+  d.setDate(d.getDate() - (type === "weekly" ? 7 : 1));
+  return localISO(d);
+}
+
+async function generateSummary(type){
+  if(typeof docx === "undefined"){
+    alert("The document library has not loaded yet. Check your connection and try again.");
+    return;
+  }
+  const data = buildSummaryData(_sinceForType(type), type);
+  const doc = buildSummaryDoc(data);
+  const blob = await docx.Packer.toBlob(doc);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = (type === "weekly" ? "kmx-weekly-summary-" : "kmx-daily-briefing-") + data.today + ".docx";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  setSetting("summary_last", data.today);
+  setSetting("summary_last_ts", new Date().toISOString());
+  if(type === "weekly"){
+    setSetting("week_snap", JSON.stringify({ d: data.today, pipe: data.snapshot.pipe, weighted: Math.round(data.snapshot.weighted) }));
+  }
+}
+
+function buildSummaryDoc(data){
+  const D = docx;
+  const NAVY = "0A1628", GREY = "6A7A8E", AQUA = "0898A0", RED = "B83030", GREEN = "0A7A50";
+  const STG_HEX = { prospect:"4A6280", scoping:"1862B8", proposal:"5040B0", lab:"8A5A00", demo:"A04878", negotiation:"0878A0", won:"0A7A50", lost:"B83030" };
+  const money = v => v ? "$" + Math.round(v).toLocaleString("en-US") : "-";
+  const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+  const dealVal = r => r.tbd ? ((r.estLow||r.estHigh) ? money(((r.estLow||0)+(r.estHigh||0))/2) + " est" : "TBD") : money(r.value);
+
+  const P = opts => new D.Paragraph(opts);
+  const T = (text, o) => new D.TextRun(Object.assign({ text, font: "Arial", size: 21 }, o||{}));
+  const H1 = text => P({ heading: D.HeadingLevel.HEADING_1, spacing: { before: 260, after: 120 },
+    children: [ new D.TextRun({ text, font: "Arial", size: 26, bold: true, color: NAVY }) ] });
+  const body = (children, o) => P(Object.assign({ spacing: { after: 80 }, children }, o||{}));
+  const bullet = children => P({ numbering: { reference: "kmx-bullets", level: 0 }, spacing: { after: 60 }, children });
+  const emptyLine = text => body([ T(text, { italics: true, color: GREY }) ]);
+  const stgRun = r => T(stg(r.stage).l, { bold: true, color: STG_HEX[r.stage] || NAVY });
+
+  const kids = [];
+  kids.push(P({ spacing:{ after: 40 }, children: [ new D.TextRun({ text: "KMX Technologies", font: "Arial", size: 32, bold: true, color: NAVY }) ] }));
+  kids.push(P({ spacing:{ after: 40 }, children: [ new D.TextRun({ text: data.type === "weekly" ? "Weekly Pipeline Executive Summary" : "Daily Pipeline Executive Briefing", font: "Arial", size: 24, color: AQUA, bold: true }) ] }));
+  kids.push(P({ spacing:{ after: 200 }, border: { bottom: { style: D.BorderStyle.SINGLE, size: 6, color: NAVY, space: 4 } },
+    children: [ new D.TextRun({ text: new Date().toLocaleDateString("en-US",{ weekday:"long", month:"long", day:"numeric", year:"numeric" }) + "   /   Covering activity since " + fmtDate(data.sinceISO), font: "Arial", size: 19, color: GREY }) ] }));
+
+  // Snapshot table
+  kids.push(H1("Executive Snapshot"));
+  const s = data.snapshot;
+  const snapPairs = [
+    ["Confirmed pipeline", money(s.pipe)],
+    ["Weighted pipeline", money(s.weighted)],
+    ["Estimated upside", money(s.estMid)],
+    ["Active projects", String(s.activeCount)],
+    ["Coverage vs target", s.coverage !== null ? s.coverage.toFixed(1) + "x" : "No target set"],
+    ["Won / Lost to date", s.wonCount + " won (" + money(s.wonVal) + ") / " + s.lostCount + " lost"]
+  ];
+  if(data.type === "weekly" && data.prevSnap){
+    const dPipe = s.pipe - (data.prevSnap.pipe || 0);
+    snapPairs.push(["Change vs last week", (dPipe >= 0 ? "+" : "-") + money(Math.abs(dPipe)) + " confirmed pipeline"]);
+  }
+  const CW = [3800, 7000];
+  kids.push(new D.Table({
+    width: { size: 10800, type: D.WidthType.DXA },
+    columnWidths: CW,
+    rows: snapPairs.map((pair, i) => new D.TableRow({ children: [
+      new D.TableCell({ width: { size: CW[0], type: D.WidthType.DXA },
+        shading: { type: D.ShadingType.CLEAR, fill: i % 2 ? "F2F7FB" : "FFFFFF" },
+        margins: { top: 60, bottom: 60, left: 120, right: 120 },
+        children: [ P({ children: [ T(pair[0], { bold: true, color: NAVY, size: 19 }) ] }) ] }),
+      new D.TableCell({ width: { size: CW[1], type: D.WidthType.DXA },
+        shading: { type: D.ShadingType.CLEAR, fill: i % 2 ? "F2F7FB" : "FFFFFF" },
+        margins: { top: 60, bottom: 60, left: 120, right: 120 },
+        children: [ P({ children: [ T(pair[1], { size: 19 }) ] }) ] })
+    ] }))
+  }));
+
+  // New opportunities
+  kids.push(H1("New Opportunities"));
+  if(!data.newOpps.length) kids.push(emptyLine("No new opportunities in this window."));
+  data.newOpps.forEach(r => {
+    kids.push(bullet([ T(r.name, { bold: true }), T("  "), stgRun(r),
+      T("  " + dealVal(r) + (r.owner ? "  /  " + r.owner : "") + (r.deploymentType ? "  /  " + cap(r.deploymentType) : "") + (r.infraType ? "  /  " + infraLabel(r.infraType) : ""), { color: GREY }) ]));
+    if(r.note) kids.push(body([ T(r.note, { italics: true, color: GREY, size: 19 }) ], { indent: { left: 360 } }));
+  });
+
+  // Progressing well
+  kids.push(H1("Progressing Well"));
+  if(!data.progressing.length) kids.push(emptyLine("No deals with new movement or notes in this window."));
+  data.progressing.forEach(p => {
+    const r = p.r;
+    kids.push(bullet([ T(r.name, { bold: true }), T("  "), stgRun(r), T("  " + dealVal(r), { color: GREY }),
+      p.advanced ? T("   ADVANCED " + fmtDate(r.stageChanged), { bold: true, color: GREEN, size: 17 }) : T("") ]));
+    p.notes.forEach(n => kids.push(body([ T(fmtDate(n.d) + ":  ", { bold: true, color: AQUA, size: 19 }), T(n.t, { size: 19 }) ], { indent: { left: 360 } })));
+    if(r.nextAction) kids.push(body([ T("Next: ", { bold: true, color: NAVY, size: 19 }), T(r.nextAction, { size: 19 }) ], { indent: { left: 360 } }));
+  });
+
+  // Wins and losses
+  if(data.wonWin.length || data.lostWin.length){
+    kids.push(H1("Closed in This Window"));
+    data.wonWin.forEach(r => kids.push(bullet([ T("WON  ", { bold: true, color: GREEN }), T(r.name, { bold: true }), T("  " + money(r.value) + (r.owner ? "  /  " + r.owner : ""), { color: GREY }) ])));
+    data.lostWin.forEach(r => {
+      kids.push(bullet([ T("LOST  ", { bold: true, color: RED }), T(r.name, { bold: true }), T(r.lossReason ? "  /  " + r.lossReason : "", { color: GREY }) ]));
+      if(r.lossNotes) kids.push(body([ T("Lessons: ", { bold: true, color: RED, size: 19 }), T(r.lossNotes, { italics: true, size: 19 }) ], { indent: { left: 360 } }));
+    });
+  }
+
+  // Actions / weekly setup
+  if(data.type === "weekly"){
+    kids.push(H1("Stage Movement This Week"));
+    if(!data.stageMoves.length) kids.push(emptyLine("No stage advances recorded this week."));
+    data.stageMoves.forEach(r => kids.push(bullet([ T(r.name, { bold: true }), T("  now at  "), stgRun(r), T("  (" + fmtDate(r.stageChanged) + ")", { color: GREY }) ])));
+    kids.push(H1("Setting Up Next Week"));
+    if(!data.nextWeek.followups.length && !data.nextWeek.deadlines.length) kids.push(emptyLine("No follow-ups or deadlines scheduled for next week."));
+    data.nextWeek.followups.forEach(r => kids.push(bullet([ T("Follow-up " + fmtDate(r.followUpDate) + "  ", { bold: true, color: AQUA }), T(r.name, { bold: true }), r.nextAction ? T("  /  " + r.nextAction, { color: GREY }) : T("") ])));
+    data.nextWeek.deadlines.forEach(r => kids.push(bullet([ T("Deadline " + fmtDate(r.deadline) + "  ", { bold: true, color: RED }), T(r.name, { bold: true }) ])));
+  } else {
+    kids.push(H1("Today's Actions"));
+    if(!data.followups.length && !data.deadlines.length) kids.push(emptyLine("No follow-ups due and no deadlines within 7 days."));
+    data.followups.forEach(r => {
+      const overdue = r.followUpDate < data.today;
+      kids.push(bullet([ T(overdue ? "OVERDUE " + fmtDate(r.followUpDate) + "  " : "Due today  ", { bold: true, color: overdue ? RED : AQUA }), T(r.name, { bold: true }), r.nextAction ? T("  /  " + r.nextAction, { color: GREY }) : T("") ]));
+    });
+    data.deadlines.forEach(r => kids.push(bullet([ T("Deadline " + fmtDate(r.deadline) + "  ", { bold: true, color: RED }), T(r.name, { bold: true }) ])));
+  }
+
+  // Watch list
+  if(data.watchRed.length || data.watchStuck.length){
+    kids.push(H1("Watch List"));
+    data.watchRed.forEach(r => kids.push(bullet([ T("RED  ", { bold: true, color: RED }), T(r.name, { bold: true }), T("  "), stgRun(r), r.nextAction ? T("  /  " + r.nextAction, { color: GREY }) : T("") ])));
+    data.watchStuck.forEach(r => kids.push(bullet([ T("STUCK  ", { bold: true, color: RED }), T(r.name, { bold: true }), T("  " + daysSince(r.stageChanged) + " days at ", { color: GREY }), stgRun(r) ])));
+  }
+
+  kids.push(P({ spacing: { before: 300 }, border: { top: { style: D.BorderStyle.SINGLE, size: 4, color: "D5E0EA", space: 4 } },
+    children: [ new D.TextRun({ text: "KMX Technologies  /  Generated " + new Date().toLocaleString("en-US") + "  /  Confidential", font: "Arial", size: 16, color: GREY }) ] }));
+
+  return new D.Document({
+    numbering: { config: [ { reference: "kmx-bullets", levels: [ { level: 0, format: D.LevelFormat.BULLET, text: "\u2022", alignment: D.AlignmentType.LEFT, style: { paragraph: { indent: { left: 360, hanging: 200 } } } } ] } ] },
+    sections: [ { properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 720, bottom: 720, left: 720, right: 720 } } }, children: kids } ]
+  });
+}
+
 async function boot(){
   buildSelects();
   loadPrefs();
   renderTable();
   await loadSettings();
+  checkSummaryDue();
+  setInterval(checkSummaryDue, 60000);
   syncNow();
   syncLicenses();
 }
@@ -1569,6 +1852,19 @@ function getPipelineTarget(){
   return _pipelineTarget;
 }
 
+let _settings = {};
+function setSetting(key, value){
+  _settings[key] = value;
+  if(GAS_URL !== "PASTE_YOUR_SCRIPT_URL_HERE"){
+    const url = GAS_URL + "?action=setting&key=" + encodeURIComponent(key) + "&value=" + encodeURIComponent(value) + "&t=" + Date.now();
+    fetch(url, {mode:"no-cors"}).catch(()=>{});
+  }
+}
+function localISO(d){
+  const p = n => String(n).padStart(2,"0");
+  return d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate());
+}
+
 function setPipelineTarget(val){
   const num = parseFloat(val) || 5000000;
   _pipelineTarget = num;
@@ -1597,6 +1893,7 @@ async function loadSettings(){
     const data = await res.json();
     // Settings sheet: col A = key, col B = value (row 1 = headers)
     (data.rows||[]).forEach(r=>{
+      if(r[0]) _settings[r[0]] = r[1];
       if(r[0]==="pipeline_target" && r[1]) _pipelineTarget = parseFloat(r[1]) || 5000000;
     });
   } catch(e){ /* use default */ }
