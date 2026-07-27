@@ -994,6 +994,54 @@ body.light-theme .deploy-pill.commercial{background:rgba(10,122,80,.08);color:#0
 body.light-theme .kb-col{background:#FFFFFF}
 body.light-theme .kb-card{background:var(--s2)}
 @media(max-width:680px){.kb-col{flex:0 0 200px}}
+
+/* Quick Update slide-over */
+#qu-panel{position:fixed;top:0;right:-400px;bottom:0;width:380px;max-width:94vw;z-index:645;background:var(--s1);border-left:1px solid var(--b1);display:flex;flex-direction:column;transition:right .22s ease;box-shadow:-16px 0 48px rgba(0,0,0,.5)}
+#qu-panel.open{right:0}
+.qu-head{display:flex;align-items:flex-start;gap:10px;padding:16px 16px 12px;border-bottom:1px solid var(--b0)}
+.qu-name{font-family:var(--f-disp);font-size:16px;font-weight:600;color:var(--t0)}
+.qu-meta{font-size:11px;color:var(--t2);font-family:var(--f-mono);margin-top:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.qu-scroll{flex:1;overflow-y:auto;padding:14px 16px}
+.qu-lbl{font-size:10px;font-family:var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--t2);margin:14px 0 6px}
+.qu-lbl:first-child{margin-top:0}
+.qu-timeline{background:var(--s0);border:1px solid var(--b0);border-radius:var(--r2);padding:8px 10px;max-height:150px;overflow-y:auto}
+.qu-tl-item{padding:5px 0;border-bottom:1px solid var(--b0);font-size:12px;line-height:1.5}
+.qu-tl-item:last-child{border-bottom:none}
+.qu-tl-d{font-family:var(--f-mono);color:var(--t2);font-size:10px;margin-right:7px}
+.qu-tl-k{display:inline-block;font-family:var(--f-mono);font-size:9px;padding:1px 6px;border-radius:3px;background:var(--lime-a10);color:var(--lime);margin-right:6px;text-transform:uppercase;letter-spacing:.05em}
+.qu-tl-empty{font-size:11px;color:var(--t3);font-style:italic;padding:6px 0}
+.qu-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.qu-chip{font-size:11px;font-family:var(--f-ui);padding:5px 11px;border-radius:20px;background:var(--s2);border:1px solid var(--b1);color:var(--t1);cursor:pointer;transition:all .1s}
+.qu-chip:hover{border-color:var(--b2);color:var(--t0)}
+.qu-chip.on{background:var(--lime-a18);border-color:var(--lime);color:var(--lime)}
+.qu-note{width:100%;min-height:76px;background:var(--s2);border:1px solid var(--b0);border-radius:var(--r2);color:var(--t0);font-size:13px;font-family:var(--f-ui);padding:9px 11px;outline:none;resize:vertical}
+.qu-note:focus,.qu-inp:focus{border-color:var(--lime);box-shadow:0 0 0 2px var(--lime-a10)}
+.qu-inp{width:100%;height:34px;background:var(--s2);border:1px solid var(--b0);border-radius:var(--r2);color:var(--t0);font-size:13px;font-family:var(--f-ui);padding:0 11px;outline:none}
+.qu-row2{display:flex;gap:12px;align-items:flex-end}
+.qu-health{display:flex;gap:4px}
+.qu-h{flex:1;height:34px;font-size:11px;font-family:var(--f-ui);background:var(--s2);border:1px solid var(--b0);border-radius:var(--r2);color:var(--t2);cursor:pointer}
+.qu-h.g.on{background:var(--green-a12);border-color:var(--green);color:var(--green)}
+.qu-h.y.on{background:var(--amber-a12);border-color:var(--amber);color:var(--amber)}
+.qu-h.r.on{background:var(--red-a12);border-color:var(--red);color:var(--red)}
+.qu-foot{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--b0)}
+@media(max-width:680px){#qu-panel{top:auto;right:0;left:0;bottom:-100%;width:100%;max-width:100%;height:82vh;border-left:none;border-top:1px solid var(--b1);border-radius:16px 16px 0 0;transition:bottom .22s ease}#qu-panel.open{bottom:0;right:0}}
+body.light-theme #qu-panel{background:#FFFFFF}
+body.light-theme .qu-timeline{background:var(--s0)}
+/* Inline next action in table */
+.cn-next{display:block;font-size:11px;color:var(--t2);font-family:var(--f-ui);margin-top:3px;cursor:text;line-height:1.4}
+.cn-next:hover{color:var(--t1)}
+.cn-next i{font-size:11px;margin-right:3px;opacity:.6}
+.cn-next-inp{width:100%;background:var(--s2);border:1px solid var(--lime);border-radius:var(--r1);color:var(--t0);font-size:11px;font-family:var(--f-ui);padding:3px 6px;outline:none;margin-top:3px}
+/* Health cycle affordance */
+.ch .hb{cursor:pointer;user-select:none}
+.ch .hb:hover{opacity:.75}
+/* Freshness */
+.fresh-ok{color:var(--t1)}
+.fresh-warn{color:var(--amber)}
+.fresh-stale{color:var(--red)}
+/* Kanban and mobile last-note lines */
+.kb-note{font-size:10px;color:var(--t2);font-family:var(--f-ui);margin-top:5px;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.kb-note b{color:var(--t1);font-family:var(--f-mono);font-weight:500}
 </style>
 </head>
 <body>
@@ -1140,6 +1188,51 @@ body.light-theme .kb-card{background:var(--s2)}
   <button class="mob-tab l" id="mtab-licdash" onclick="showPage('licdash')"><i class="ti ti-chart-pie"></i>Analytics</button>
   <div class="mob-tab-div"></div>
   <button class="mob-tab" id="mtab-board" onclick="showPage('board')" style="color:var(--lime)"><i class="ti ti-presentation" style="color:var(--lime)"></i>Board</button>
+</div>
+
+<div id="qu-bg" onclick="closeQuickUpdate()" style="display:none;position:fixed;inset:0;z-index:640;background:rgba(4,8,16,.55)"></div>
+<div id="qu-panel">
+  <div class="qu-head">
+    <div style="flex:1;min-width:0">
+      <div id="qu-name" class="qu-name">Deal</div>
+      <div id="qu-meta" class="qu-meta"></div>
+    </div>
+    <button class="ib" onclick="closeQuickUpdate()" title="Close"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="qu-scroll">
+    <div class="qu-lbl">Recent activity</div>
+    <div id="qu-timeline" class="qu-timeline"></div>
+    <div class="qu-lbl">New note</div>
+    <div class="qu-chips" id="qu-chips">
+      <button class="qu-chip on" data-k="note" onclick="quType(this)">Note</button>
+      <button class="qu-chip" data-k="call" onclick="quType(this)">Call</button>
+      <button class="qu-chip" data-k="email" onclick="quType(this)">Email</button>
+      <button class="qu-chip" data-k="meeting" onclick="quType(this)">Meeting</button>
+      <button class="qu-chip" data-k="site" onclick="quType(this)">Site visit</button>
+      <button class="qu-chip" data-k="milestone" onclick="quType(this)">Milestone</button>
+    </div>
+    <textarea id="qu-note" class="qu-note" placeholder="What happened? This appears in the activity timeline and the executive briefs."></textarea>
+    <div class="qu-lbl">Next action</div>
+    <input id="qu-next" type="text" class="qu-inp" placeholder="e.g. Send revised proposal by Friday">
+    <div class="qu-row2">
+      <div style="flex:1">
+        <div class="qu-lbl">Follow-up date</div>
+        <input id="qu-fu" type="date" class="qu-inp">
+      </div>
+      <div style="flex:1">
+        <div class="qu-lbl">Health</div>
+        <div class="qu-health">
+          <button class="qu-h g" data-h="green" onclick="quHealth(this)">Green</button>
+          <button class="qu-h y" data-h="yellow" onclick="quHealth(this)">Yellow</button>
+          <button class="qu-h r" data-h="red" onclick="quHealth(this)">Red</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="qu-foot">
+    <button class="btn btn-g" onclick="closeQuickUpdate()">Cancel</button>
+    <button class="btn btn-p" onclick="saveQuickUpdate()"><i class="ti ti-check"></i>Save update</button>
+  </div>
 </div>
 
 <div id="summary-pop" style="display:none;position:fixed;top:64px;right:16px;z-index:650;max-width:340px;background:var(--s1);border:1px solid var(--b2);border-left:3px solid var(--lime);border-radius:var(--r3);padding:16px;box-shadow:0 12px 40px rgba(0,0,0,.55)">
@@ -1501,7 +1594,7 @@ function buildSummaryDoc(data){
     const r = p.r;
     kids.push(bullet([ T(r.name, { bold: true }), T("  "), stgRun(r), T("  " + dealVal(r), { color: GREY }),
       p.advanced ? T("   ADVANCED " + fmtDate(r.stageChanged), { bold: true, color: GREEN, size: 17 }) : T("") ]));
-    p.notes.forEach(n => kids.push(body([ T(fmtDate(n.d) + ":  ", { bold: true, color: AQUA, size: 19 }), T(n.t, { size: 19 }) ], { indent: { left: 360 } })));
+    p.notes.forEach(n => kids.push(body([ T(fmtDate(n.d) + ":  ", { bold: true, color: AQUA, size: 19 }), n.k ? T((NOTE_KINDS[n.k]||n.k).toUpperCase() + "  ", { bold: true, color: NAVY, size: 17 }) : T(""), T(n.t, { size: 19 }) ], { indent: { left: 360 } })));
     if(r.nextAction) kids.push(body([ T("Next: ", { bold: true, color: NAVY, size: 19 }), T(r.nextAction, { size: 19 }) ], { indent: { left: 360 } }));
   });
 
@@ -1794,13 +1887,13 @@ function renderTable(){
     const rng=fmtRange(r);
     const np=r.note?(r.note.length>26?r.note.slice(0,26)+"…":r.note):"-";
     return `<tr>
-      <td class="cn"><span class="cname">${r.name}</span></td>
+      <td class="cn"><span class="cname">${r.name}</span><span class="cn-next" id="cnnext-${r.id}" onclick="editNextInline(${r.id},event)" title="Click to edit next action">${r.nextAction?`<i class="ti ti-corner-down-right"></i>${r.nextAction}`:`<i class="ti ti-plus"></i><span style="opacity:.5">Add next action</span>`}</span></td>
       <td class="co" style="color:var(--t1)">${r.owner||"-"}</td>
       <td class="cst"><span class="sp ${r.stage}">${s.l}</span></td>
-      <td class="ch"><span class="hb"><span class="hd ${r.health}"></span>${r.health[0].toUpperCase()+r.health.slice(1)}</span></td>
+      <td class="ch"><span class="hb" onclick="cycleHealth(${r.id},event)" title="Click to cycle health"><span class="hd ${r.health}"></span>${r.health[0].toUpperCase()+r.health.slice(1)}</span></td>
       <td class="cv">${v?`<span class="vk">${v}</span>`:`<span class="vtbd">TBD</span>`}</td>
       <td class="ce"><span class="vr">${r.tbd?(rng||"-"):"-"}</span></td>
-      <td class="cl" style="color:var(--t1);font-size:12px">${fmtDate(r.last)}</td>
+      <td class="cl" style="font-size:12px"><span class="${freshInfo(r).cls}" title="Last touched ${freshInfo(r).label}">${fmtDate(r.last)}</span></td>
 
       <td class="cage">${r.created?(()=>{const d=daysSince(r.created);return d===0?"Today":d+"d";})():"-"}</td>
       <td class="cfu">${(()=>{
@@ -2706,17 +2799,104 @@ function exportCSV(){
   URL.revokeObjectURL(a.href);
 }
 
-function logActivity(id){
+let _quId=null;
+const NOTE_KINDS={note:"Note",call:"Call",email:"Email",meeting:"Meeting",site:"Site visit",milestone:"Milestone"};
+function logActivity(id){ openQuickUpdate(id); }
+function openQuickUpdate(id){
+  const r=rows.find(x=>x.id===id);
+  if(!r) return;
+  _quId=id;
+  document.getElementById("qu-name").textContent=r.name;
+  const v=r.tbd?((r.estLow||r.estHigh)?fmtMoney(((r.estLow||0)+(r.estHigh||0))/2,true)+" est":"TBD"):(r.value?fmtMoney(r.value,true):"-");
+  document.getElementById("qu-meta").innerHTML='<span class="sp '+r.stage+'">'+stg(r.stage).l+'</span><span>'+v+'</span>'+(r.owner?'<span>'+r.owner+'</span>':'');
+  const tl=document.getElementById("qu-timeline");
+  const acts=(r.activity||[]).slice(-6).reverse();
+  tl.innerHTML=acts.length?acts.map(a=>'<div class="qu-tl-item"><span class="qu-tl-d">'+fmtDate(a.d)+'</span>'+(a.k&&a.k!=="note"?'<span class="qu-tl-k">'+(NOTE_KINDS[a.k]||a.k)+'</span>':'')+a.t+'</div>').join(""):'<div class="qu-tl-empty">No activity logged yet. This update will be the first.</div>';
+  document.getElementById("qu-note").value="";
+  document.getElementById("qu-next").value=r.nextAction||"";
+  document.getElementById("qu-fu").value=r.followUpDate||"";
+  document.querySelectorAll(".qu-chip").forEach(x=>x.classList.toggle("on",x.dataset.k==="note"));
+  document.querySelectorAll(".qu-h").forEach(x=>x.classList.toggle("on",x.dataset.h===r.health));
+  document.getElementById("qu-bg").style.display="block";
+  document.getElementById("qu-panel").classList.add("open");
+  setTimeout(()=>document.getElementById("qu-note").focus(),240);
+}
+function closeQuickUpdate(){
+  _quId=null;
+  document.getElementById("qu-bg").style.display="none";
+  document.getElementById("qu-panel").classList.remove("open");
+}
+function quType(btn){
+  document.querySelectorAll(".qu-chip").forEach(x=>x.classList.remove("on"));
+  btn.classList.add("on");
+}
+function quHealth(btn){
+  document.querySelectorAll(".qu-h").forEach(x=>x.classList.remove("on"));
+  btn.classList.add("on");
+}
+function _rerenderActive(){
+  renderTable();
+  if(document.getElementById("page-kanban").classList.contains("on")) renderKanban();
+  if(document.getElementById("page-dash").classList.contains("on")) renderDash();
+}
+function saveQuickUpdate(){
+  const i=rows.findIndex(r=>r.id===_quId);
+  if(i<0){closeQuickUpdate();return;}
+  const r=rows[i];
+  const today=new Date().toISOString().split("T")[0];
+  const note=document.getElementById("qu-note").value.trim();
+  const kind=(document.querySelector(".qu-chip.on")||{}).dataset?.k||"note";
+  if(note){
+    if(!r.activity) r.activity=[];
+    const entry={d:today,t:note};
+    if(kind!=="note") entry.k=kind;
+    r.activity.push(entry);
+    r.last=today;
+  }
+  r.nextAction=document.getElementById("qu-next").value.trim();
+  r.followUpDate=document.getElementById("qu-fu").value||"";
+  const h=(document.querySelector(".qu-h.on")||{}).dataset?.h;
+  if(h) r.health=h;
+  sheetWrite("update",toRow(r),i);
+  closeQuickUpdate();
+  _rerenderActive();
+}
+function cycleHealth(id,ev){
+  if(ev) ev.stopPropagation();
   const i=rows.findIndex(r=>r.id===id);
   if(i<0) return;
-  const t=prompt("Log activity for "+rows[i].name+":\n(e.g. Called Jane, sent revised proposal)");
-  if(!t||!t.trim()) return;
-  const today=new Date().toISOString().split("T")[0];
-  if(!rows[i].activity) rows[i].activity=[];
-  rows[i].activity.push({d:today,t:t.trim()});
-  rows[i].last=today;
+  const order=["green","yellow","red"];
+  rows[i].health=order[(order.indexOf(rows[i].health)+1)%3];
   sheetWrite("update",toRow(rows[i]),i);
-  renderTable();
+  _rerenderActive();
+}
+function editNextInline(id,ev){
+  if(ev) ev.stopPropagation();
+  const span=document.getElementById("cnnext-"+id);
+  if(!span||span.dataset.editing) return;
+  span.dataset.editing="1";
+  const r=rows.find(x=>x.id===id);
+  const cur=r?r.nextAction||"":"";
+  span.innerHTML='<input class="cn-next-inp" id="cnnext-inp-'+id+'" value="'+cur.replace(/"/g,"&quot;")+'" placeholder="Next action...">';
+  const inp=document.getElementById("cnnext-inp-"+id);
+  inp.focus(); inp.select();
+  const commit=()=>{
+    const i=rows.findIndex(x=>x.id===id);
+    if(i>=0&&rows[i].nextAction!==inp.value.trim()){
+      rows[i].nextAction=inp.value.trim();
+      sheetWrite("update",toRow(rows[i]),i);
+    }
+    renderTable();
+  };
+  inp.addEventListener("blur",commit);
+  inp.addEventListener("keydown",e=>{if(e.key==="Enter"){inp.blur();}if(e.key==="Escape"){inp.removeEventListener("blur",commit);renderTable();}});
+}
+function freshInfo(r){
+  const d=daysSince(r.last);
+  if(d===null) return {cls:"fresh-stale",label:"never"};
+  if(d<=7) return {cls:"fresh-ok",label:d===0?"today":d+"d ago"};
+  if(d<=14) return {cls:"fresh-warn",label:d+"d ago"};
+  return {cls:"fresh-stale",label:d+"d ago"};
 }
 
 
@@ -2742,6 +2922,7 @@ function renderKanban(){
             +(r.deploymentType?'<span class="deploy-pill '+r.deploymentType+'">'+({pilot:"Pilot",demo:"Demo",commercial:"Comm."}[r.deploymentType])+'</span>':'')
             +'</div>'
             +(val?'<div class="kb-val">'+val+'</div>':'')
+            +(function(){const a=(r.activity||[]).slice(-1)[0];return a?'<div class="kb-note"><b>'+fmtDate(a.d)+'</b> '+a.t+'</div>':'';})()
             +'</div>';
         }).join(""))
         +'</div>';
@@ -3529,6 +3710,7 @@ function renderMobileProjects(data){
         <span class="hb"><span class="hd ${r.health}"></span>${r.health[0].toUpperCase()+r.health.slice(1)}</span>
         ${r.deploymentType?`<span class="deploy-pill ${r.deploymentType}">${{pilot:"Pilot",demo:"Demo",commercial:"Commercial"}[r.deploymentType]}</span>`:""}
       </div>
+      ${(r.activity||[]).length?`<div class="kb-note" style="margin:0 0 10px;font-size:11px"><b>${fmtDate(r.activity[r.activity.length-1].d)}</b> ${r.activity[r.activity.length-1].t}</div>`:""}
       ${r.contactName||r.contactPhone||r.contactEmail?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 10px;background:var(--s0);border-radius:var(--r2)">
         <i class="ti ti-user" style="color:var(--t2);font-size:14px"></i>
         <span style="flex:1;font-size:12px;color:var(--t1);font-family:var(--f-ui);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.contactName||"Contact"}</span>
