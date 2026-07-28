@@ -1721,15 +1721,23 @@ function buildSummaryDoc(data){
     ["ESTIMATED UPSIDE", s.estMid ? money(s.estMid) : "-", NAVY],
     ["ACTIVE PROJECTS", String(s.activeCount), NAVY],
     ["COVERAGE VS TARGET", s.coverage !== null ? s.coverage.toFixed(1) + "x" : "No target", s.coverage !== null && s.coverage < 1.5 ? RED : GREEN],
-    ["WON TO DATE", s.wonCount + (s.wonVal ? "  (" + money(s.wonVal) + ")" : "") + "   LOST " + s.lostCount, NAVY]
+    ["DEALS CLOSED TO DATE",
+      [ { t: s.wonCount + " won", c: GREEN }, { t: "   ", c: GREY }, { t: s.lostCount + " lost", c: s.lostCount ? RED : GREY } ],
+      NAVY,
+      s.wonVal ? money(s.wonVal) + " total won value" : null]
   ];
   const KW = 3600;
-  const kpiRow = idx => new D.TableRow({ children: kpis.slice(idx, idx+3).map(k =>
-    cell([
+  const kpiRow = idx => new D.TableRow({ children: kpis.slice(idx, idx+3).map(k => {
+    const valueRuns = Array.isArray(k[1])
+      ? k[1].map(v => new D.TextRun({ text: v.t, font: "Arial", size: 28, bold: true, color: v.c }))
+      : [ new D.TextRun({ text: k[1], font: "Arial", size: 28, bold: true, color: k[2] }) ];
+    const parts = [
       P({ spacing:{ after: 40 }, children: [ new D.TextRun({ text: k[0], font: "Arial", size: 14, bold: true, color: GREY }) ] }),
-      P({ children: [ new D.TextRun({ text: k[1], font: "Arial", size: 28, bold: true, color: k[2] }) ] })
-    ], { width:{ size: KW, type: D.WidthType.DXA }, shading: { type: D.ShadingType.CLEAR, fill: SOFT } })
-  ) });
+      P({ children: valueRuns })
+    ];
+    if(k[3]) parts.push(P({ spacing:{ before: 20 }, children: [ new D.TextRun({ text: k[3], font: "Arial", size: 14, color: GREY }) ] }));
+    return cell(parts, { width:{ size: KW, type: D.WidthType.DXA }, shading: { type: D.ShadingType.CLEAR, fill: SOFT } });
+  }) });
   kids.push(new D.Table({
     width: { size: 10800, type: D.WidthType.DXA },
     columnWidths: [KW, KW, KW],
@@ -1756,6 +1764,20 @@ function buildSummaryDoc(data){
     kids.push(H1("Pipeline Overview"));
     imgs.forEach(im => kids.push(P({ spacing:{ after: 100 }, children: [ new D.ImageRun({ data: im[0], type: "png", transformation: { width: im[1], height: im[2] } }) ] })));
   }
+
+  // ── Recently closed (14 days, always) ──
+  if(data.closedRecent.length){
+    kids.push(H1("Recently Closed"));
+    data.closedRecent.forEach(x => {
+      const r = x.r;
+      const isWon = r.stage === "won";
+      kids.push(bullet([ T(isWon ? "WON  " : "LOST  ", { bold: true, color: isWon ? GREEN : RED, size: 17 }),
+        T(r.name, { bold: x.fresh, size: 19 }),
+        T("   " + fmtDate(r.stageChanged) + (isWon ? (r.value ? "   " + money(r.value) : "") : (r.lossReason ? "   /   " + r.lossReason : "")), { color: GREY, size: 17 }) ]));
+      if(!isWon && r.lossNotes) kids.push(body([ T("Lessons: ", { bold: true, color: RED, size: 17 }), T(r.lossNotes, { italics: true, size: 17 }) ], { indent: { left: 360 } }));
+    });
+  }
+
 
   // ── Deal Focus (always full) ──
   kids.push(H1("Deal Focus"));
@@ -1785,19 +1807,6 @@ function buildSummaryDoc(data){
       kids.push(bullet([ T(r.name, { bold: true }), T("   "), stgRun(r),
         T("   " + dealVal(r) + (r.owner ? "   /   " + r.owner : "") + (r.deploymentType ? "   /   " + cap(r.deploymentType) : "") + (r.infraType ? "   /   " + infraLabel(r.infraType) : ""), { color: GREY, size: 18 }) ]));
       if(r.note) kids.push(body([ T(r.note, { italics: true, color: GREY, size: 17 }) ], { indent: { left: 360 } }));
-    });
-  }
-
-  // ── Recently closed (14 days, always) ──
-  if(data.closedRecent.length){
-    kids.push(H1("Recently Closed"));
-    data.closedRecent.forEach(x => {
-      const r = x.r;
-      const isWon = r.stage === "won";
-      kids.push(bullet([ T(isWon ? "WON  " : "LOST  ", { bold: true, color: isWon ? GREEN : RED, size: 17 }),
-        T(r.name, { bold: x.fresh, size: 19 }),
-        T("   " + fmtDate(r.stageChanged) + (isWon ? (r.value ? "   " + money(r.value) : "") : (r.lossReason ? "   /   " + r.lossReason : "")), { color: GREY, size: 17 }) ]));
-      if(!isWon && r.lossNotes) kids.push(body([ T("Lessons: ", { bold: true, color: RED, size: 17 }), T(r.lossNotes, { italics: true, size: 17 }) ], { indent: { left: 360 } }));
     });
   }
 
