@@ -1479,37 +1479,50 @@ function buildSummaryData(sinceISO, type){
     + active.filter(r => r.tbd && (r.estLow || r.estHigh)).reduce((s,r) => s + ((r.estLow||0)+(r.estHigh||0))/2 * (STAGE_WEIGHTS[r.stage]||0), 0);
   const target = getPipelineTarget();
   const coverage = target > 0 ? (pipe + estMid) / target : null;
-
   const inWin = d => d && d >= sinceISO;
+  const dealW = r => (r.tbd ? ((r.estLow||0)+(r.estHigh||0))/2 : (r.value||0)) * (STAGE_WEIGHTS[r.stage]||0);
+  const ago14 = (()=>{ const d=new Date(); d.setDate(d.getDate()-14); return localISO(d); })();
+  const ago5 = (()=>{ const d=new Date(); d.setDate(d.getDate()-5); return localISO(d); })();
+
+  const hasFresh = r => (r.activity||[]).some(a => inWin(a.d)) || inWin(r.stageChanged) || inWin(r.created) || (r.steps||[]).some(s => s.c && inWin(s.c));
+
+  // Deal Focus: every brief, top active deals, freshest first then by weighted value
+  const focus = active.slice()
+    .sort((a,b) => (hasFresh(b)?1:0)-(hasFresh(a)?1:0) || dealW(b)-dealW(a) || (b.last||"").localeCompare(a.last||""))
+    .slice(0, 8)
+    .map(r => {
+      const winNotes = (r.activity||[]).filter(a => inWin(a.d) && a.k !== "done").sort((a,b) => a.d.localeCompare(b.d));
+      const allNotes = (r.activity||[]).filter(a => a.k !== "done");
+      return {
+        r,
+        fresh: hasFresh(r),
+        isNew: inWin(r.created),
+        advanced: inWin(r.stageChanged) && r.stageChanged !== r.created && !inWin(r.created),
+        winNotes,
+        lastNote: winNotes.length ? null : (allNotes.length ? allNotes[allNotes.length-1] : null),
+        doneRecent: (r.steps||[]).filter(s => s.c && (inWin(s.c) || s.c >= ago5)).slice(-3),
+        openSteps: (r.steps||[]).filter(s => !s.c).slice(0, 3)
+      };
+    });
+
   const newOpps = rows.filter(r => inWin(r.created));
-  const wonWin  = won.filter(r => inWin(r.stageChanged));
-  const lostWin = lost.filter(r => inWin(r.stageChanged));
-  const progressing = active.filter(r => {
-    if(inWin(r.created)) return false;
-    const advanced = inWin(r.stageChanged) && r.stageChanged !== r.created;
-    const notesWin = (r.activity||[]).filter(a => inWin(a.d));
-    return advanced || notesWin.length > 0 || _notesInLastNWorkdays(r, 5) >= 2;
-  }).map(r => ({
-    r,
-    advanced: inWin(r.stageChanged) && r.stageChanged !== r.created,
-    notes: (r.activity||[]).filter(a => inWin(a.d) && a.k !== "done").sort((a,b) => a.d.localeCompare(b.d)),
-    openSteps: (r.steps||[]).filter(s => !s.c).slice(0,3),
-    doneSteps: (r.steps||[]).filter(s => s.c && inWin(s.c))
-  }));
+  const closedRecent = won.concat(lost)
+    .filter(r => r.stageChanged && r.stageChanged >= ago14)
+    .sort((a,b) => (b.stageChanged||"").localeCompare(a.stageChanged||""))
+    .map(r => ({ r, fresh: inWin(r.stageChanged) }));
 
   const plus7 = new Date(); plus7.setDate(plus7.getDate() + 7);
   const plus14 = new Date(); plus14.setDate(plus14.getDate() + 14);
-  const followups = active.filter(r => r.followUpDate && r.followUpDate <= today)
-    .sort((a,b) => a.followUpDate.localeCompare(b.followUpDate));
-  const deadlines = active.filter(r => r.deadline && r.deadline <= localISO(plus7))
-    .sort((a,b) => a.deadline.localeCompare(b.deadline));
+  const fuDue = active.filter(r => r.followUpDate && r.followUpDate <= today).sort((a,b) => a.followUpDate.localeCompare(b.followUpDate));
+  const fuSoon = active.filter(r => r.followUpDate && r.followUpDate > today && r.followUpDate <= localISO(plus7)).sort((a,b) => a.followUpDate.localeCompare(b.followUpDate));
+  const dlSoon = active.filter(r => r.deadline && r.deadline <= localISO(plus7)).sort((a,b) => a.deadline.localeCompare(b.deadline));
   const watchRed = active.filter(r => r.health === "red");
   const watchStuck = active.filter(r => { const d = daysSince(r.stageChanged); return d !== null && d > 60; });
 
   const data = { type, sinceISO, today,
     snapshot: { pipe, weighted, estMid, activeCount: active.length, coverage, wonCount: won.length, lostCount: lost.length,
       wonVal: won.filter(r => r.value).reduce((s,r) => s + r.value, 0) },
-    newOpps, progressing, wonWin, lostWin, followups, deadlines, watchRed, watchStuck };
+    focus, newOpps, closedRecent, fuDue, fuSoon, dlSoon, watchRed, watchStuck };
 
   if(type === "weekly"){
     let prev = null;
@@ -1517,7 +1530,7 @@ function buildSummaryData(sinceISO, type){
     data.prevSnap = prev;
     data.stageMoves = active.filter(r => inWin(r.stageChanged) && r.stageChanged !== r.created);
     data.nextWeek = {
-      followups: active.filter(r => r.followUpDate && r.followUpDate > today && r.followUpDate <= localISO(plus7)),
+      followups: fuSoon,
       deadlines: active.filter(r => r.deadline && r.deadline > today && r.deadline <= localISO(plus14))
     };
   }
@@ -1661,133 +1674,171 @@ function chartDeployMix(){
 
 function buildSummaryDoc(data){
   const D = docx;
-  const NAVY = "0A1628", GREY = "6A7A8E", AQUA = "0898A0", RED = "B83030", GREEN = "0A7A50";
+  const NAVY = "0A1628", GREY = "6A7A8E", AQUA = "0898A0", RED = "B83030", GREEN = "0A7A50", LINE = "D5E0EA", SOFT = "F2F7FB";
   const STG_HEX = { prospect:"4A6280", scoping:"1862B8", proposal:"5040B0", lab:"8A5A00", demo:"A04878", negotiation:"0878A0", won:"0A7A50", lost:"B83030" };
+  const HP_HEX = { green: GREEN, yellow: "8A5A00", red: RED };
   const money = v => v ? "$" + Math.round(v).toLocaleString("en-US") : "-";
   const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
-  const dealVal = r => r.tbd ? ((r.estLow||r.estHigh) ? money(((r.estLow||0)+(r.estHigh||0))/2) + " est" : "TBD") : money(r.value);
+  const dealVal = r => r.tbd ? ((r.estLow||r.estHigh) ? money(((r.estLow||0)+(r.estHigh||0))/2) + " est" : "Value TBD") : money(r.value);
 
-  const P = opts => new D.Paragraph(opts);
-  const T = (text, o) => new D.TextRun(Object.assign({ text, font: "Arial", size: 21 }, o||{}));
-  const H1 = text => P({ heading: D.HeadingLevel.HEADING_1, spacing: { before: 260, after: 120 },
-    children: [ new D.TextRun({ text, font: "Arial", size: 26, bold: true, color: NAVY }) ] });
-  const body = (children, o) => P(Object.assign({ spacing: { after: 80 }, children }, o||{}));
+  const P = o => new D.Paragraph(o);
+  const T = (text, o) => new D.TextRun(Object.assign({ text, font: "Arial", size: 20 }, o||{}));
+  const H1 = text => P({ spacing: { before: 300, after: 140 },
+    border: { bottom: { style: D.BorderStyle.SINGLE, size: 6, color: LINE, space: 3 } },
+    children: [ new D.TextRun({ text, font: "Arial", size: 25, bold: true, color: NAVY }) ] });
+  const body = (children, o) => P(Object.assign({ spacing: { after: 70 }, children }, o||{}));
   const bullet = children => P({ numbering: { reference: "kmx-bullets", level: 0 }, spacing: { after: 60 }, children });
-  const emptyLine = text => body([ T(text, { italics: true, color: GREY }) ]);
-  const stgRun = r => T(stg(r.stage).l, { bold: true, color: STG_HEX[r.stage] || NAVY });
+  const stgRun = r => T(stg(r.stage).l.toUpperCase(), { bold: true, color: STG_HEX[r.stage] || NAVY, size: 16 });
+  const badge = (text, color) => T("  " + text, { bold: true, color, size: 15 });
+  const cell = (children, o) => new D.TableCell(Object.assign({ margins: { top: 90, bottom: 90, left: 140, right: 140 }, children }, o||{}));
 
   const kids = [];
-  kids.push(P({ spacing:{ after: 40 }, children: [ new D.TextRun({ text: "KMX Technologies", font: "Arial", size: 32, bold: true, color: NAVY }) ] }));
-  kids.push(P({ spacing:{ after: 40 }, children: [ new D.TextRun({ text: data.type === "weekly" ? "Weekly Pipeline Executive Summary" : "Daily Pipeline Executive Briefing", font: "Arial", size: 24, color: AQUA, bold: true }) ] }));
-  kids.push(P({ spacing:{ after: 200 }, border: { bottom: { style: D.BorderStyle.SINGLE, size: 6, color: NAVY, space: 4 } },
-    children: [ new D.TextRun({ text: new Date().toLocaleDateString("en-US",{ weekday:"long", month:"long", day:"numeric", year:"numeric" }) + "   /   Covering activity since " + fmtDate(data.sinceISO), font: "Arial", size: 19, color: GREY }) ] }));
 
-  // Snapshot table
-  kids.push(H1("Executive Snapshot"));
-  const s = data.snapshot;
-  const snapPairs = [
-    ["Confirmed pipeline", money(s.pipe)],
-    ["Weighted pipeline", money(s.weighted)],
-    ["Estimated upside", money(s.estMid)],
-    ["Active projects", String(s.activeCount)],
-    ["Coverage vs target", s.coverage !== null ? s.coverage.toFixed(1) + "x" : "No target set"],
-    ["Won / Lost to date", s.wonCount + " won (" + money(s.wonVal) + ") / " + s.lostCount + " lost"]
-  ];
-  if(data.type === "weekly" && data.prevSnap){
-    const dPipe = s.pipe - (data.prevSnap.pipe || 0);
-    snapPairs.push(["Change vs last week", (dPipe >= 0 ? "+" : "-") + money(Math.abs(dPipe)) + " confirmed pipeline"]);
-  }
-  const CW = [3800, 7000];
+  // ── Masthead band ──
+  const mastheadTitle = data.type === "weekly" ? "WEEKLY PIPELINE SUMMARY" : "DAILY PIPELINE BRIEFING";
   kids.push(new D.Table({
     width: { size: 10800, type: D.WidthType.DXA },
-    columnWidths: CW,
-    rows: snapPairs.map((pair, i) => new D.TableRow({ children: [
-      new D.TableCell({ width: { size: CW[0], type: D.WidthType.DXA },
-        shading: { type: D.ShadingType.CLEAR, fill: i % 2 ? "F2F7FB" : "FFFFFF" },
-        margins: { top: 60, bottom: 60, left: 120, right: 120 },
-        children: [ P({ children: [ T(pair[0], { bold: true, color: NAVY, size: 19 }) ] }) ] }),
-      new D.TableCell({ width: { size: CW[1], type: D.WidthType.DXA },
-        shading: { type: D.ShadingType.CLEAR, fill: i % 2 ? "F2F7FB" : "FFFFFF" },
-        margins: { top: 60, bottom: 60, left: 120, right: 120 },
-        children: [ P({ children: [ T(pair[1], { size: 19 }) ] }) ] })
-    ] }))
+    columnWidths: [7300, 3500],
+    borders: { top:{style:D.BorderStyle.NONE}, bottom:{style:D.BorderStyle.NONE}, left:{style:D.BorderStyle.NONE}, right:{style:D.BorderStyle.NONE}, insideHorizontal:{style:D.BorderStyle.NONE}, insideVertical:{style:D.BorderStyle.NONE} },
+    rows: [ new D.TableRow({ children: [
+      cell([
+        P({ spacing:{ after: 30 }, children: [ new D.TextRun({ text: "KMX TECHNOLOGIES", font: "Arial", size: 31, bold: true, color: "FFFFFF" }) ] }),
+        P({ children: [ new D.TextRun({ text: mastheadTitle, font: "Arial", size: 18, bold: true, color: "38E8C8" }) ] })
+      ], { shading: { type: D.ShadingType.CLEAR, fill: NAVY }, width:{ size: 7300, type: D.WidthType.DXA } }),
+      cell([
+        P({ alignment: D.AlignmentType.RIGHT, spacing:{ after: 30 }, children: [ new D.TextRun({ text: new Date().toLocaleDateString("en-US",{ weekday:"long" }), font: "Arial", size: 20, bold: true, color: "FFFFFF" }) ] }),
+        P({ alignment: D.AlignmentType.RIGHT, children: [ new D.TextRun({ text: new Date().toLocaleDateString("en-US",{ month:"long", day:"numeric", year:"numeric" }), font: "Arial", size: 17, color: "9FC4D8" }) ] })
+      ], { shading: { type: D.ShadingType.CLEAR, fill: NAVY }, width:{ size: 3500, type: D.WidthType.DXA } })
+    ] }) ]
   }));
+  kids.push(P({ spacing: { after: 160 }, children: [ T("Covering updates since " + fmtDate(data.sinceISO) + ". Freshest information first.", { size: 16, color: GREY, italics: true }) ] }));
 
-  // Charts
-  const imgs=[];
-  const stgPng=chartStageValue(); if(stgPng) imgs.push([stgPng, 640, Math.round(640*( (64+6*56) /880))]);
-  const hthPng=chartHealthMix(); if(hthPng) imgs.push([hthPng, 380, Math.round(380*(340/560))]);
-  const depPng=data.type==="weekly"?chartDeployMix():null; if(depPng) imgs.push([depPng, 640, Math.round(640*(250/880))]);
-  if(imgs.length){
-    kids.push(H1("Pipeline Picture"));
-    imgs.forEach(im=>kids.push(P({spacing:{after:140},children:[ new D.ImageRun({data:im[0],type:"png",transformation:{width:im[1],height:im[2]}}) ]})));
+  // ── KPI grid 3x2 ──
+  const s = data.snapshot;
+  const kpis = [
+    ["CONFIRMED PIPELINE", money(s.pipe), NAVY],
+    ["WEIGHTED PIPELINE", money(s.weighted), AQUA],
+    ["ESTIMATED UPSIDE", s.estMid ? money(s.estMid) : "-", NAVY],
+    ["ACTIVE PROJECTS", String(s.activeCount), NAVY],
+    ["COVERAGE VS TARGET", s.coverage !== null ? s.coverage.toFixed(1) + "x" : "No target", s.coverage !== null && s.coverage < 1.5 ? RED : GREEN],
+    ["WON TO DATE", s.wonCount + (s.wonVal ? "  (" + money(s.wonVal) + ")" : "") + "   LOST " + s.lostCount, NAVY]
+  ];
+  const KW = 3600;
+  const kpiRow = idx => new D.TableRow({ children: kpis.slice(idx, idx+3).map(k =>
+    cell([
+      P({ spacing:{ after: 40 }, children: [ new D.TextRun({ text: k[0], font: "Arial", size: 14, bold: true, color: GREY }) ] }),
+      P({ children: [ new D.TextRun({ text: k[1], font: "Arial", size: 28, bold: true, color: k[2] }) ] })
+    ], { width:{ size: KW, type: D.WidthType.DXA }, shading: { type: D.ShadingType.CLEAR, fill: SOFT } })
+  ) });
+  kids.push(new D.Table({
+    width: { size: 10800, type: D.WidthType.DXA },
+    columnWidths: [KW, KW, KW],
+    borders: { top:{style:D.BorderStyle.SINGLE,size:4,color:"FFFFFF"}, bottom:{style:D.BorderStyle.SINGLE,size:4,color:"FFFFFF"}, left:{style:D.BorderStyle.SINGLE,size:4,color:"FFFFFF"}, right:{style:D.BorderStyle.SINGLE,size:4,color:"FFFFFF"}, insideHorizontal:{style:D.BorderStyle.SINGLE,size:8,color:"FFFFFF"}, insideVertical:{style:D.BorderStyle.SINGLE,size:8,color:"FFFFFF"} },
+    rows: [ kpiRow(0), kpiRow(3) ]
+  }));
+  if(data.type === "weekly" && data.prevSnap){
+    const dPipe = s.pipe - (data.prevSnap.pipe || 0);
+    const dW = Math.round(s.weighted) - (data.prevSnap.weighted || 0);
+    kids.push(P({ spacing: { before: 100, after: 0 }, children: [
+      T("Week over week:  ", { bold: true, size: 18, color: NAVY }),
+      T((dPipe >= 0 ? "+" : "-") + money(Math.abs(dPipe)) + " confirmed", { size: 18, color: dPipe >= 0 ? GREEN : RED, bold: true }),
+      T("   ", {}),
+      T((dW >= 0 ? "+" : "-") + money(Math.abs(dW)) + " weighted", { size: 18, color: dW >= 0 ? GREEN : RED, bold: true })
+    ] }));
   }
 
-  // New opportunities
-  kids.push(H1("New Opportunities"));
-  if(!data.newOpps.length) kids.push(emptyLine("No new opportunities in this window."));
-  data.newOpps.forEach(r => {
-    kids.push(bullet([ T(r.name, { bold: true }), T("  "), stgRun(r),
-      T("  " + dealVal(r) + (r.owner ? "  /  " + r.owner : "") + (r.deploymentType ? "  /  " + cap(r.deploymentType) : "") + (r.infraType ? "  /  " + infraLabel(r.infraType) : ""), { color: GREY }) ]));
-    if(r.note) kids.push(body([ T(r.note, { italics: true, color: GREY, size: 19 }) ], { indent: { left: 360 } }));
+  // ── Charts ──
+  const imgs = [];
+  const stgPng = chartStageValue(); if(stgPng) imgs.push([stgPng, 620, Math.round(620*((64+6*56)/880))]);
+  const hthPng = chartHealthMix(); if(hthPng) imgs.push([hthPng, 360, Math.round(360*(340/560))]);
+  const depPng = data.type === "weekly" ? chartDeployMix() : null; if(depPng) imgs.push([depPng, 620, Math.round(620*(250/880))]);
+  if(imgs.length){
+    kids.push(H1("Pipeline Overview"));
+    imgs.forEach(im => kids.push(P({ spacing:{ after: 100 }, children: [ new D.ImageRun({ data: im[0], type: "png", transformation: { width: im[1], height: im[2] } }) ] })));
+  }
+
+  // ── Deal Focus (always full) ──
+  kids.push(H1("Deal Focus"));
+  if(!data.focus.length) kids.push(body([ T("No active deals in the pipeline. Add opportunities to see them here.", { italics: true, color: GREY }) ]));
+  data.focus.forEach(f => {
+    const r = f.r;
+    const line = [ T(r.name, { bold: true, size: 22 }), T("   "), stgRun(r), T("   " + dealVal(r), { color: GREY, size: 18 }) ];
+    if(f.isNew) line.push(badge("NEW", AQUA));
+    if(f.advanced) line.push(badge("ADVANCED " + fmtDate(r.stageChanged), GREEN));
+    kids.push(P({ spacing: { before: 150, after: 40 }, children: line }));
+    const meta = [];
+    if(r.owner) meta.push(r.owner);
+    meta.push("Health " + cap(r.health));
+    if(r.last) meta.push("Last touched " + fmtDate(r.last));
+    kids.push(body([ T(meta.join("   /   "), { size: 16, color: GREY }) ], { spacing: { after: 50 } }));
+    f.winNotes.forEach(n => kids.push(body([ T(fmtDate(n.d) + "  ", { bold: true, color: AQUA, size: 18 }), n.k ? T((NOTE_KINDS[n.k]||n.k).toUpperCase() + "  ", { bold: true, color: NAVY, size: 15 }) : T(""), T(n.t, { size: 18 }) ], { indent: { left: 280 } })));
+    if(f.lastNote) kids.push(body([ T("Last note " + fmtDate(f.lastNote.d) + "  ", { bold: true, color: GREY, size: 17 }), T(f.lastNote.t, { size: 18, color: "3A4A5E" }) ], { indent: { left: 280 } }));
+    f.doneRecent.forEach(st => kids.push(body([ T("DONE " + fmtDate(st.c) + "  ", { bold: true, color: GREEN, size: 15 }), T(st.t, { size: 17, strike: true, color: GREY }) ], { indent: { left: 280 } })));
+    f.openSteps.forEach((st, si) => kids.push(body([ T(si === 0 ? "NEXT  " : "THEN  ", { bold: true, color: si === 0 ? AQUA : GREY, size: 15 }), T(st.t, { size: 18, bold: si === 0 }) ], { indent: { left: 280 } })));
+    if(!f.winNotes.length && !f.lastNote && !f.openSteps.length) kids.push(body([ T("No notes or steps yet. Open the quick update panel to add the first.", { italics: true, color: GREY, size: 17 }) ], { indent: { left: 280 } }));
   });
 
-  // Progressing well
-  kids.push(H1("Progressing Well"));
-  if(!data.progressing.length) kids.push(emptyLine("No deals with new movement or notes in this window."));
-  data.progressing.forEach(p => {
-    const r = p.r;
-    kids.push(bullet([ T(r.name, { bold: true }), T("  "), stgRun(r), T("  " + dealVal(r), { color: GREY }),
-      p.advanced ? T("   ADVANCED " + fmtDate(r.stageChanged), { bold: true, color: GREEN, size: 17 }) : T("") ]));
-    p.notes.forEach(n => kids.push(body([ T(fmtDate(n.d) + ":  ", { bold: true, color: AQUA, size: 19 }), n.k ? T((NOTE_KINDS[n.k]||n.k).toUpperCase() + "  ", { bold: true, color: NAVY, size: 17 }) : T(""), T(n.t, { size: 19 }) ], { indent: { left: 360 } })));
-    p.doneSteps.forEach(s => kids.push(body([ T("DONE " + fmtDate(s.c) + "  ", { bold: true, color: GREEN, size: 17 }), T(s.t, { size: 19, strike: true, color: GREY }) ], { indent: { left: 360 } })));
-    p.openSteps.forEach((s, si) => kids.push(body([ T(si === 0 ? "NEXT  " : "THEN  ", { bold: true, color: si === 0 ? AQUA : GREY, size: 17 }), T(s.t, { size: 19, bold: si === 0 }) ], { indent: { left: 360 } })));
-  });
-
-  // Wins and losses
-  if(data.wonWin.length || data.lostWin.length){
-    kids.push(H1("Closed in This Window"));
-    data.wonWin.forEach(r => kids.push(bullet([ T("WON  ", { bold: true, color: GREEN }), T(r.name, { bold: true }), T("  " + money(r.value) + (r.owner ? "  /  " + r.owner : ""), { color: GREY }) ])));
-    data.lostWin.forEach(r => {
-      kids.push(bullet([ T("LOST  ", { bold: true, color: RED }), T(r.name, { bold: true }), T(r.lossReason ? "  /  " + r.lossReason : "", { color: GREY }) ]));
-      if(r.lossNotes) kids.push(body([ T("Lessons: ", { bold: true, color: RED, size: 19 }), T(r.lossNotes, { italics: true, size: 19 }) ], { indent: { left: 360 } }));
+  // ── New opportunities (only when present) ──
+  if(data.newOpps.length){
+    kids.push(H1("New Opportunities"));
+    data.newOpps.forEach(r => {
+      kids.push(bullet([ T(r.name, { bold: true }), T("   "), stgRun(r),
+        T("   " + dealVal(r) + (r.owner ? "   /   " + r.owner : "") + (r.deploymentType ? "   /   " + cap(r.deploymentType) : "") + (r.infraType ? "   /   " + infraLabel(r.infraType) : ""), { color: GREY, size: 18 }) ]));
+      if(r.note) kids.push(body([ T(r.note, { italics: true, color: GREY, size: 17 }) ], { indent: { left: 360 } }));
     });
   }
 
-  // Actions / weekly setup
+  // ── Recently closed (14 days, always) ──
+  if(data.closedRecent.length){
+    kids.push(H1("Recently Closed"));
+    data.closedRecent.forEach(x => {
+      const r = x.r;
+      const isWon = r.stage === "won";
+      kids.push(bullet([ T(isWon ? "WON  " : "LOST  ", { bold: true, color: isWon ? GREEN : RED, size: 17 }),
+        T(r.name, { bold: x.fresh, size: 19 }),
+        T("   " + fmtDate(r.stageChanged) + (isWon ? (r.value ? "   " + money(r.value) : "") : (r.lossReason ? "   /   " + r.lossReason : "")), { color: GREY, size: 17 }) ]));
+      if(!isWon && r.lossNotes) kids.push(body([ T("Lessons: ", { bold: true, color: RED, size: 17 }), T(r.lossNotes, { italics: true, size: 17 }) ], { indent: { left: 360 } }));
+    });
+  }
+
+  // ── Actions (always) ──
   if(data.type === "weekly"){
     kids.push(H1("Stage Movement This Week"));
-    if(!data.stageMoves.length) kids.push(emptyLine("No stage advances recorded this week."));
-    data.stageMoves.forEach(r => kids.push(bullet([ T(r.name, { bold: true }), T("  now at  "), stgRun(r), T("  (" + fmtDate(r.stageChanged) + ")", { color: GREY }) ])));
+    if(!data.stageMoves.length) kids.push(body([ T("No stage advances this week. The Deal Focus section shows where each deal stands.", { italics: true, color: GREY }) ]));
+    data.stageMoves.forEach(r => kids.push(bullet([ T(r.name, { bold: true }), T("  now at  "), stgRun(r), T("  (" + fmtDate(r.stageChanged) + ")", { color: GREY, size: 17 }) ])));
     kids.push(H1("Setting Up Next Week"));
-    if(!data.nextWeek.followups.length && !data.nextWeek.deadlines.length) kids.push(emptyLine("No follow-ups or deadlines scheduled for next week."));
-    data.nextWeek.followups.forEach(r => kids.push(bullet([ T("Follow-up " + fmtDate(r.followUpDate) + "  ", { bold: true, color: AQUA }), T(r.name, { bold: true }), r.nextAction ? T("  /  " + r.nextAction, { color: GREY }) : T("") ])));
-    data.nextWeek.deadlines.forEach(r => kids.push(bullet([ T("Deadline " + fmtDate(r.deadline) + "  ", { bold: true, color: RED }), T(r.name, { bold: true }) ])));
+    if(!data.nextWeek.followups.length && !data.nextWeek.deadlines.length) kids.push(body([ T("Nothing scheduled yet. Set follow-up dates so next week plans itself.", { italics: true, color: GREY }) ]));
+    data.nextWeek.followups.forEach(r => kids.push(bullet([ T("Follow-up " + fmtDate(r.followUpDate) + "  ", { bold: true, color: AQUA, size: 17 }), T(r.name, { bold: true }), topStep(r) ? T("   /   " + topStep(r), { color: GREY, size: 17 }) : T("") ])));
+    data.nextWeek.deadlines.forEach(r => kids.push(bullet([ T("Deadline " + fmtDate(r.deadline) + "  ", { bold: true, color: RED, size: 17 }), T(r.name, { bold: true }) ])));
   } else {
-    kids.push(H1("Today's Actions"));
-    if(!data.followups.length && !data.deadlines.length) kids.push(emptyLine("No follow-ups due and no deadlines within 7 days."));
-    data.followups.forEach(r => {
+    kids.push(H1("Action Board"));
+    if(!data.fuDue.length && !data.fuSoon.length && !data.dlSoon.length){
+      kids.push(body([ T("No follow-ups or deadlines on the board. Set follow-up dates in the quick update panel to build tomorrow's list.", { italics: true, color: GREY }) ]));
+    }
+    data.fuDue.forEach(r => {
       const overdue = r.followUpDate < data.today;
-      kids.push(bullet([ T(overdue ? "OVERDUE " + fmtDate(r.followUpDate) + "  " : "Due today  ", { bold: true, color: overdue ? RED : AQUA }), T(r.name, { bold: true }), r.nextAction ? T("  /  " + r.nextAction, { color: GREY }) : T("") ]));
+      kids.push(bullet([ T(overdue ? "OVERDUE " + fmtDate(r.followUpDate) + "  " : "DUE TODAY  ", { bold: true, color: overdue ? RED : AQUA, size: 17 }), T(r.name, { bold: true }), topStep(r) ? T("   /   " + topStep(r), { color: GREY, size: 17 }) : T("") ]));
     });
-    data.deadlines.forEach(r => kids.push(bullet([ T("Deadline " + fmtDate(r.deadline) + "  ", { bold: true, color: RED }), T(r.name, { bold: true }) ])));
+    data.fuSoon.forEach(r => kids.push(bullet([ T("Coming up " + fmtDate(r.followUpDate) + "  ", { bold: true, color: GREY, size: 17 }), T(r.name, {}), topStep(r) ? T("   /   " + topStep(r), { color: GREY, size: 17 }) : T("") ])));
+    data.dlSoon.forEach(r => kids.push(bullet([ T("Deadline " + fmtDate(r.deadline) + "  ", { bold: true, color: RED, size: 17 }), T(r.name, { bold: true }) ])));
   }
 
-  // Watch list
+  // ── Watch list ──
   if(data.watchRed.length || data.watchStuck.length){
     kids.push(H1("Watch List"));
-    data.watchRed.forEach(r => kids.push(bullet([ T("RED  ", { bold: true, color: RED }), T(r.name, { bold: true }), T("  "), stgRun(r), r.nextAction ? T("  /  " + r.nextAction, { color: GREY }) : T("") ])));
-    data.watchStuck.forEach(r => kids.push(bullet([ T("STUCK  ", { bold: true, color: RED }), T(r.name, { bold: true }), T("  " + daysSince(r.stageChanged) + " days at ", { color: GREY }), stgRun(r) ])));
+    data.watchRed.forEach(r => kids.push(bullet([ T("RED  ", { bold: true, color: RED, size: 17 }), T(r.name, { bold: true }), T("   "), stgRun(r), topStep(r) ? T("   /   " + topStep(r), { color: GREY, size: 17 }) : T("") ])));
+    data.watchStuck.forEach(r => kids.push(bullet([ T("STUCK  ", { bold: true, color: RED, size: 17 }), T(r.name, { bold: true }), T("   " + daysSince(r.stageChanged) + " days at ", { color: GREY, size: 17 }), stgRun(r) ])));
   }
 
-  kids.push(P({ spacing: { before: 300 }, border: { top: { style: D.BorderStyle.SINGLE, size: 4, color: "D5E0EA", space: 4 } },
-    children: [ new D.TextRun({ text: "KMX Technologies  /  Generated " + new Date().toLocaleString("en-US") + "  /  Confidential", font: "Arial", size: 16, color: GREY }) ] }));
+  kids.push(P({ spacing: { before: 320 }, border: { top: { style: D.BorderStyle.SINGLE, size: 4, color: LINE, space: 4 } },
+    children: [ new D.TextRun({ text: "KMX Technologies   /   Generated " + new Date().toLocaleString("en-US") + "   /   Confidential", font: "Arial", size: 15, color: GREY }) ] }));
 
   return new D.Document({
     numbering: { config: [ { reference: "kmx-bullets", levels: [ { level: 0, format: D.LevelFormat.BULLET, text: "\u2022", alignment: D.AlignmentType.LEFT, style: { paragraph: { indent: { left: 360, hanging: 200 } } } } ] } ] },
-    sections: [ { properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 720, bottom: 720, left: 720, right: 720 } } }, children: kids } ]
+    sections: [ { properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 620, bottom: 620, left: 720, right: 720 } } }, children: kids } ]
   });
 }
+
 
 async function boot(){
   buildSelects();
