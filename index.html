@@ -1667,26 +1667,42 @@ function buildBriefHTML(data){
   return h;
 }
 
-function computeBreaks(blocks, pageH, totalH){
-  // Returns slice end positions so cuts land between blocks, never through them.
-  const breaks=[];
-  const sorted=(blocks||[]).filter(b=>b.bottom>b.top).sort((a,b)=>a.top-b.top);
-  let y=0, guard=0;
-  while(y < totalH - 1 && guard++ < 200){
-    const limit=y+pageH;
-    if(limit>=totalH){ breaks.push(totalH); break; }
-    let best=-1, bestBlock=null;
-    for(const b of sorted){
-      if(b.bottom<=limit && b.bottom>y && b.bottom>best){ best=b.bottom; bestBlock=b; }
-    }
-    if(best<=y){ breaks.push(limit); y=limit; continue; }
-    // Never leave a section heading orphaned at the bottom of a page
-    if(bestBlock.h1 && bestBlock.top>y){ best=bestBlock.top; }
-    breaks.push(best);
-    y=best;
+function paginateBrief(target){
+  // Distributes the brief's blocks into fixed-size Letter page containers.
+  // Returns the array of page elements (inserted into target's parent).
+  const PAGE_W=816, PAGE_H=1056, PAD_V=34, PAD_H=40;
+  const LIMIT=PAGE_H-PAD_V*2;
+  const parent=target.parentNode;
+  const blocks=[].slice.call(target.children);
+  const heights=blocks.map(b=>{
+    const cs=window.getComputedStyle?window.getComputedStyle(b):null;
+    const mt=cs?parseFloat(cs.marginTop)||0:0;
+    const mb=cs?parseFloat(cs.marginBottom)||0:0;
+    return (b.offsetHeight||0)+mt+mb;
+  });
+  const pages=[];
+  const newPage=()=>{
+    const p=document.createElement("div");
+    p.className="brief-page";
+    p.style.cssText="width:"+PAGE_W+"px;height:"+PAGE_H+"px;padding:"+PAD_V+"px "+PAD_H+"px;box-sizing:border-box;background:#FFFFFF;overflow:hidden;font-family:Arial,Helvetica,sans-serif;color:#1A2430";
+    parent.appendChild(p);
+    pages.push(p);
+    return p;
+  };
+  let page=newPage(), used=0;
+  for(let i=0;i<blocks.length;i++){
+    const b=blocks[i], h=heights[i];
+    const isHead=b.classList&&b.classList.contains("pbh");
+    const nextH=i+1<blocks.length?heights[i+1]:0;
+    const needsNewPage=used>0&&(
+      used+h>LIMIT ||
+      (isHead && used+h+Math.min(nextH,120)>LIMIT)
+    );
+    if(needsNewPage){ page=newPage(); used=0; }
+    page.appendChild(b);
+    used+=h;
   }
-  if(!breaks.length || breaks[breaks.length-1] < totalH) breaks.push(totalH);
-  return breaks;
+  return pages;
 }
 
 async function generateSummaryPDF(data, type){
@@ -1696,31 +1712,19 @@ async function generateSummaryPDF(data, type){
   document.body.appendChild(el);
   try{
     const target=el.firstElementChild;
-    const canvas=await html2canvas(target,{scale:2,backgroundColor:"#FFFFFF",logging:false});
+    // Ensure chart images are decoded before measuring
+    const imgEls=[].slice.call(el.querySelectorAll("img"));
+    await Promise.all(imgEls.map(im=>im.decode?im.decode().catch(()=>{}):Promise.resolve()));
+    await new Promise(r=>setTimeout(r,30));
+    const pages=paginateBrief(target);
+    target.style.display="none";
     const {jsPDF}=window.jspdf;
     const pdf=new jsPDF({unit:"pt",format:"letter"});
     const pw=612, ph=792;
-    const imgW=pw, pageCanvasH=Math.floor(canvas.width*(ph/pw));
-    // Measure block positions in canvas pixels for break protection
-    const scaleF=canvas.width/(target.offsetWidth||816);
-    const blocks=[].slice.call(target.querySelectorAll(".pbb")).map(b=>({
-      top:b.offsetTop*scaleF,
-      bottom:(b.offsetTop+b.offsetHeight)*scaleF,
-      h1:b.classList.contains("pbh")
-    }));
-    const bounds=computeBreaks(blocks, pageCanvasH, canvas.height);
-    let y=0, first=true;
-    for(const end of bounds){
-      const sliceH=Math.round(end-y);
-      if(sliceH<=0) continue;
-      const pc=document.createElement("canvas");
-      pc.width=canvas.width; pc.height=sliceH;
-      const ctx=pc.getContext("2d");
-      ctx.fillStyle="#FFFFFF"; ctx.fillRect(0,0,pc.width,pc.height);
-      ctx.drawImage(canvas,0,y,canvas.width,sliceH,0,0,canvas.width,sliceH);
-      if(!first) pdf.addPage();
-      pdf.addImage(pc.toDataURL("image/jpeg",0.92),"JPEG",0,0,imgW,sliceH*(pw/canvas.width));
-      first=false; y=end;
+    for(let i=0;i<pages.length;i++){
+      const canvas=await html2canvas(pages[i],{scale:2,backgroundColor:"#FFFFFF",logging:false});
+      if(i>0) pdf.addPage();
+      pdf.addImage(canvas.toDataURL("image/jpeg",0.92),"JPEG",0,0,pw,ph);
     }
     pdf.save((type==="weekly"?"kmx-weekly-summary-":"kmx-daily-briefing-")+data.today+".pdf");
     return true;
