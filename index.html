@@ -1554,26 +1554,26 @@ function buildBriefHTML(data){
   const esc=t=>String(t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   const dealVal=r=>r.tbd?((r.estLow||r.estHigh)?money(((r.estLow||0)+(r.estHigh||0))/2)+" est":"Value TBD"):money(r.value);
   const stgSpan=r=>'<span style="font-weight:700;font-size:10px;letter-spacing:.04em;color:'+(STG_HEX[r.stage]||NAVY)+'">'+esc(stg(r.stage).l.toUpperCase())+'</span>';
-  const H1=t=>'<div style="font-size:16px;font-weight:700;color:'+NAVY+';margin:26px 0 10px;padding-bottom:5px;border-bottom:1px solid '+LINE+'">'+t+'</div>';
+  const H1=t=>'<div class="pbb pbh" style="font-size:16px;font-weight:700;color:'+NAVY+';margin:26px 0 10px;padding-bottom:5px;border-bottom:1px solid '+LINE+'">'+t+'</div>';
   const s=data.snapshot;
 
   let h='<div style="font-family:Arial,Helvetica,sans-serif;color:#1A2430;background:#FFFFFF;width:816px;padding:34px 40px;box-sizing:border-box">';
 
   // Masthead
-  h+='<table style="width:100%;border-collapse:collapse;background:'+NAVY+'"><tr>'
+  h+='<table class="pbb" style="width:100%;border-collapse:collapse;background:'+NAVY+'"><tr>'
     +'<td style="padding:16px 20px"><div style="font-size:20px;font-weight:700;color:#FFFFFF;letter-spacing:.02em">KMX TECHNOLOGIES</div>'
     +'<div style="font-size:11px;font-weight:700;color:#38E8C8;letter-spacing:.06em;margin-top:3px">'+(data.type==="weekly"?"WEEKLY PIPELINE SUMMARY":"DAILY PIPELINE BRIEFING")+'</div></td>'
     +'<td style="padding:16px 20px;text-align:right;vertical-align:top"><div style="font-size:13px;font-weight:700;color:#FFFFFF">'+new Date().toLocaleDateString("en-US",{weekday:"long"})+'</div>'
     +'<div style="font-size:11px;color:#9FC4D8;margin-top:3px">'+new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})+'</div></td>'
     +'</tr></table>';
-  h+='<div style="font-size:10px;color:'+GREY+';font-style:italic;margin:8px 0 14px">Covering updates since '+esc(fmtDate(data.sinceISO))+'. Freshest information first.</div>';
+  h+='<div class="pbb" style="font-size:10px;color:'+GREY+';font-style:italic;margin:8px 0 14px">Covering updates since '+esc(fmtDate(data.sinceISO))+'. Freshest information first.</div>';
 
   // KPI grid
   const kpiCell=(lbl,valHtml,sub)=>'<td style="width:33.3%;background:'+SOFT+';padding:10px 14px;border:3px solid #FFFFFF;vertical-align:top">'
     +'<div style="font-size:9px;font-weight:700;color:'+GREY+';letter-spacing:.06em">'+lbl+'</div>'
     +'<div style="font-size:19px;font-weight:700;margin-top:3px">'+valHtml+'</div>'
     +(sub?'<div style="font-size:9px;color:'+GREY+';margin-top:2px">'+sub+'</div>':'')+'</td>';
-  h+='<table style="width:100%;border-collapse:collapse"><tr>'
+  h+='<table class="pbb" style="width:100%;border-collapse:collapse"><tr>'
     +kpiCell("CONFIRMED PIPELINE",'<span style="color:'+NAVY+'">'+money(s.pipe)+'</span>')
     +kpiCell("WEIGHTED PIPELINE",'<span style="color:'+AQUA+'">'+money(s.weighted)+'</span>')
     +kpiCell("ESTIMATED UPSIDE",'<span style="color:'+NAVY+'">'+(s.estMid?money(s.estMid):"-")+'</span>')
@@ -1584,7 +1584,7 @@ function buildBriefHTML(data){
     +'</tr></table>';
   if(data.type==="weekly"&&data.prevSnap){
     const dP=s.pipe-(data.prevSnap.pipe||0), dW=Math.round(s.weighted)-(data.prevSnap.weighted||0);
-    h+='<div style="font-size:12px;margin-top:8px"><b style="color:'+NAVY+'">Week over week:</b> <b style="color:'+(dP>=0?GREEN:RED)+'">'+(dP>=0?"+":"-")+money(Math.abs(dP))+' confirmed</b> &nbsp; <b style="color:'+(dW>=0?GREEN:RED)+'">'+(dW>=0?"+":"-")+money(Math.abs(dW))+' weighted</b></div>';
+    h+='<div class="pbb" style="font-size:12px;margin-top:8px"><b style="color:'+NAVY+'">Week over week:</b> <b style="color:'+(dP>=0?GREEN:RED)+'">'+(dP>=0?"+":"-")+money(Math.abs(dP))+' confirmed</b> &nbsp; <b style="color:'+(dW>=0?GREEN:RED)+'">'+(dW>=0?"+":"-")+money(Math.abs(dW))+' weighted</b></div>';
   }
 
   // Charts
@@ -1592,9 +1592,9 @@ function buildBriefHTML(data){
   const depPng=data.type==="weekly"?chartDeployMix():null;
   if(stgPng||hthPng||depPng){
     h+=H1("Pipeline Overview");
-    if(stgPng) h+='<img src="data:image/png;base64,'+stgPng+'" style="width:640px;display:block;margin-bottom:8px">';
-    if(hthPng) h+='<img src="data:image/png;base64,'+hthPng+'" style="width:380px;display:block;margin-bottom:8px">';
-    if(depPng) h+='<img src="data:image/png;base64,'+depPng+'" style="width:640px;display:block;margin-bottom:8px">';
+    if(stgPng) h+='<img class="pbb" src="data:image/png;base64,'+stgPng+'" style="width:640px;display:block;margin-bottom:8px">';
+    if(hthPng) h+='<img class="pbb" src="data:image/png;base64,'+hthPng+'" style="width:380px;display:block;margin-bottom:8px">';
+    if(depPng) h+='<img class="pbb" src="data:image/png;base64,'+depPng+'" style="width:640px;display:block;margin-bottom:8px">';
   }
 
   // Recently closed
@@ -1602,8 +1602,9 @@ function buildBriefHTML(data){
     h+=H1("Recently Closed");
     data.closedRecent.forEach(x=>{
       const r=x.r, isWon=r.stage==="won";
-      h+='<div style="font-size:12px;margin:5px 0"><b style="color:'+(isWon?GREEN:RED)+';font-size:10px">'+(isWon?"WON":"LOST")+'</b> &nbsp;<b>'+esc(r.name)+'</b> <span style="color:'+GREY+';font-size:11px">&nbsp;'+esc(fmtDate(r.stageChanged))+(isWon?(r.value?" &nbsp;"+money(r.value):""):(r.lossReason?" &nbsp;/&nbsp; "+esc(r.lossReason):""))+'</span></div>';
-      if(!isWon&&r.lossNotes) h+='<div style="font-size:11px;margin:2px 0 6px 18px"><b style="color:'+RED+'">Lessons:</b> <i>'+esc(r.lossNotes)+'</i></div>';
+      let blk='<div style="font-size:12px;margin:5px 0"><b style="color:'+(isWon?GREEN:RED)+';font-size:10px">'+(isWon?"WON":"LOST")+'</b> &nbsp;<b>'+esc(r.name)+'</b> <span style="color:'+GREY+';font-size:11px">&nbsp;'+esc(fmtDate(r.stageChanged))+(isWon?(r.value?" &nbsp;"+money(r.value):""):(r.lossReason?" &nbsp;/&nbsp; "+esc(r.lossReason):""))+'</span></div>';
+      if(!isWon&&r.lossNotes) blk+='<div style="font-size:11px;margin:2px 0 6px 18px"><b style="color:'+RED+'">Lessons:</b> <i>'+esc(r.lossNotes)+'</i></div>';
+      h+='<div class="pbb">'+blk+'</div>';
     });
   }
 
@@ -1612,7 +1613,7 @@ function buildBriefHTML(data){
   if(!data.focus.length) h+='<div style="font-size:11px;color:'+GREY+';font-style:italic">No active deals in the pipeline.</div>';
   data.focus.forEach(f=>{
     const r=f.r;
-    h+='<div style="margin:13px 0 0;page-break-inside:avoid">';
+    h+='<div class="pbb" style="margin:13px 0 0">';
     h+='<div style="font-size:14px"><b>'+esc(r.name)+'</b> &nbsp;'+stgSpan(r)+' <span style="color:'+GREY+';font-size:11px">&nbsp;'+dealVal(r)+'</span>'
       +(f.isNew?' <b style="color:'+AQUA+';font-size:9px">&nbsp;NEW</b>':'')
       +(f.advanced?' <b style="color:'+GREEN+';font-size:9px">&nbsp;ADVANCED '+esc(fmtDate(r.stageChanged))+'</b>':'')+'</div>';
@@ -1630,17 +1631,18 @@ function buildBriefHTML(data){
   if(data.newOpps.length){
     h+=H1("New Opportunities");
     data.newOpps.forEach(r=>{
-      h+='<div style="font-size:12px;margin:5px 0"><b>'+esc(r.name)+'</b> &nbsp;'+stgSpan(r)+' <span style="color:'+GREY+';font-size:11px">&nbsp;'+dealVal(r)+(r.owner?' &nbsp;/&nbsp; '+esc(r.owner):'')+(r.deploymentType?' &nbsp;/&nbsp; '+cap(r.deploymentType):'')+(r.infraType?' &nbsp;/&nbsp; '+esc(infraLabel(r.infraType)):'')+'</span></div>';
-      if(r.note) h+='<div style="font-size:11px;color:'+GREY+';font-style:italic;margin:1px 0 4px 16px">'+esc(r.note)+'</div>';
+      let blk='<div style="font-size:12px;margin:5px 0"><b>'+esc(r.name)+'</b> &nbsp;'+stgSpan(r)+' <span style="color:'+GREY+';font-size:11px">&nbsp;'+dealVal(r)+(r.owner?' &nbsp;/&nbsp; '+esc(r.owner):'')+(r.deploymentType?' &nbsp;/&nbsp; '+cap(r.deploymentType):'')+(r.infraType?' &nbsp;/&nbsp; '+esc(infraLabel(r.infraType)):'')+'</span></div>';
+      if(r.note) blk+='<div style="font-size:11px;color:'+GREY+';font-style:italic;margin:1px 0 4px 16px">'+esc(r.note)+'</div>';
+      h+='<div class="pbb">'+blk+'</div>';
     });
   }
 
   // Actions
-  const li=(tag,tagColor,name,extra,boldName)=>'<div style="font-size:12px;margin:4px 0"><b style="color:'+tagColor+';font-size:10px">'+tag+'</b> &nbsp;'+(boldName?'<b>'+esc(name)+'</b>':esc(name))+(extra?' <span style="color:'+GREY+';font-size:11px">&nbsp;/&nbsp; '+esc(extra)+'</span>':'')+'</div>';
+  const li=(tag,tagColor,name,extra,boldName)=>'<div class="pbb" style="font-size:12px;margin:4px 0"><b style="color:'+tagColor+';font-size:10px">'+tag+'</b> &nbsp;'+(boldName?'<b>'+esc(name)+'</b>':esc(name))+(extra?' <span style="color:'+GREY+';font-size:11px">&nbsp;/&nbsp; '+esc(extra)+'</span>':'')+'</div>';
   if(data.type==="weekly"){
     h+=H1("Stage Movement This Week");
     if(!data.stageMoves.length) h+='<div style="font-size:11px;color:'+GREY+';font-style:italic">No stage advances this week. Deal Focus shows where each deal stands.</div>';
-    data.stageMoves.forEach(r=>{h+='<div style="font-size:12px;margin:4px 0"><b>'+esc(r.name)+'</b> now at '+stgSpan(r)+' <span style="color:'+GREY+';font-size:11px">('+esc(fmtDate(r.stageChanged))+')</span></div>';});
+    data.stageMoves.forEach(r=>{h+='<div class="pbb" style="font-size:12px;margin:4px 0"><b>'+esc(r.name)+'</b> now at '+stgSpan(r)+' <span style="color:'+GREY+';font-size:11px">('+esc(fmtDate(r.stageChanged))+')</span></div>';});
     h+=H1("Setting Up Next Week");
     if(!data.nextWeek.followups.length&&!data.nextWeek.deadlines.length) h+='<div style="font-size:11px;color:'+GREY+';font-style:italic">Nothing scheduled yet. Set follow-up dates so next week plans itself.</div>';
     data.nextWeek.followups.forEach(r=>{h+=li("FOLLOW-UP "+fmtDate(r.followUpDate).toUpperCase(),AQUA,r.name,topStep(r),true);});
@@ -1657,12 +1659,34 @@ function buildBriefHTML(data){
   if(data.watchRed.length||data.watchStuck.length){
     h+=H1("Watch List");
     data.watchRed.forEach(r=>{h+=li("RED",RED,r.name,topStep(r),true)+'';});
-    data.watchStuck.forEach(r=>{h+='<div style="font-size:12px;margin:4px 0"><b style="color:'+RED+';font-size:10px">STUCK</b> &nbsp;<b>'+esc(r.name)+'</b> <span style="color:'+GREY+';font-size:11px">&nbsp;'+daysSince(r.stageChanged)+' days at</span> '+stgSpan(r)+'</div>';});
+    data.watchStuck.forEach(r=>{h+='<div class="pbb" style="font-size:12px;margin:4px 0"><b style="color:'+RED+';font-size:10px">STUCK</b> &nbsp;<b>'+esc(r.name)+'</b> <span style="color:'+GREY+';font-size:11px">&nbsp;'+daysSince(r.stageChanged)+' days at</span> '+stgSpan(r)+'</div>';});
   }
 
-  h+='<div style="font-size:9px;color:'+GREY+';border-top:1px solid '+LINE+';margin-top:24px;padding-top:6px">KMX Technologies &nbsp;/&nbsp; Generated '+new Date().toLocaleString("en-US")+' &nbsp;/&nbsp; Confidential</div>';
+  h+='<div class="pbb" style="font-size:9px;color:'+GREY+';border-top:1px solid '+LINE+';margin-top:24px;padding-top:6px">KMX Technologies &nbsp;/&nbsp; Generated '+new Date().toLocaleString("en-US")+' &nbsp;/&nbsp; Confidential</div>';
   h+='</div>';
   return h;
+}
+
+function computeBreaks(blocks, pageH, totalH){
+  // Returns slice end positions so cuts land between blocks, never through them.
+  const breaks=[];
+  const sorted=(blocks||[]).filter(b=>b.bottom>b.top).sort((a,b)=>a.top-b.top);
+  let y=0, guard=0;
+  while(y < totalH - 1 && guard++ < 200){
+    const limit=y+pageH;
+    if(limit>=totalH){ breaks.push(totalH); break; }
+    let best=-1, bestBlock=null;
+    for(const b of sorted){
+      if(b.bottom<=limit && b.bottom>y && b.bottom>best){ best=b.bottom; bestBlock=b; }
+    }
+    if(best<=y){ breaks.push(limit); y=limit; continue; }
+    // Never leave a section heading orphaned at the bottom of a page
+    if(bestBlock.h1 && bestBlock.top>y){ best=bestBlock.top; }
+    breaks.push(best);
+    y=best;
+  }
+  if(!breaks.length || breaks[breaks.length-1] < totalH) breaks.push(totalH);
+  return breaks;
 }
 
 async function generateSummaryPDF(data, type){
@@ -1677,9 +1701,18 @@ async function generateSummaryPDF(data, type){
     const pdf=new jsPDF({unit:"pt",format:"letter"});
     const pw=612, ph=792;
     const imgW=pw, pageCanvasH=Math.floor(canvas.width*(ph/pw));
+    // Measure block positions in canvas pixels for break protection
+    const scaleF=canvas.width/(target.offsetWidth||816);
+    const blocks=[].slice.call(target.querySelectorAll(".pbb")).map(b=>({
+      top:b.offsetTop*scaleF,
+      bottom:(b.offsetTop+b.offsetHeight)*scaleF,
+      h1:b.classList.contains("pbh")
+    }));
+    const bounds=computeBreaks(blocks, pageCanvasH, canvas.height);
     let y=0, first=true;
-    while(y<canvas.height){
-      const sliceH=Math.min(pageCanvasH, canvas.height-y);
+    for(const end of bounds){
+      const sliceH=Math.round(end-y);
+      if(sliceH<=0) continue;
       const pc=document.createElement("canvas");
       pc.width=canvas.width; pc.height=sliceH;
       const ctx=pc.getContext("2d");
@@ -1687,7 +1720,7 @@ async function generateSummaryPDF(data, type){
       ctx.drawImage(canvas,0,y,canvas.width,sliceH,0,0,canvas.width,sliceH);
       if(!first) pdf.addPage();
       pdf.addImage(pc.toDataURL("image/jpeg",0.92),"JPEG",0,0,imgW,sliceH*(pw/canvas.width));
-      first=false; y+=sliceH;
+      first=false; y=end;
     }
     pdf.save((type==="weekly"?"kmx-weekly-summary-":"kmx-daily-briefing-")+data.today+".pdf");
     return true;
