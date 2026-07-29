@@ -1269,7 +1269,7 @@ body.light-theme .st-item{background:var(--s2)}
       <div id="summary-pop-title" style="font-family:var(--f-disp);font-size:14px;font-weight:600;color:var(--t0);margin-bottom:3px">Your daily briefing is ready</div>
       <div id="summary-pop-sub" style="font-size:12px;color:var(--t1);line-height:1.5;margin-bottom:12px">Pipeline summary covering recent updates.</div>
       <div style="display:flex;gap:8px">
-        <button class="btn btn-p" style="height:30px;padding:0 12px;font-size:12px" onclick="downloadSummaryFromPop()"><i class="ti ti-download"></i>Download DOCX</button>
+        <button class="btn btn-p" style="height:30px;padding:0 12px;font-size:12px" onclick="downloadSummaryFromPop()"><i class="ti ti-download"></i>Download PDF</button>
         <button class="btn btn-g" style="height:30px;padding:0 10px;font-size:12px" onclick="hideSummaryPop()">Later</button>
       </div>
     </div>
@@ -1384,7 +1384,7 @@ body.light-theme .st-item{background:var(--s2)}
 
 <script>
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyelyzFYo_GuAkhXaKP_V1E17ZbPIwqMcj14xQrc_HrD2m74C9NCbwvbmug8NX5cIhTrQ/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxXHxk6JGj1dDDE3OpHypaRncHK_mfmkx2Amom_fz5yvB22KSXc0orqWdZRv75QkBhMXg/exec";
 // Sheet names: "Sheet1" for projects, "Licenses" for licenses
 const STAGES = [
   {k:"prospect",   l:"Prospect",      c:"#4A6280"},
@@ -1546,19 +1546,267 @@ function _sinceForType(type){
   return localISO(d);
 }
 
-async function generateSummary(type){
-  if(typeof docx === "undefined"){
-    alert("The document library has not loaded yet. Check your connection and try again.");
-    return;
+function buildBriefHTML(data){
+  const NAVY="#0A1628", GREY="#6A7A8E", AQUA="#0898A0", RED="#B83030", GREEN="#0A7A50", LINE="#D5E0EA", SOFT="#F2F7FB";
+  const STG_HEX={prospect:"#4A6280",scoping:"#1862B8",proposal:"#5040B0",lab:"#8A5A00",demo:"#A04878",negotiation:"#0878A0",won:"#0A7A50",lost:"#B83030"};
+  const money=v=>v?"$"+Math.round(v).toLocaleString("en-US"):"-";
+  const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):"";
+  const esc=t=>String(t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const dealVal=r=>r.tbd?((r.estLow||r.estHigh)?money(((r.estLow||0)+(r.estHigh||0))/2)+" est":"Value TBD"):money(r.value);
+  const stgSpan=r=>'<span style="font-weight:700;font-size:10px;letter-spacing:.04em;color:'+(STG_HEX[r.stage]||NAVY)+'">'+esc(stg(r.stage).l.toUpperCase())+'</span>';
+  const H1=t=>'<div style="font-size:16px;font-weight:700;color:'+NAVY+';margin:26px 0 10px;padding-bottom:5px;border-bottom:1px solid '+LINE+'">'+t+'</div>';
+  const s=data.snapshot;
+
+  let h='<div style="font-family:Arial,Helvetica,sans-serif;color:#1A2430;background:#FFFFFF;width:816px;padding:34px 40px;box-sizing:border-box">';
+
+  // Masthead
+  h+='<table style="width:100%;border-collapse:collapse;background:'+NAVY+'"><tr>'
+    +'<td style="padding:16px 20px"><div style="font-size:20px;font-weight:700;color:#FFFFFF;letter-spacing:.02em">KMX TECHNOLOGIES</div>'
+    +'<div style="font-size:11px;font-weight:700;color:#38E8C8;letter-spacing:.06em;margin-top:3px">'+(data.type==="weekly"?"WEEKLY PIPELINE SUMMARY":"DAILY PIPELINE BRIEFING")+'</div></td>'
+    +'<td style="padding:16px 20px;text-align:right;vertical-align:top"><div style="font-size:13px;font-weight:700;color:#FFFFFF">'+new Date().toLocaleDateString("en-US",{weekday:"long"})+'</div>'
+    +'<div style="font-size:11px;color:#9FC4D8;margin-top:3px">'+new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})+'</div></td>'
+    +'</tr></table>';
+  h+='<div style="font-size:10px;color:'+GREY+';font-style:italic;margin:8px 0 14px">Covering updates since '+esc(fmtDate(data.sinceISO))+'. Freshest information first.</div>';
+
+  // KPI grid
+  const kpiCell=(lbl,valHtml,sub)=>'<td style="width:33.3%;background:'+SOFT+';padding:10px 14px;border:3px solid #FFFFFF;vertical-align:top">'
+    +'<div style="font-size:9px;font-weight:700;color:'+GREY+';letter-spacing:.06em">'+lbl+'</div>'
+    +'<div style="font-size:19px;font-weight:700;margin-top:3px">'+valHtml+'</div>'
+    +(sub?'<div style="font-size:9px;color:'+GREY+';margin-top:2px">'+sub+'</div>':'')+'</td>';
+  h+='<table style="width:100%;border-collapse:collapse"><tr>'
+    +kpiCell("CONFIRMED PIPELINE",'<span style="color:'+NAVY+'">'+money(s.pipe)+'</span>')
+    +kpiCell("WEIGHTED PIPELINE",'<span style="color:'+AQUA+'">'+money(s.weighted)+'</span>')
+    +kpiCell("ESTIMATED UPSIDE",'<span style="color:'+NAVY+'">'+(s.estMid?money(s.estMid):"-")+'</span>')
+    +'</tr><tr>'
+    +kpiCell("ACTIVE PROJECTS",'<span style="color:'+NAVY+'">'+s.activeCount+'</span>')
+    +kpiCell("COVERAGE VS TARGET",'<span style="color:'+(s.coverage!==null&&s.coverage<1.5?RED:GREEN)+'">'+(s.coverage!==null?s.coverage.toFixed(1)+"x":"No target")+'</span>')
+    +kpiCell("DEALS CLOSED TO DATE",'<span style="color:'+GREEN+'">'+s.wonCount+' won</span> <span style="color:'+(s.lostCount?RED:GREY)+'">&nbsp;'+s.lostCount+' lost</span>', s.wonVal?esc(money(s.wonVal))+' total won value':null)
+    +'</tr></table>';
+  if(data.type==="weekly"&&data.prevSnap){
+    const dP=s.pipe-(data.prevSnap.pipe||0), dW=Math.round(s.weighted)-(data.prevSnap.weighted||0);
+    h+='<div style="font-size:12px;margin-top:8px"><b style="color:'+NAVY+'">Week over week:</b> <b style="color:'+(dP>=0?GREEN:RED)+'">'+(dP>=0?"+":"-")+money(Math.abs(dP))+' confirmed</b> &nbsp; <b style="color:'+(dW>=0?GREEN:RED)+'">'+(dW>=0?"+":"-")+money(Math.abs(dW))+' weighted</b></div>';
   }
+
+  // Charts
+  const stgPng=chartStageValue(), hthPng=chartHealthMix();
+  const depPng=data.type==="weekly"?chartDeployMix():null;
+  if(stgPng||hthPng||depPng){
+    h+=H1("Pipeline Overview");
+    if(stgPng) h+='<img src="data:image/png;base64,'+stgPng+'" style="width:640px;display:block;margin-bottom:8px">';
+    if(hthPng) h+='<img src="data:image/png;base64,'+hthPng+'" style="width:380px;display:block;margin-bottom:8px">';
+    if(depPng) h+='<img src="data:image/png;base64,'+depPng+'" style="width:640px;display:block;margin-bottom:8px">';
+  }
+
+  // Recently closed
+  if(data.closedRecent.length){
+    h+=H1("Recently Closed");
+    data.closedRecent.forEach(x=>{
+      const r=x.r, isWon=r.stage==="won";
+      h+='<div style="font-size:12px;margin:5px 0"><b style="color:'+(isWon?GREEN:RED)+';font-size:10px">'+(isWon?"WON":"LOST")+'</b> &nbsp;<b>'+esc(r.name)+'</b> <span style="color:'+GREY+';font-size:11px">&nbsp;'+esc(fmtDate(r.stageChanged))+(isWon?(r.value?" &nbsp;"+money(r.value):""):(r.lossReason?" &nbsp;/&nbsp; "+esc(r.lossReason):""))+'</span></div>';
+      if(!isWon&&r.lossNotes) h+='<div style="font-size:11px;margin:2px 0 6px 18px"><b style="color:'+RED+'">Lessons:</b> <i>'+esc(r.lossNotes)+'</i></div>';
+    });
+  }
+
+  // Deal focus
+  h+=H1("Deal Focus");
+  if(!data.focus.length) h+='<div style="font-size:11px;color:'+GREY+';font-style:italic">No active deals in the pipeline.</div>';
+  data.focus.forEach(f=>{
+    const r=f.r;
+    h+='<div style="margin:13px 0 0;page-break-inside:avoid">';
+    h+='<div style="font-size:14px"><b>'+esc(r.name)+'</b> &nbsp;'+stgSpan(r)+' <span style="color:'+GREY+';font-size:11px">&nbsp;'+dealVal(r)+'</span>'
+      +(f.isNew?' <b style="color:'+AQUA+';font-size:9px">&nbsp;NEW</b>':'')
+      +(f.advanced?' <b style="color:'+GREEN+';font-size:9px">&nbsp;ADVANCED '+esc(fmtDate(r.stageChanged))+'</b>':'')+'</div>';
+    const meta=[]; if(r.owner)meta.push(esc(r.owner)); meta.push("Health "+cap(r.health)); if(r.last)meta.push("Last touched "+esc(fmtDate(r.last)));
+    h+='<div style="font-size:10px;color:'+GREY+';margin:2px 0 4px">'+meta.join(" &nbsp;/&nbsp; ")+'</div>';
+    f.winNotes.forEach(n=>h+='<div style="font-size:11px;margin:2px 0 2px 16px"><b style="color:'+AQUA+'">'+esc(fmtDate(n.d))+'</b>'+(n.k?' <b style="color:'+NAVY+';font-size:9px">'+esc((NOTE_KINDS[n.k]||n.k).toUpperCase())+'</b>':'')+' '+esc(n.t)+'</div>');
+    if(f.lastNote) h+='<div style="font-size:11px;margin:2px 0 2px 16px;color:#3A4A5E"><b style="color:'+GREY+'">Last note '+esc(fmtDate(f.lastNote.d))+'</b> '+esc(f.lastNote.t)+'</div>';
+    f.doneRecent.forEach(st=>h+='<div style="font-size:11px;margin:2px 0 2px 16px"><b style="color:'+GREEN+';font-size:9px">DONE '+esc(fmtDate(st.c))+'</b> <span style="text-decoration:line-through;color:'+GREY+'">'+esc(st.t)+'</span></div>');
+    f.openSteps.forEach((st,si)=>h+='<div style="font-size:11px;margin:2px 0 2px 16px"><b style="color:'+(si===0?AQUA:GREY)+';font-size:9px">'+(si===0?"NEXT":"THEN")+'</b> '+(si===0?'<b>'+esc(st.t)+'</b>':esc(st.t))+'</div>');
+    if(!f.winNotes.length&&!f.lastNote&&!f.openSteps.length) h+='<div style="font-size:10px;color:'+GREY+';font-style:italic;margin-left:16px">No notes or steps yet.</div>';
+    h+='</div>';
+  });
+
+  // New opportunities
+  if(data.newOpps.length){
+    h+=H1("New Opportunities");
+    data.newOpps.forEach(r=>{
+      h+='<div style="font-size:12px;margin:5px 0"><b>'+esc(r.name)+'</b> &nbsp;'+stgSpan(r)+' <span style="color:'+GREY+';font-size:11px">&nbsp;'+dealVal(r)+(r.owner?' &nbsp;/&nbsp; '+esc(r.owner):'')+(r.deploymentType?' &nbsp;/&nbsp; '+cap(r.deploymentType):'')+(r.infraType?' &nbsp;/&nbsp; '+esc(infraLabel(r.infraType)):'')+'</span></div>';
+      if(r.note) h+='<div style="font-size:11px;color:'+GREY+';font-style:italic;margin:1px 0 4px 16px">'+esc(r.note)+'</div>';
+    });
+  }
+
+  // Actions
+  const li=(tag,tagColor,name,extra,boldName)=>'<div style="font-size:12px;margin:4px 0"><b style="color:'+tagColor+';font-size:10px">'+tag+'</b> &nbsp;'+(boldName?'<b>'+esc(name)+'</b>':esc(name))+(extra?' <span style="color:'+GREY+';font-size:11px">&nbsp;/&nbsp; '+esc(extra)+'</span>':'')+'</div>';
+  if(data.type==="weekly"){
+    h+=H1("Stage Movement This Week");
+    if(!data.stageMoves.length) h+='<div style="font-size:11px;color:'+GREY+';font-style:italic">No stage advances this week. Deal Focus shows where each deal stands.</div>';
+    data.stageMoves.forEach(r=>{h+='<div style="font-size:12px;margin:4px 0"><b>'+esc(r.name)+'</b> now at '+stgSpan(r)+' <span style="color:'+GREY+';font-size:11px">('+esc(fmtDate(r.stageChanged))+')</span></div>';});
+    h+=H1("Setting Up Next Week");
+    if(!data.nextWeek.followups.length&&!data.nextWeek.deadlines.length) h+='<div style="font-size:11px;color:'+GREY+';font-style:italic">Nothing scheduled yet. Set follow-up dates so next week plans itself.</div>';
+    data.nextWeek.followups.forEach(r=>{h+=li("FOLLOW-UP "+fmtDate(r.followUpDate).toUpperCase(),AQUA,r.name,topStep(r),true);});
+    data.nextWeek.deadlines.forEach(r=>{h+=li("DEADLINE "+fmtDate(r.deadline).toUpperCase(),RED,r.name,null,true);});
+  } else {
+    h+=H1("Action Board");
+    if(!data.fuDue.length&&!data.fuSoon.length&&!data.dlSoon.length) h+='<div style="font-size:11px;color:'+GREY+';font-style:italic">No follow-ups or deadlines on the board. Set follow-up dates in the quick update panel to build tomorrow\u0027s list.</div>';
+    data.fuDue.forEach(r=>{const od=r.followUpDate<data.today;h+=li(od?"OVERDUE "+fmtDate(r.followUpDate).toUpperCase():"DUE TODAY",od?RED:AQUA,r.name,topStep(r),true);});
+    data.fuSoon.forEach(r=>{h+=li("COMING UP "+fmtDate(r.followUpDate).toUpperCase(),GREY,r.name,topStep(r),false);});
+    data.dlSoon.forEach(r=>{h+=li("DEADLINE "+fmtDate(r.deadline).toUpperCase(),RED,r.name,null,true);});
+  }
+
+  // Watch list
+  if(data.watchRed.length||data.watchStuck.length){
+    h+=H1("Watch List");
+    data.watchRed.forEach(r=>{h+=li("RED",RED,r.name,topStep(r),true)+'';});
+    data.watchStuck.forEach(r=>{h+='<div style="font-size:12px;margin:4px 0"><b style="color:'+RED+';font-size:10px">STUCK</b> &nbsp;<b>'+esc(r.name)+'</b> <span style="color:'+GREY+';font-size:11px">&nbsp;'+daysSince(r.stageChanged)+' days at</span> '+stgSpan(r)+'</div>';});
+  }
+
+  h+='<div style="font-size:9px;color:'+GREY+';border-top:1px solid '+LINE+';margin-top:24px;padding-top:6px">KMX Technologies &nbsp;/&nbsp; Generated '+new Date().toLocaleString("en-US")+' &nbsp;/&nbsp; Confidential</div>';
+  h+='</div>';
+  return h;
+}
+
+async function generateSummaryPDF(data, type){
+  const el=document.createElement("div");
+  el.style.cssText="position:fixed;left:-9999px;top:0;z-index:-1;background:#FFFFFF";
+  el.innerHTML=buildBriefHTML(data);
+  document.body.appendChild(el);
+  try{
+    const target=el.firstElementChild;
+    const canvas=await html2canvas(target,{scale:2,backgroundColor:"#FFFFFF",logging:false});
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({unit:"pt",format:"letter"});
+    const pw=612, ph=792;
+    const imgW=pw, pageCanvasH=Math.floor(canvas.width*(ph/pw));
+    let y=0, first=true;
+    while(y<canvas.height){
+      const sliceH=Math.min(pageCanvasH, canvas.height-y);
+      const pc=document.createElement("canvas");
+      pc.width=canvas.width; pc.height=sliceH;
+      const ctx=pc.getContext("2d");
+      ctx.fillStyle="#FFFFFF"; ctx.fillRect(0,0,pc.width,pc.height);
+      ctx.drawImage(canvas,0,y,canvas.width,sliceH,0,0,canvas.width,sliceH);
+      if(!first) pdf.addPage();
+      pdf.addImage(pc.toDataURL("image/jpeg",0.92),"JPEG",0,0,imgW,sliceH*(pw/canvas.width));
+      first=false; y+=sliceH;
+    }
+    pdf.save((type==="weekly"?"kmx-weekly-summary-":"kmx-daily-briefing-")+data.today+".pdf");
+    return true;
+  } finally {
+    document.body.removeChild(el);
+  }
+}
+
+function buildBriefText(data){
+  const money=v=>v?"$"+Math.round(v).toLocaleString("en-US"):"-";
+  const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):"";
+  const dealVal=r=>r.tbd?((r.estLow||r.estHigh)?money(((r.estLow||0)+(r.estHigh||0))/2)+" est":"Value TBD"):money(r.value);
+  const s=data.snapshot;
+  const L=[];
+  L.push("KMX TECHNOLOGIES");
+  L.push((data.type==="weekly"?"WEEKLY PIPELINE SUMMARY":"DAILY PIPELINE BRIEFING")+" / "+new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"}));
+  L.push("Covering updates since "+fmtDate(data.sinceISO));
+  L.push("");
+  L.push("EXECUTIVE SNAPSHOT");
+  L.push("Confirmed pipeline: "+money(s.pipe));
+  L.push("Weighted pipeline: "+money(s.weighted));
+  L.push("Estimated upside: "+(s.estMid?money(s.estMid):"-"));
+  L.push("Active projects: "+s.activeCount);
+  L.push("Coverage vs target: "+(s.coverage!==null?s.coverage.toFixed(1)+"x":"No target"));
+  L.push("Deals closed to date: "+s.wonCount+" won"+(s.wonVal?" ("+money(s.wonVal)+")":"")+" / "+s.lostCount+" lost");
+  if(data.type==="weekly"&&data.prevSnap){
+    const dP=s.pipe-(data.prevSnap.pipe||0), dW=Math.round(s.weighted)-(data.prevSnap.weighted||0);
+    L.push("Week over week: "+(dP>=0?"+":"-")+money(Math.abs(dP))+" confirmed / "+(dW>=0?"+":"-")+money(Math.abs(dW))+" weighted");
+  }
+  if(data.closedRecent.length){
+    L.push(""); L.push("RECENTLY CLOSED");
+    data.closedRecent.forEach(x=>{
+      const r=x.r, isWon=r.stage==="won";
+      L.push((isWon?"WON ":"LOST ")+r.name+" / "+fmtDate(r.stageChanged)+(isWon?(r.value?" / "+money(r.value):""):(r.lossReason?" / "+r.lossReason:"")));
+      if(!isWon&&r.lossNotes) L.push("  Lessons: "+r.lossNotes);
+    });
+  }
+  L.push(""); L.push("DEAL FOCUS");
+  if(!data.focus.length) L.push("No active deals in the pipeline.");
+  data.focus.forEach(f=>{
+    const r=f.r;
+    L.push(r.name+" / "+stg(r.stage).l.toUpperCase()+" / "+dealVal(r)+(f.isNew?" [NEW]":"")+(f.advanced?" [ADVANCED "+fmtDate(r.stageChanged)+"]":""));
+    const meta=[]; if(r.owner)meta.push(r.owner); meta.push("Health "+cap(r.health)); if(r.last)meta.push("Last touched "+fmtDate(r.last));
+    L.push("  "+meta.join(" / "));
+    f.winNotes.forEach(n=>L.push("  "+fmtDate(n.d)+(n.k?" "+(NOTE_KINDS[n.k]||n.k).toUpperCase():"")+" "+n.t));
+    if(f.lastNote) L.push("  Last note "+fmtDate(f.lastNote.d)+" "+f.lastNote.t);
+    f.doneRecent.forEach(st=>L.push("  DONE "+fmtDate(st.c)+" "+st.t));
+    f.openSteps.forEach((st,si)=>L.push("  "+(si===0?"NEXT":"THEN")+" "+st.t));
+  });
+  if(data.newOpps.length){
+    L.push(""); L.push("NEW OPPORTUNITIES");
+    data.newOpps.forEach(r=>{
+      L.push(r.name+" / "+stg(r.stage).l.toUpperCase()+" / "+dealVal(r)+(r.owner?" / "+r.owner:"")+(r.deploymentType?" / "+cap(r.deploymentType):"")+(r.infraType?" / "+infraLabel(r.infraType):""));
+      if(r.note) L.push("  "+r.note);
+    });
+  }
+  L.push("");
+  if(data.type==="weekly"){
+    L.push("STAGE MOVEMENT THIS WEEK");
+    if(!data.stageMoves.length) L.push("No stage advances this week.");
+    data.stageMoves.forEach(r=>L.push(r.name+" now at "+stg(r.stage).l.toUpperCase()+" ("+fmtDate(r.stageChanged)+")"));
+    L.push(""); L.push("SETTING UP NEXT WEEK");
+    if(!data.nextWeek.followups.length&&!data.nextWeek.deadlines.length) L.push("Nothing scheduled yet.");
+    data.nextWeek.followups.forEach(r=>L.push("FOLLOW-UP "+fmtDate(r.followUpDate)+" "+r.name+(topStep(r)?" / "+topStep(r):"")));
+    data.nextWeek.deadlines.forEach(r=>L.push("DEADLINE "+fmtDate(r.deadline)+" "+r.name));
+  } else {
+    L.push("ACTION BOARD");
+    if(!data.fuDue.length&&!data.fuSoon.length&&!data.dlSoon.length) L.push("No follow-ups or deadlines on the board.");
+    data.fuDue.forEach(r=>{const od=r.followUpDate<data.today;L.push((od?"OVERDUE "+fmtDate(r.followUpDate):"DUE TODAY")+" "+r.name+(topStep(r)?" / "+topStep(r):""));});
+    data.fuSoon.forEach(r=>L.push("COMING UP "+fmtDate(r.followUpDate)+" "+r.name+(topStep(r)?" / "+topStep(r):"")));
+    data.dlSoon.forEach(r=>L.push("DEADLINE "+fmtDate(r.deadline)+" "+r.name));
+  }
+  if(data.watchRed.length||data.watchStuck.length){
+    L.push(""); L.push("WATCH LIST");
+    data.watchRed.forEach(r=>L.push("RED "+r.name+" / "+stg(r.stage).l.toUpperCase()+(topStep(r)?" / "+topStep(r):"")));
+    data.watchStuck.forEach(r=>L.push("STUCK "+r.name+" / "+daysSince(r.stageChanged)+" days at "+stg(r.stage).l.toUpperCase()));
+  }
+  L.push("");
+  L.push("Generated "+new Date().toLocaleString("en-US")+" / Confidential");
+  return L.join("\n");
+}
+
+function storeBriefToSheet(data, type){
+  if(GAS_URL === "PASTE_YOUR_SCRIPT_URL_HERE") return;
+  const s = data.snapshot;
+  const money = v => v ? "$" + Math.round(v).toLocaleString("en-US") : "-";
+  const payload = {
+    action: "brief",
+    date: data.today,
+    type: type === "weekly" ? "Weekly" : "Daily",
+    generatedAt: new Date().toISOString(),
+    summary: money(s.pipe) + " confirmed / " + money(s.weighted) + " weighted / " + s.activeCount + " active / " + s.wonCount + " won / " + s.lostCount + " lost",
+    content: buildBriefText(data)
+  };
+  fetch(GAS_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) }).catch(()=>{});
+}
+
+
+async function generateSummary(type){
   const data = buildSummaryData(_sinceForType(type), type);
-  const doc = buildSummaryDoc(data);
-  const blob = await docx.Packer.toBlob(doc);
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = (type === "weekly" ? "kmx-weekly-summary-" : "kmx-daily-briefing-") + data.today + ".docx";
-  a.click();
-  URL.revokeObjectURL(a.href);
+  let ok = false;
+  if(typeof html2canvas !== "undefined" && window.jspdf){
+    try { ok = await generateSummaryPDF(data, type); }
+    catch(e){ ok = false; }
+  }
+  if(!ok){
+    if(typeof docx === "undefined"){
+      alert("The document libraries have not loaded yet. Check your connection and try again.");
+      return;
+    }
+    const doc = buildSummaryDoc(data);
+    const blob = await docx.Packer.toBlob(doc);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = (type === "weekly" ? "kmx-weekly-summary-" : "kmx-daily-briefing-") + data.today + ".docx";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+  storeBriefToSheet(data, type);
   setSetting("summary_last", data.today);
   setSetting("summary_last_ts", new Date().toISOString());
   if(type === "weekly"){
