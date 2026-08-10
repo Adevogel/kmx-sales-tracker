@@ -1499,11 +1499,27 @@ function buildSummaryData(sinceISO, type){
         isNew: inWin(r.created),
         advanced: inWin(r.stageChanged) && r.stageChanged !== r.created && !inWin(r.created),
         winNotes,
-        lastNote: winNotes.length ? null : (allNotes.length ? allNotes[allNotes.length-1] : null),
+        lastNotes: winNotes.length ? [] : allNotes.slice(-2).reverse(),
         doneRecent: (r.steps||[]).filter(s => s.c && (inWin(s.c) || s.c >= ago5)).slice(-3),
-        openSteps: (r.steps||[]).filter(s => !s.c).slice(0, 3)
+        openSteps: (r.steps||[]).filter(s => !s.c).slice(0, 3),
+        stageDays: daysSince(r.stageChanged),
+        weightPct: Math.round((STAGE_WEIGHTS[r.stage]||0)*100),
+        weightedVal: dealW(r)
       };
     });
+
+  // Portfolio insights
+  const conf = pipe + estMid;
+  const midOf = r => r.tbd ? ((r.estLow||0)+(r.estHigh||0))/2 : (r.value||0);
+  const topDeal = active.slice().sort((a,b) => midOf(b)-midOf(a))[0] || null;
+  const insights = {
+    topDealName: topDeal ? topDeal.name : null,
+    topDealPct: topDeal && conf > 0 ? Math.round(midOf(topDeal)/conf*100) : null,
+    notesLogged: rows.reduce((s,r) => s + (r.activity||[]).filter(a => inWin(a.d)).length, 0),
+    stepsDone: rows.reduce((s,r) => s + (r.steps||[]).filter(x => x.c && inWin(x.c)).length, 0),
+    advancedCount: active.filter(r => inWin(r.stageChanged) && r.stageChanged !== r.created).length,
+    avgAge: active.length ? Math.round(active.reduce((s,r) => s + (daysSince(r.created)||0), 0)/active.length) : null
+  };
 
   const newOpps = rows.filter(r => inWin(r.created));
   const closedRecent = won.concat(lost)
@@ -1519,7 +1535,7 @@ function buildSummaryData(sinceISO, type){
   const watchRed = active.filter(r => r.health === "red");
   const watchStuck = active.filter(r => { const d = daysSince(r.stageChanged); return d !== null && d > 60; });
 
-  const data = { type, sinceISO, today,
+  const data = { type, sinceISO, today, insights,
     snapshot: { pipe, weighted, estMid, activeCount: active.length, coverage, wonCount: won.length, lostCount: lost.length,
       wonVal: won.filter(r => r.value).reduce((s,r) => s + r.value, 0) },
     focus, newOpps, closedRecent, fuDue, fuSoon, dlSoon, watchRed, watchStuck };
@@ -1587,6 +1603,15 @@ function buildBriefHTML(data){
     h+='<div class="pbb" style="font-size:12px;margin-top:8px"><b style="color:'+NAVY+'">Week over week:</b> <b style="color:'+(dP>=0?GREEN:RED)+'">'+(dP>=0?"+":"-")+money(Math.abs(dP))+' confirmed</b> &nbsp; <b style="color:'+(dW>=0?GREEN:RED)+'">'+(dW>=0?"+":"-")+money(Math.abs(dW))+' weighted</b></div>';
   }
 
+  // Portfolio insights strip
+  const ins=data.insights||{};
+  const insBits=[];
+  if(ins.notesLogged||ins.stepsDone) insBits.push('<b style="color:'+AQUA+'">'+(ins.notesLogged||0)+' note'+(ins.notesLogged!==1?'s':'')+'</b> and <b style="color:'+GREEN+'">'+(ins.stepsDone||0)+' step'+(ins.stepsDone!==1?'s':'')+' completed</b> this window');
+  if(ins.advancedCount) insBits.push('<b style="color:'+GREEN+'">'+ins.advancedCount+' deal'+(ins.advancedCount!==1?'s':'')+' advanced stage</b>');
+  if(ins.topDealPct!==null&&ins.topDealPct>=25) insBits.push('<b>'+esc(ins.topDealName)+'</b> is <b style="color:'+(ins.topDealPct>=50?RED:NAVY)+'">'+ins.topDealPct+'%</b> of total pipeline');
+  if(ins.avgAge!==null) insBits.push('average active deal age <b>'+ins.avgAge+'d</b>');
+  if(insBits.length) h+='<div class="pbb" style="font-size:11px;color:#3A4A5E;background:#F7FAFC;border-left:3px solid '+AQUA+';padding:8px 12px;margin-top:10px;line-height:1.6">'+insBits.join(' &nbsp;&middot;&nbsp; ')+'</div>';
+
   // Charts
   const stgPng=chartStageValue(), hthPng=chartHealthMix();
   const depPng=data.type==="weekly"?chartDeployMix():null;
@@ -1614,16 +1639,25 @@ function buildBriefHTML(data){
   data.focus.forEach(f=>{
     const r=f.r;
     h+='<div class="pbb" style="margin:13px 0 0">';
-    h+='<div style="font-size:14px"><b>'+esc(r.name)+'</b> &nbsp;'+stgSpan(r)+' <span style="color:'+GREY+';font-size:11px">&nbsp;'+dealVal(r)+'</span>'
+    h+='<div style="font-size:14px"><b>'+esc(r.name)+'</b> &nbsp;'+stgSpan(r)+' <span style="color:'+GREY+';font-size:11px">&nbsp;'+dealVal(r)+(f.weightPct&&r.stage!=="won"?' &nbsp;<span style="color:#8AA0B4">'+f.weightPct+'% weighted '+(f.weightedVal?fmtMoney(f.weightedVal,true):"-")+'</span>':'')+'</span>'
       +(f.isNew?' <b style="color:'+AQUA+';font-size:9px">&nbsp;NEW</b>':'')
       +(f.advanced?' <b style="color:'+GREEN+';font-size:9px">&nbsp;ADVANCED '+esc(fmtDate(r.stageChanged))+'</b>':'')+'</div>';
-    const meta=[]; if(r.owner)meta.push(esc(r.owner)); meta.push("Health "+cap(r.health)); if(r.last)meta.push("Last touched "+esc(fmtDate(r.last)));
+    const meta=[];
+    if(r.owner)meta.push(esc(r.owner));
+    if(r.contactName)meta.push('<span style="color:#4A6A85">'+esc(r.contactName)+'</span>');
+    if(r.deploymentType)meta.push(cap(r.deploymentType));
+    if(r.infraType)meta.push(esc(infraLabel(r.infraType)));
+    meta.push("Health "+cap(r.health));
+    if(f.stageDays!==null&&f.stageDays!==undefined)meta.push('<span style="color:'+(f.stageDays>45?RED:f.stageDays>21?"#8A5A00":GREY)+'">'+f.stageDays+"d at stage</span>");
+    if(r.last)meta.push("Touched "+esc(fmtDate(r.last)));
+    if(r.followUpDate)meta.push('<b style="color:'+(r.followUpDate<=data.today?RED:AQUA)+'">Follow-up '+esc(fmtDate(r.followUpDate))+'</b>');
+    if(r.deadline)meta.push('<b style="color:'+RED+'">Deadline '+esc(fmtDate(r.deadline))+'</b>');
     h+='<div style="font-size:10px;color:'+GREY+';margin:2px 0 4px">'+meta.join(" &nbsp;/&nbsp; ")+'</div>';
     f.winNotes.forEach(n=>h+='<div style="font-size:11px;margin:2px 0 2px 16px"><b style="color:'+AQUA+'">'+esc(fmtDate(n.d))+'</b>'+(n.k?' <b style="color:'+NAVY+';font-size:9px">'+esc((NOTE_KINDS[n.k]||n.k).toUpperCase())+'</b>':'')+' '+esc(n.t)+'</div>');
-    if(f.lastNote) h+='<div style="font-size:11px;margin:2px 0 2px 16px;color:#3A4A5E"><b style="color:'+GREY+'">Last note '+esc(fmtDate(f.lastNote.d))+'</b> '+esc(f.lastNote.t)+'</div>';
+    (f.lastNotes||[]).forEach((n,ni)=>h+='<div style="font-size:11px;margin:2px 0 2px 16px;color:#3A4A5E"><b style="color:'+GREY+'">'+(ni===0?"Last note ":"")+esc(fmtDate(n.d))+'</b>'+(n.k?' <b style="color:#5A7288;font-size:9px">'+esc((NOTE_KINDS[n.k]||n.k).toUpperCase())+'</b>':'')+' '+esc(n.t)+'</div>');
     f.doneRecent.forEach(st=>h+='<div style="font-size:11px;margin:2px 0 2px 16px"><b style="color:'+GREEN+';font-size:9px">DONE '+esc(fmtDate(st.c))+'</b> <span style="text-decoration:line-through;color:'+GREY+'">'+esc(st.t)+'</span></div>');
     f.openSteps.forEach((st,si)=>h+='<div style="font-size:11px;margin:2px 0 2px 16px"><b style="color:'+(si===0?AQUA:GREY)+';font-size:9px">'+(si===0?"NEXT":"THEN")+'</b> '+(si===0?'<b>'+esc(st.t)+'</b>':esc(st.t))+'</div>');
-    if(!f.winNotes.length&&!f.lastNote&&!f.openSteps.length) h+='<div style="font-size:10px;color:'+GREY+';font-style:italic;margin-left:16px">No notes or steps yet.</div>';
+    if(!f.winNotes.length&&!(f.lastNotes||[]).length&&!f.openSteps.length) h+='<div style="font-size:10px;color:'+GREY+';font-style:italic;margin-left:16px">No notes or steps yet.</div>';
     h+='</div>';
   });
 
@@ -1766,11 +1800,11 @@ function buildBriefText(data){
   if(!data.focus.length) L.push("No active deals in the pipeline.");
   data.focus.forEach(f=>{
     const r=f.r;
-    L.push(r.name+" / "+stg(r.stage).l.toUpperCase()+" / "+dealVal(r)+(f.isNew?" [NEW]":"")+(f.advanced?" [ADVANCED "+fmtDate(r.stageChanged)+"]":""));
-    const meta=[]; if(r.owner)meta.push(r.owner); meta.push("Health "+cap(r.health)); if(r.last)meta.push("Last touched "+fmtDate(r.last));
+    L.push(r.name+" / "+stg(r.stage).l.toUpperCase()+" / "+dealVal(r)+(f.weightPct&&r.stage!=="won"?" ("+f.weightPct+"% weighted)":"")+(f.isNew?" [NEW]":"")+(f.advanced?" [ADVANCED "+fmtDate(r.stageChanged)+"]":""));
+    const meta=[]; if(r.owner)meta.push(r.owner); if(r.contactName)meta.push(r.contactName); if(r.deploymentType)meta.push(cap(r.deploymentType)); meta.push("Health "+cap(r.health)); if(f.stageDays!==null&&f.stageDays!==undefined)meta.push(f.stageDays+"d at stage"); if(r.followUpDate)meta.push("Follow-up "+fmtDate(r.followUpDate)); if(r.deadline)meta.push("Deadline "+fmtDate(r.deadline));
     L.push("  "+meta.join(" / "));
     f.winNotes.forEach(n=>L.push("  "+fmtDate(n.d)+(n.k?" "+(NOTE_KINDS[n.k]||n.k).toUpperCase():"")+" "+n.t));
-    if(f.lastNote) L.push("  Last note "+fmtDate(f.lastNote.d)+" "+f.lastNote.t);
+    (f.lastNotes||[]).forEach(n=>L.push("  Last note "+fmtDate(n.d)+" "+n.t));
     f.doneRecent.forEach(st=>L.push("  DONE "+fmtDate(st.c)+" "+st.t));
     f.openSteps.forEach((st,si)=>L.push("  "+(si===0?"NEXT":"THEN")+" "+st.t));
   });
