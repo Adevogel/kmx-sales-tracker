@@ -1394,7 +1394,32 @@ body.light-theme .st-item{background:var(--s2)}
 
 <script>
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbx3wIYUp7WuHsmsKsabsfSeeVmGf_ElIWzO-xe-oe88pdOlkZGabxsOt5grnumbLC_XJg/exec";
+const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbx3wIYUp7WuHsmsKsabsfSeeVmGf_ElIWzO-xe-oe88pdOlkZGabxsOt5grnumbLC_XJg/exec";
+const GAS_URL = (function(){
+  try{
+    const o = localStorage.getItem("kmx_gas_url");
+    if(o && o.indexOf("script.google.com/macros/s/") >= 0 && o.endsWith("/exec")) return o;
+  }catch(e){}
+  return GAS_URL_DEFAULT;
+})();
+function saveGasUrl(){
+  const inp = document.getElementById("doc-url");
+  const v = (inp.value || "").trim();
+  const msg = document.getElementById("doc-url-msg");
+  if(v.indexOf("script.google.com/macros/s/") < 0 || !v.endsWith("/exec")){
+    msg.textContent = "That does not look right. It must be the Web app URL from Apps Script and end in /exec";
+    msg.style.color = "var(--red)";
+    return;
+  }
+  try{ localStorage.setItem("kmx_gas_url", v); }catch(e){}
+  msg.textContent = "Saved. Reconnecting...";
+  msg.style.color = "var(--green)";
+  setTimeout(function(){ location.reload(); }, 400);
+}
+function clearGasUrl(){
+  try{ localStorage.removeItem("kmx_gas_url"); }catch(e){}
+  location.reload();
+}
 // Sheet names: "Sheet1" for projects, "Licenses" for licenses
 const STAGES = [
   {k:"prospect",   l:"Prospect",      c:"#4A6280"},
@@ -2210,14 +2235,31 @@ async function runDiagnosis(){
     out+=verdict("ti-alert-triangle","var(--red)","The URL in this deployed file is not a valid Apps Script URL","Upload the latest index.html to GitHub and hard refresh.");
     el.innerHTML=out; return;
   }
+  if(!GAS_URL.endsWith("/exec")){
+    out+=verdict("ti-alert-triangle","var(--red)","The backend URL in this deployed file is malformed: it must end in /exec",
+      "This file was probably edited by hand and lost characters. It currently ends in \""+GAS_URL.slice(-8)+"\". Upload the latest index.html exactly as delivered (do not hand-edit the URL on GitHub), wait for Netlify, then hard refresh.");
+    el.innerHTML=out; return;
+  }
   let status=null, text="";
   try{
     const res=await fetch(GAS_URL+"?action=get&t="+Date.now());
     status=res.status;
     text=await res.text();
   }catch(err){
-    out+=verdict("ti-wifi-off","var(--red)","The browser could not reach Google at all",
-      "This is a network problem, not a configuration problem. Check your internet connection, VPN, or firewall, then reload. Error: "+String(err).slice(0,120));
+    // A CORS-blocked reply (login redirect, error page, 404) also lands here.
+    // Probe in no-cors mode to learn whether Google itself is reachable.
+    let reachable=false;
+    try{ await fetch(GAS_URL+"?action=get&nc="+Date.now(),{mode:"no-cors"}); reachable=true; }catch(e2){}
+    if(reachable){
+      out+=verdict("ti-shield-x","var(--amber)","Google is reachable, but it refused to hand the app any data",
+        "Your internet is fine. Google answered with a page the browser is not allowed to show the app, which almost always means one of these, in order of likelihood: "
+        +"1) The deployment is not public: in Apps Script go to Deploy, Manage deployments, pencil, set Who has access to Anyone, then Deploy. "
+        +"2) The published version is broken or stale: paste the complete kmx-apps-script.gs file, save, then Manage deployments, pencil, New version, Deploy. "
+        +"3) To see exactly what Google is answering, open this in a normal browser tab: the same URL with ?action=get on the end. A tab is allowed to show what the app cannot. If the tab shows JSON but the app stays blocked, a browser extension such as an ad blocker is interfering: try an incognito window.");
+    } else {
+      out+=verdict("ti-wifi-off","var(--red)","This browser genuinely cannot reach script.google.com",
+        "General internet may still work while this specific domain is blocked. Common causes: a corporate or school network blocking Google Scripts, a VPN, or an ad-blocking extension or DNS filter. Try the URL in a normal browser tab, try an incognito window with extensions off, or try a different network such as your phone hotspot.");
+    }
     el.innerHTML=out; return;
   }
   out+='<div style="font-size:11px;color:var(--t2)">Google answered with HTTP '+status+'. First part of the response:</div><div style="'+mono+'">'+String(text).slice(0,180).replace(/</g,"&lt;")+'</div>';
@@ -2242,6 +2284,16 @@ async function runDiagnosis(){
     out+=verdict("ti-help-circle","var(--amber)","Unrecognized response",
       "Copy the response text shown above and send it to me; it identifies the problem exactly.");
   }
+  out+='<div style="border-top:1px solid var(--b0);margin-top:14px;padding-top:12px">'
+    +'<div style="font-weight:600;color:var(--t0);font-size:13px;margin-bottom:6px"><i class="ti ti-plug" style="margin-right:6px;color:var(--lime)"></i>Connect to a different backend</div>'
+    +'<div style="font-size:11px;color:var(--t2);margin-bottom:8px">If you created a fresh Apps Script deployment, paste its Web app URL here (ends in /exec). No site redeploy needed.</div>'
+    +'<input id="doc-url" type="text" class="qu-inp" style="margin-bottom:8px" value="'+GAS_URL.replace(/"/g,"&quot;")+'">'
+    +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
+    +'<button class="btn btn-p" onclick="saveGasUrl()"><i class="ti ti-check"></i>Save and reconnect</button>'
+    +(GAS_URL!==GAS_URL_DEFAULT?'<button class="btn btn-g" onclick="clearGasUrl()">Use built-in URL</button>':'')
+    +'<span id="doc-url-msg" style="font-size:11px"></span></div>'
+    +(GAS_URL!==GAS_URL_DEFAULT?'<div style="font-size:10px;color:var(--amber);margin-top:6px">Using a saved override instead of the built-in URL.</div>':'')
+    +'</div>';
   el.innerHTML=out;
 }
 
