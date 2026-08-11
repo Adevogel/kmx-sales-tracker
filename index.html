@@ -1394,6 +1394,7 @@ body.light-theme .st-item{background:var(--s2)}
 
 <script>
 
+const KMX_BUILD = "2026.08.11-a";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -2230,7 +2231,8 @@ async function runDiagnosis(){
   el.innerHTML="Testing the Google connection from this browser...";
   const mono='font-family:var(--f-mono);font-size:11px;background:var(--s0);border:1px solid var(--b0);border-radius:6px;padding:8px 10px;word-break:break-all;color:var(--t2);margin:8px 0';
   const verdict=(icon,color,title,fix)=>'<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px"><i class="ti '+icon+'" style="font-size:22px;color:'+color+';flex-shrink:0;margin-top:2px"></i><div><div style="font-weight:600;color:var(--t0);font-size:14px;margin-bottom:4px">'+title+'</div><div>'+fix+'</div></div></div>';
-  let out='<div style="font-size:11px;color:var(--t2);margin-bottom:4px">This page is using backend URL:</div><div style="'+mono+'">'+GAS_URL+'</div>';
+  let out='<div style="font-size:11px;color:var(--t2);margin-bottom:8px">Running build <b style="color:var(--lime);font-family:var(--f-mono)">'+KMX_BUILD+'</b>. If this is not the build you just uploaded, the browser is serving a cached copy: hard refresh with Ctrl+Shift+R, or on iPhone close the app fully and reopen.</div>'
+    +'<div style="font-size:11px;color:var(--t2);margin-bottom:4px">This page is using backend URL:</div><div style="'+mono+'">'+GAS_URL+'</div>';
   if(GAS_URL.indexOf("script.google.com/macros/s/")<0){
     out+=verdict("ti-alert-triangle","var(--red)","The URL in this deployed file is not a valid Apps Script URL","Upload the latest index.html to GitHub and hard refresh.");
     el.innerHTML=out; return;
@@ -4514,6 +4516,7 @@ function renderMobileLicenses(data){
 // Boot immediately - password handled by Netlify
 document.addEventListener("DOMContentLoaded", () => boot());
 
+document.getElementById("date-tag").title = "Build " + KMX_BUILD;
 document.getElementById("date-tag").textContent =
   new Date().toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",year:"numeric"});
 
