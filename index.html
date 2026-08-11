@@ -1095,8 +1095,8 @@ body.light-theme .st-item{background:var(--s2)}
     <button class="ni" id="tab-board" onclick="showPage('board')" style="color:var(--lime)"><i class="ti ti-presentation"></i><span class="ni-lbl">Board View</span></button>
   </div>
   <div class="nav-foot">
-    <div class="sync-dot" id="sdot"></div>
-    <div class="sync-meta"><span class="sync-lbl" id="slbl">Not synced</span></div>
+    <div class="sync-dot" id="sdot" onclick="showDoctor()" style="cursor:pointer" title="Connection doctor"></div>
+    <div class="sync-meta" onclick="showDoctor()" style="cursor:pointer" title="Connection doctor"><span class="sync-lbl" id="slbl">Not synced</span></div>
     <button class="sync-btn" onclick="syncNow()" title="Sync"><i class="ti ti-refresh" id="sicon"></i></button>
   </div>
 </nav>
@@ -1259,6 +1259,16 @@ body.light-theme .st-item{background:var(--s2)}
   <div class="qu-foot">
     <button class="btn btn-g" onclick="closeQuickUpdate()">Cancel</button>
     <button class="btn btn-p" onclick="saveQuickUpdate()"><i class="ti ti-check"></i>Save update</button>
+  </div>
+</div>
+
+<div id="doc-bg" style="display:none;position:fixed;inset:0;z-index:660;background:rgba(4,8,16,.7);backdrop-filter:blur(4px)" onclick="if(event.target===this)hideDoctor()">
+  <div style="max-width:560px;margin:8vh auto 0;background:var(--s1);border:1px solid var(--b2);border-radius:var(--r4);padding:22px;max-height:84vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-family:var(--f-disp);font-size:16px;font-weight:600;color:var(--t0)"><i class="ti ti-stethoscope" style="margin-right:8px;color:var(--lime)"></i>Connection Doctor</div>
+      <button class="ib" onclick="hideDoctor()"><i class="ti ti-x"></i></button>
+    </div>
+    <div id="doc-body" style="font-size:13px;line-height:1.7;color:var(--t1)">Running checks...</div>
   </div>
 </div>
 
@@ -2185,6 +2195,56 @@ function setSyncState(state,label){
   document.getElementById("slbl").textContent=label;
 }
 
+
+// ── Connection doctor ──────────────────────────
+let _docShownAuto=false;
+function hideDoctor(){ document.getElementById("doc-bg").style.display="none"; }
+function showDoctor(){ document.getElementById("doc-bg").style.display="block"; runDiagnosis(); }
+async function runDiagnosis(){
+  const el=document.getElementById("doc-body");
+  el.innerHTML="Testing the Google connection from this browser...";
+  const mono='font-family:var(--f-mono);font-size:11px;background:var(--s0);border:1px solid var(--b0);border-radius:6px;padding:8px 10px;word-break:break-all;color:var(--t2);margin:8px 0';
+  const verdict=(icon,color,title,fix)=>'<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px"><i class="ti '+icon+'" style="font-size:22px;color:'+color+';flex-shrink:0;margin-top:2px"></i><div><div style="font-weight:600;color:var(--t0);font-size:14px;margin-bottom:4px">'+title+'</div><div>'+fix+'</div></div></div>';
+  let out='<div style="font-size:11px;color:var(--t2);margin-bottom:4px">This page is using backend URL:</div><div style="'+mono+'">'+GAS_URL+'</div>';
+  if(GAS_URL.indexOf("script.google.com/macros/s/")<0){
+    out+=verdict("ti-alert-triangle","var(--red)","The URL in this deployed file is not a valid Apps Script URL","Upload the latest index.html to GitHub and hard refresh.");
+    el.innerHTML=out; return;
+  }
+  let status=null, text="";
+  try{
+    const res=await fetch(GAS_URL+"?action=get&t="+Date.now());
+    status=res.status;
+    text=await res.text();
+  }catch(err){
+    out+=verdict("ti-wifi-off","var(--red)","The browser could not reach Google at all",
+      "This is a network problem, not a configuration problem. Check your internet connection, VPN, or firewall, then reload. Error: "+String(err).slice(0,120));
+    el.innerHTML=out; return;
+  }
+  out+='<div style="font-size:11px;color:var(--t2)">Google answered with HTTP '+status+'. First part of the response:</div><div style="'+mono+'">'+String(text).slice(0,180).replace(/</g,"&lt;")+'</div>';
+  const t=String(text);
+  if(t.trim().startsWith("{")&&t.indexOf("\"rows\"")>=0){
+    let n=0; try{ n=(JSON.parse(t).rows||[]).length; }catch(e){}
+    out+=verdict("ti-circle-check","var(--green)","Connected. The backend is healthy and returned "+n+" project row"+(n!==1?"s":"")+".",
+      "If the app still looks empty, this page was loaded before the connection recovered: close and reopen the app or hard refresh (Ctrl+Shift+R). On the iPhone home screen app, fully swipe it away and reopen.");
+  } else if(t.indexOf("Script function not found")>=0){
+    out+=verdict("ti-code-off","var(--red)","The deployed script is broken or incomplete",
+      "The published version of the Apps Script does not compile or lacks doGet. Open the sheet, Extensions then Apps Script, paste the complete kmx-apps-script.gs file as the entire script, save with no red underlines, then Deploy, Manage deployments, pencil, New version, Deploy.");
+  } else if(t.indexOf("accounts.google.com")>=0||t.indexOf("ServiceLogin")>=0||t.indexOf("You need access")>=0||t.toLowerCase().indexOf("sign in")>=0){
+    out+=verdict("ti-lock","var(--amber)","The deployment is not public",
+      "The web app is asking for a Google login, so the app cannot read it. In Apps Script: Deploy, Manage deployments, pencil, set Who has access to Anyone (not Anyone with Google account), then Deploy.");
+  } else if(status===404){
+    out+=verdict("ti-map-off","var(--red)","This deployment URL no longer exists",
+      "The deployment was deleted or this URL belongs to an old project. In Apps Script create or locate the current Web app deployment, copy its /exec URL, and send it to me so I can wire it into the app.");
+  } else if(t.indexOf("<html")>=0||t.indexOf("<!DOCTYPE")>=0){
+    out+=verdict("ti-alert-triangle","var(--amber)","Google returned a web page instead of data",
+      "This usually means the published version is stale or errored. Publish a new version: Deploy, Manage deployments, pencil, New version, Deploy. If it persists, copy the text shown above to me.");
+  } else {
+    out+=verdict("ti-help-circle","var(--amber)","Unrecognized response",
+      "Copy the response text shown above and send it to me; it identifies the problem exactly.");
+  }
+  el.innerHTML=out;
+}
+
 // ── Load from Sheets ──────────────────────────
 function syncNow(){
   setSyncState("busy","Syncing…");
@@ -2214,7 +2274,10 @@ function syncNow(){
       if(document.getElementById("page-dash").classList.contains("on")){renderDash();}
       if(document.getElementById("page-kanban").classList.contains("on")){renderKanban();}
     })
-    .catch(()=>setSyncState("err","Could not reach Google Sheets"))
+    .catch(()=>{
+      setSyncState("err","Could not reach Google Sheets");
+      if(!_docShownAuto){ _docShownAuto=true; showDoctor(); }
+    })
     .finally(()=>{
       document.getElementById("sicon").className="ti ti-refresh";
       if(document.getElementById("page-licdash").classList.contains("on")) renderLicDash();
