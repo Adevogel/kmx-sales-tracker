@@ -1394,7 +1394,7 @@ body.light-theme .st-item{background:var(--s2)}
 
 <script>
 
-const KMX_BUILD = "2026.08.11-a";
+const KMX_BUILD = "2026.08.11-b";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -1523,9 +1523,16 @@ function buildSummaryData(sinceISO, type){
   const hasFresh = r => (r.activity||[]).some(a => inWin(a.d)) || inWin(r.stageChanged) || inWin(r.created) || (r.steps||[]).some(s => s.c && inWin(s.c));
 
   // Deal Focus: every brief, top active deals, freshest first then by weighted value
+  // Most recent activity date across notes, completed steps, stage moves and last-contact
+  const touchDate = r => {
+    const ds = [r.last||"", r.stageChanged||"", r.created||""];
+    (r.activity||[]).forEach(a => { if(a.d) ds.push(a.d); });
+    (r.steps||[]).forEach(s => { if(s.c) ds.push(s.c); });
+    return ds.filter(Boolean).sort().pop() || "";
+  };
   const focus = active.slice()
-    .sort((a,b) => (hasFresh(b)?1:0)-(hasFresh(a)?1:0) || dealW(b)-dealW(a) || (b.last||"").localeCompare(a.last||""))
-    .slice(0, 8)
+    .sort((a,b) => touchDate(b).localeCompare(touchDate(a)) || dealW(b)-dealW(a))
+    .slice(0, 12)
     .map(r => {
       const winNotes = (r.activity||[]).filter(a => inWin(a.d) && a.k !== "done").sort((a,b) => a.d.localeCompare(b.d));
       const allNotes = (r.activity||[]).filter(a => a.k !== "done");
@@ -1540,7 +1547,9 @@ function buildSummaryData(sinceISO, type){
         openSteps: (r.steps||[]).filter(s => !s.c).slice(0, 3),
         stageDays: daysSince(r.stageChanged),
         weightPct: Math.round((STAGE_WEIGHTS[r.stage]||0)*100),
-        weightedVal: dealW(r)
+        weightedVal: dealW(r),
+        touched: touchDate(r),
+        touchedDays: daysSince(touchDate(r))
       };
     });
 
@@ -1672,20 +1681,29 @@ function buildBriefHTML(data){
   // Deal focus
   h+=H1("Deal Focus");
   if(!data.focus.length) h+='<div style="font-size:11px;color:'+GREY+';font-style:italic">No active deals in the pipeline.</div>';
+  const freshCount=data.focus.filter(x=>x.fresh).length;
+  if(freshCount) h+='<div class="pbb" style="font-size:10px;font-weight:700;color:'+AQUA+';letter-spacing:.06em;margin:2px 0 4px">UPDATED SINCE LAST BRIEF ('+freshCount+')</div>';
+  let dividerDone=false;
   data.focus.forEach(f=>{
     const r=f.r;
-    h+='<div class="pbb" style="margin:13px 0 0">';
+    if(!f.fresh && !dividerDone){
+      dividerDone=true;
+      h+='<div class="pbb" style="font-size:10px;font-weight:700;color:'+GREY+';letter-spacing:.06em;margin:14px 0 4px;border-top:1px solid '+LINE+';padding-top:8px">NO CHANGE SINCE LAST BRIEF</div>';
+    }
+    const hl=f.fresh;
+    h+='<div class="pbb" style="margin:13px 0 0'+(hl?';background:#F4FBFC;border-left:3px solid '+AQUA+';padding:8px 10px':'')+'">';
     h+='<div style="font-size:14px"><b>'+esc(r.name)+'</b> &nbsp;'+stgSpan(r)+' <span style="color:'+GREY+';font-size:11px">&nbsp;'+dealVal(r)+(f.weightPct&&r.stage!=="won"?' &nbsp;<span style="color:#8AA0B4">'+f.weightPct+'% weighted '+(f.weightedVal?fmtMoney(f.weightedVal,true):"-")+'</span>':'')+'</span>'
       +(f.isNew?' <b style="color:'+AQUA+';font-size:9px">&nbsp;NEW</b>':'')
-      +(f.advanced?' <b style="color:'+GREEN+';font-size:9px">&nbsp;ADVANCED '+esc(fmtDate(r.stageChanged))+'</b>':'')+'</div>';
+      +(f.advanced?' <b style="color:'+GREEN+';font-size:9px">&nbsp;ADVANCED '+esc(fmtDate(r.stageChanged))+'</b>':'')
+      +(f.fresh?' <b style="color:#FFFFFF;background:'+AQUA+';font-size:8px;padding:2px 6px;border-radius:3px">&nbsp;'+(f.touchedDays===0?"TODAY":f.touchedDays===1?"YESTERDAY":f.touchedDays+"D AGO")+'&nbsp;</b>':'')+'</div>';
     const meta=[];
+    if(f.touched)meta.push('<b style="color:'+(f.fresh?AQUA:GREY)+'">Updated '+esc(fmtDate(f.touched))+'</b>');
     if(r.owner)meta.push(esc(r.owner));
     if(r.contactName)meta.push('<span style="color:#4A6A85">'+esc(r.contactName)+'</span>');
     if(r.deploymentType)meta.push(cap(r.deploymentType));
     if(r.infraType)meta.push(esc(infraLabel(r.infraType)));
     meta.push("Health "+cap(r.health));
     if(f.stageDays!==null&&f.stageDays!==undefined)meta.push('<span style="color:'+(f.stageDays>45?RED:f.stageDays>21?"#8A5A00":GREY)+'">'+f.stageDays+"d at stage</span>");
-    if(r.last)meta.push("Touched "+esc(fmtDate(r.last)));
     if(r.followUpDate)meta.push('<b style="color:'+(r.followUpDate<=data.today?RED:AQUA)+'">Follow-up '+esc(fmtDate(r.followUpDate))+'</b>');
     if(r.deadline)meta.push('<b style="color:'+RED+'">Deadline '+esc(fmtDate(r.deadline))+'</b>');
     h+='<div style="font-size:10px;color:'+GREY+';margin:2px 0 4px">'+meta.join(" &nbsp;/&nbsp; ")+'</div>';
@@ -1832,12 +1850,14 @@ function buildBriefText(data){
       if(!isWon&&r.lossNotes) L.push("  Lessons: "+r.lossNotes);
     });
   }
-  L.push(""); L.push("DEAL FOCUS");
+  L.push(""); L.push("DEAL FOCUS (most recently updated first)");
   if(!data.focus.length) L.push("No active deals in the pipeline.");
+  let _txtDivider=false;
   data.focus.forEach(f=>{
     const r=f.r;
-    L.push(r.name+" / "+stg(r.stage).l.toUpperCase()+" / "+dealVal(r)+(f.weightPct&&r.stage!=="won"?" ("+f.weightPct+"% weighted)":"")+(f.isNew?" [NEW]":"")+(f.advanced?" [ADVANCED "+fmtDate(r.stageChanged)+"]":""));
-    const meta=[]; if(r.owner)meta.push(r.owner); if(r.contactName)meta.push(r.contactName); if(r.deploymentType)meta.push(cap(r.deploymentType)); meta.push("Health "+cap(r.health)); if(f.stageDays!==null&&f.stageDays!==undefined)meta.push(f.stageDays+"d at stage"); if(r.followUpDate)meta.push("Follow-up "+fmtDate(r.followUpDate)); if(r.deadline)meta.push("Deadline "+fmtDate(r.deadline));
+    if(!f.fresh && !_txtDivider){ _txtDivider=true; L.push(""); L.push("-- No change since last brief --"); }
+    L.push(r.name+" / "+stg(r.stage).l.toUpperCase()+" / "+dealVal(r)+(f.weightPct&&r.stage!=="won"?" ("+f.weightPct+"% weighted)":"")+(f.isNew?" [NEW]":"")+(f.advanced?" [ADVANCED "+fmtDate(r.stageChanged)+"]":"")+(f.fresh?" ["+(f.touchedDays===0?"TODAY":f.touchedDays===1?"YESTERDAY":f.touchedDays+"D AGO")+"]":""));
+    const meta=[]; if(f.touched)meta.push("Updated "+fmtDate(f.touched)); if(r.owner)meta.push(r.owner); if(r.contactName)meta.push(r.contactName); if(r.deploymentType)meta.push(cap(r.deploymentType)); meta.push("Health "+cap(r.health)); if(f.stageDays!==null&&f.stageDays!==undefined)meta.push(f.stageDays+"d at stage"); if(r.followUpDate)meta.push("Follow-up "+fmtDate(r.followUpDate)); if(r.deadline)meta.push("Deadline "+fmtDate(r.deadline));
     L.push("  "+meta.join(" / "));
     f.winNotes.forEach(n=>L.push("  "+fmtDate(n.d)+(n.k?" "+(NOTE_KINDS[n.k]||n.k).toUpperCase():"")+" "+n.t));
     (f.lastNotes||[]).forEach(n=>L.push("  Last note "+fmtDate(n.d)+" "+n.t));
@@ -2421,7 +2441,11 @@ function toggleLossReason(){
 function daysSince(d){
   const n = normaliseDate(d);
   if(!n) return null;
-  return Math.round((Date.now()-new Date(n+"T00:00:00"))/86400000);
+  // Whole calendar days, so anything dated today is 0 regardless of the hour
+  const then = new Date(n+"T00:00:00");
+  const now = new Date();
+  const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((today0 - then)/86400000);
 }
 function toRow(r){
   return[r.name,r.owner,r.stage,r.health,r.tbd?"TRUE":"FALSE",r.value||"",r.estLow||"",r.estHigh||"",r.last,r.note,r.renewal||"",r.deadline||"",r.created||"",r.stageChanged||"",r.infraType||"",r.lossReason||"",r.nextAction||"",r.followUpDate||"",r.deploymentType||"",r.lossNotes||"",r.contactName||"",r.contactEmail||"",r.contactPhone||"",JSON.stringify(r.activity||[]),JSON.stringify(r.steps||[])];
