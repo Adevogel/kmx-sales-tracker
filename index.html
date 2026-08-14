@@ -1069,6 +1069,14 @@ body.light-theme .qu-timeline{background:var(--s0)}
 .st-done-lbl{font-size:9px;font-family:var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin:10px 0 4px}
 .st-empty{font-size:11px;color:var(--t3);font-style:italic;padding:4px 0}
 body.light-theme .st-item{background:var(--s2)}
+
+/* Dashboard section separators */
+.dsec{display:flex;align-items:center;gap:12px;margin:36px 0 0}
+.dsec-l{font-family:var(--f-mono);font-size:10px;font-weight:600;letter-spacing:.14em;color:var(--t2);text-transform:uppercase;white-space:nowrap;display:inline-flex;align-items:center;gap:7px}
+.dsec-l i{color:var(--lime);font-size:13px}
+.dsec-r{flex:1;height:1px;background:var(--b1)}
+body.light-theme .dsec-r{background:var(--b1)}
+@media(max-width:680px){.dsec{margin-top:26px}}
 </style>
 </head>
 <body>
@@ -1141,7 +1149,7 @@ body.light-theme .st-item{background:var(--s2)}
         <th class="cl" onclick="doSort('last')">Last contact<span class="sort-i" id="si-last">↕</span></th>
         <th class="cage" onclick="doSort('created')">Age<span class="sort-i" id="si-created">↕</span></th>
         <th class="cfu" onclick="doSort('followUpDate')">Follow-up<span class="sort-i" id="si-followUpDate">↕</span></th>
-        <th class="cdep" onclick="doSort('deploymentType')">Type<span class="sort-i" id="si-deploymentType">'</span></th>
+        <th class="cdep" onclick="doSort('deploymentType')">Type<span class="sort-i" id="si-deploymentType">↕</span></th>
         <th class="ca">Actions</th>
       </tr></thead>
       <tbody id="tbody"></tbody>
@@ -1394,7 +1402,7 @@ body.light-theme .st-item{background:var(--s2)}
 
 <script>
 
-const KMX_BUILD = "2026.08.11-b";
+const KMX_BUILD = "2026.08.11-e";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -1435,6 +1443,7 @@ const STAGES = [
 const SORDER = STAGES.map(s=>s.k);
 
 let rows=[], editId=null, sk="name", sd=1, vm="tbd";
+let outreachRows=[], _outreachLoaded=false;
 let chartInstances = {};
 
 // ── Lock ──────────────────────────────────────
@@ -2320,6 +2329,24 @@ async function runDiagnosis(){
 }
 
 // ── Load from Sheets ──────────────────────────
+
+function syncOutreach(){
+  // Non-blocking: executive outreach section; failure never disturbs the main app
+  return fetch(GAS_URL+"?action=get&sheet=outreach&t="+Date.now())
+    .then(r=>r.json())
+    .then(j=>{
+      outreachRows=(j.rows||[]).map(r=>({
+        company:r[0]||"", status:r[6]||"new", owner:r[7]||"",
+        created:normaliseDate(r[8]), last:normaliseDate(r[9]),
+        touches:(function(){try{const a=JSON.parse(r[10]);return Array.isArray(a)?a:[];}catch(e){return [];}})(),
+        estValue:parseFloat(r[12])||0, convertedDate:normaliseDate(r[13])
+      })).filter(r=>r.company);
+      _outreachLoaded=true;
+      if(document.getElementById("page-dash").classList.contains("on")) renderDash();
+    })
+    .catch(()=>{ _outreachLoaded=false; });
+}
+
 function syncNow(){
   setSyncState("busy","Syncing…");
   document.getElementById("sicon").className="ti ti-refresh spin";
@@ -2345,6 +2372,7 @@ function syncNow(){
       }));
       renderTable();
       setSyncState("ok","Synced "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}));
+      syncOutreach();
       if(document.getElementById("page-dash").classList.contains("on")){renderDash();}
       if(document.getElementById("page-kanban").classList.contains("on")){renderKanban();}
     })
@@ -2520,23 +2548,42 @@ function getFiltered(){
     (!q||r.name.toLowerCase().includes(q)||(r.owner||"").toLowerCase().includes(q))&&
     (!fh||r.health===fh)&&(!fs||r.stage===fs)
   ).sort((a,b)=>{
+    // Funnel view: group by stage, newest opportunities at the top of each stage
+    if(sk==="stage"){
+      const ai=SORDER.indexOf(a.stage), bi=SORDER.indexOf(b.stage);
+      if(ai!==bi) return (ai-bi)*sd;
+      const ad=a.created||"", bd=b.created||"";
+      if(ad!==bd) return bd.localeCompare(ad);
+      return (b.id||0)-(a.id||0);
+    }
     let av=a[sk]??"",bv=b[sk]??"";
-    if(sk==="stage"){av=SORDER.indexOf(a.stage);bv=SORDER.indexOf(b.stage);}
     if(sk==="value"){av=a.tbd?-1:(a.value||0);bv=b.tbd?-1:(b.value||0);}
     if(sk==="renewal"){av=a.renewal||"9999";bv=b.renewal||"9999";}
-    if(sk==="created"){av=a.created||"9999";bv=b.created||"9999";}
+    if(sk==="created"){av=a.created||"0000";bv=b.created||"0000";}
+    if(sk==="last"){av=a.last||"0000";bv=b.last||"0000";}
     if(sk==="deploymentType"){av=a.deploymentType||"";bv=b.deploymentType||"";}
     if(sk==="infraType"){av=a.infraType||"";bv=b.infraType||"";}
     if(sk==="followUpDate"){av=a.followUpDate||"9999";bv=b.followUpDate||"9999";}
-    return av<bv?-sd:av>bv?sd:0;
+    if(av<bv) return -sd;
+    if(av>bv) return sd;
+    // Stable tie-break so equal values never shuffle: newest first
+    return (b.created||"").localeCompare(a.created||"");
   });
 }
 function savePrefs(){try{localStorage.setItem("kmx_prefs",JSON.stringify({sk,sd,fh:document.getElementById("fh").value,fs:document.getElementById("fs").value}));}catch(e){}}
 function loadPrefs(){try{const p=JSON.parse(localStorage.getItem("kmx_prefs")||"{}");if(p.sk)sk=p.sk;if(p.sd)sd=p.sd;if(p.fh)document.getElementById("fh").value=p.fh;if(p.fs)document.getElementById("fs").value=p.fs;}catch(e){}}
-function doSort(k){if(sk===k)sd*=-1;else{sk=k;sd=1;}renderTable();}
+function doSort(k){
+  if(sk===k){ sd*=-1; }
+  else {
+    sk=k;
+    // Sensible first-click direction per column
+    sd=(k==="created"||k==="last")?-1:1;
+  }
+  renderTable();
+}
 function renderTable(){
   try{savePrefs();}catch(e){}
-  ["name","owner","stage","health","value","last"].forEach(k=>{
+  ["name","owner","stage","health","value","last","created","followUpDate","deploymentType"].forEach(k=>{
     const el=document.getElementById("si-"+k);
     if(!el) return;
     el.textContent=sk===k?(sd===1?"↑":"↓"):"↕";
@@ -2666,6 +2713,58 @@ const CHART_DEFAULTS={
   grid:{color:"rgba(255,255,255,0.05)"},
   font:{family:"'IBM Plex Mono', monospace",size:11}
 };
+
+
+function buildOutreachSection(){
+  if(!_outreachLoaded || !outreachRows.length){
+    return '<div class="chcard gap"><div class="chtitle"><i class="ti ti-send" style="margin-right:6px"></i>Outreach Engine</div>'
+      +'<div style="font-size:12px;color:var(--t2);font-style:italic;padding:4px 0">'
+      +(_outreachLoaded?'No outreach logged yet. The sales team adds targets in the Outreach Tracker app; conversions land here automatically.':'Outreach data not loaded. It appears once the Outreach tab exists in the sheet.')
+      +'</div></div>';
+  }
+  const o=outreachRows;
+  const conv=o.filter(r=>r.status==="converted");
+  const dead=o.filter(r=>r.status==="dead");
+  const active=o.length-conv.length-dead.length;
+  const engaged=o.filter(r=>["responded","meeting","qualified","converted"].includes(r.status)).length;
+  const reached=o.filter(r=>r.status!=="new").length;
+  const respRate=reached?Math.round(engaged/reached*100):0;
+  const convRate=o.length?Math.round(conv.length/o.length*100):0;
+  const week=(()=>{const d=new Date();d.setDate(d.getDate()-7);return localISO(d);})();
+  const month=(()=>{const d=new Date();d.setDate(d.getDate()-30);return localISO(d);})();
+  const touches7=o.reduce((s,r)=>s+r.touches.filter(a=>a.d>=week).length,0);
+  const conv30=conv.filter(r=>r.convertedDate&&r.convertedDate>=month);
+  const convVal=conv.reduce((s,r)=>s+(r.estValue||0),0);
+  const OSTAT=[["new","New","#4A6280"],["contacted","Contacted","#1862B8"],["responded","Responded","#5040B0"],["meeting","Meeting","#8A5A00"],["qualified","Qualified","#0878A0"],["converted","Converted","#0A7A50"],["dead","Dead","#B83030"]];
+  const liveTotal=Math.max(o.length,1);
+  const funnel=OSTAT.map(s=>{
+    const n=o.filter(r=>r.status===s[0]).length;
+    return n?'<div title="'+s[1]+': '+n+'" style="flex:'+n+';background:'+s[2]+';min-width:'+(n?'14px':'0')+';display:flex;align-items:center;justify-content:center;color:#FFF;font-size:10px;font-family:var(--f-mono)">'+n+'</div>':'';
+  }).join("");
+  const legend=OSTAT.map(s=>{
+    const n=o.filter(r=>r.status===s[0]).length;
+    return n?'<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--t2);margin-right:10px"><span style="width:8px;height:8px;border-radius:2px;background:'+s[2]+'"></span>'+s[1]+'</span>':'';
+  }).join("");
+  const recent=conv.slice().sort((a,b)=>(b.convertedDate||"").localeCompare(a.convertedDate||"")).slice(0,3);
+  const owners={};
+  o.forEach(r=>{const k=r.owner||"Unassigned";if(!owners[k])owners[k]={t:0,c:0};owners[k].t+=r.touches.length;if(r.status==="converted")owners[k].c++;});
+  const topOwner=Object.keys(owners).sort((a,b)=>owners[b].c-owners[a].c||owners[b].t-owners[a].t)[0];
+  const mini=(l,v,s,col)=>'<div style="flex:1;min-width:120px"><div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--t2)">'+l+'</div><div style="font-family:var(--f-disp);font-size:24px;font-weight:700;color:'+(col||"var(--t0)")+';line-height:1.2">'+v+'</div>'+(s?'<div style="font-size:10px;color:var(--t2);font-family:var(--f-mono)">'+s+'</div>':'')+'</div>';
+  return '<div class="chcard gap"><div class="chtitle"><i class="ti ti-send" style="margin-right:6px"></i>Outreach Engine <span style="font-weight:400;font-size:11px;color:var(--t2);text-transform:none;letter-spacing:0">/ top of funnel, from the Outreach Tracker</span></div>'
+    +'<div style="display:flex;gap:18px;flex-wrap:wrap;margin:10px 0 14px">'
+      +mini("ACTIVE TARGETS", active, o.length+" total logged")
+      +mini("TOUCHES 7D", touches7, "team activity", "var(--lime)")
+      +mini("RESPONSE RATE", respRate+"%", engaged+" engaged / "+reached+" reached", respRate>=25?"var(--green)":"var(--amber)")
+      +mini("CONVERTED", conv.length, (conv30.length?conv30.length+" in last 30d":"")+(convVal?" / "+fmtMoney(convVal,true)+" est":""), "var(--green)")
+      +mini("CONVERSION RATE", convRate+"%", topOwner?("top: "+topOwner+" ("+owners[topOwner].c+")"):"" )
+    +'</div>'
+    +'<div style="display:flex;height:26px;border-radius:6px;overflow:hidden;gap:2px">'+funnel+'</div>'
+    +'<div style="margin-top:8px">'+legend+'</div>'
+    +(recent.length?'<div style="margin-top:12px;border-top:1px solid var(--b0);padding-top:10px">'
+      +recent.map(r=>'<div style="font-size:11px;color:var(--t1);margin:3px 0"><b style="color:var(--green);font-size:9px">CONVERTED '+fmtDate(r.convertedDate)+'</b> &nbsp;'+r.company+(r.estValue?' <span style="color:var(--t2)">/ '+fmtMoney(r.estValue,true)+' est</span>':'')+(r.owner?' <span style="color:var(--t2)">/ '+r.owner+'</span>':'')+'</div>').join("")
+    +'</div>':'')
+    +'</div>';
+}
 
 function renderDash(){
   const active=rows.filter(r=>r.stage!=="won"&&r.stage!=="lost");
@@ -2874,6 +2973,8 @@ function renderDash(){
   ${urgent.length>0?`<div class="alert-banner"><i class="ti ti-bell-ringing"></i><span><b>${urgent.length} project${urgent.length!==1?"s":""}</b> with deadlines within 30 days or overdue: ${urgent.map(r=>r.name.split(" ")[0]).join(", ")}</span></div>`:""}
   ${overdueFollowup.length>0?`<div class="alert-banner" style="background:rgba(232,160,48,.07);border-color:rgba(232,160,48,.25);color:#E8A030"><i class="ti ti-player-play" style="color:var(--amber)"></i><span><b>${overdueFollowup.length} follow-up${overdueFollowup.length!==1?"s":""}</b> overdue: ${overdueFollowup.map(r=>r.name.split(" ")[0]).join(", ")}</span></div>`:""}
 
+  <div class="dsec"><span class="dsec-l"><i class="ti ti-cash"></i>Pipeline value</span><span class="dsec-r"></span></div>
+
   <!-- ROW 1: $$ KPIs -->
   <div class="kgrid k4 gap">
     <div class="kc tb">
@@ -2897,6 +2998,8 @@ function renderDash(){
       <div class="ksub">${wonVal?"<b>"+fmtMoney(wonVal,true)+"</b> total value":"No value recorded"}</div>
     </div>
   </div>
+
+  <div class="dsec"><span class="dsec-l"><i class="ti ti-activity-heartbeat"></i>Coverage and health</span><span class="dsec-r"></span></div>
 
   <!-- ROW 2: Coverage + Health -->
   <div class="kgrid k2 gap">
@@ -2941,6 +3044,12 @@ function renderDash(){
       </div>
     </div>
   </div>
+
+  <div class="dsec"><span class="dsec-l"><i class="ti ti-send"></i>Top of funnel / outreach</span><span class="dsec-r"></span></div>
+
+  ${buildOutreachSection()}
+
+  <div class="dsec"><span class="dsec-l"><i class="ti ti-chart-dots"></i>Pipeline analytics</span><span class="dsec-r"></span></div>
 
   <!-- ROW 3: Charts -->
   <div class="kgrid k2 gap">
@@ -2999,6 +3108,8 @@ function renderDash(){
     <div class="funnel-wrap" id="funnel-chart"></div>
   </div>
 
+  <div class="dsec"><span class="dsec-l"><i class="ti ti-list-check"></i>Execution / stages and follow-ups</span><span class="dsec-r"></span></div>
+
   <!-- ROW 6: Stage + Follow-ups -->
   <div class="kgrid k2 gap">
     <div class="scard">
@@ -3035,6 +3146,8 @@ function renderDash(){
       }
     </div>
   </div>
+
+  <div class="dsec"><span class="dsec-l"><i class="ti ti-users"></i>Team and sectors</span><span class="dsec-r"></span></div>
 
   <!-- ROW 7: Owner performance + Infra -->
   <div class="kgrid k2 gap">
@@ -3083,6 +3196,8 @@ function renderDash(){
       }
     </div>
   </div>
+
+  <div class="dsec"><span class="dsec-l"><i class="ti ti-alert-triangle"></i>Risk and lessons</span><span class="dsec-r"></span></div>
 
   <!-- Lost deals and lessons learned -->
   ${lost.length>0?`
