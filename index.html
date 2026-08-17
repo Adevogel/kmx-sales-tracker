@@ -1402,7 +1402,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-a";
+const KMX_BUILD = "2026.08.12-b";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -1964,8 +1964,8 @@ function _chartPngBytes(cv){
 }
 function chartSectorGrowth(){
   // Cumulative opportunities by creation month, stacked by sector
-  const dated=rows.filter(r=>r.created);
-  if(dated.length<2) return null;
+  const dated=rows.map(r=>({r, cd:normaliseDate(r.created)})).filter(x=>x.cd).map(x=>Object.assign({}, x.r, {created:x.cd}));
+  if(!dated.length) return null;
   const SEC_HEX={oilgas:"#155E75",lithium:"#E97132",datacenter:"#14532D",foodbev:"#38BDF8",industrial:"#A21CAF",municipal:"#4CAF50",mining:"#8A5A00",minerals:"#5040B0",chipfab:"#0878A0",power:"#B83030",other:"#4A6280"};
   const secKey=r=>SEC_HEX[r.infraType]?r.infraType:"other";
   const secLbl=k=>k==="other"?"Other":(INFRA_LABELS[k]||k);
@@ -1977,7 +1977,12 @@ function chartSectorGrowth(){
   const endNow=new Date(now.getFullYear(), now.getMonth(), 1);
   while(cur<=endNow){ months.push(new Date(cur)); cur.setMonth(cur.getMonth()+1); }
   while(months.length>8) months.shift();
-  if(months.length<2) return null;
+  // Single-month data still tells a story: show growth from zero
+  if(months.length===1){
+    const prev=new Date(months[0]);
+    prev.setMonth(prev.getMonth()-1);
+    months.unshift(prev);
+  }
   const MN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const mLabel=d=>MN[d.getMonth()]+(d.getFullYear()!==now.getFullYear()?" "+String(d.getFullYear()).slice(2):"");
   const mEnd=d=>{ const e=new Date(d.getFullYear(), d.getMonth()+1, 0); return localISO(e); };
@@ -2232,6 +2237,7 @@ function buildSummaryDoc(data){
   const imgs = [];
   const stgPng = chartStageValue(); if(stgPng) imgs.push([stgPng, 620, Math.round(620*((64+6*56)/880))]);
   const hthPng = chartHealthMix(); if(hthPng) imgs.push([hthPng, 360, Math.round(360*(340/560))]);
+  const grwPng2 = chartSectorGrowth(); if(grwPng2) imgs.push([grwPng2, 620, Math.round(620*(430/880))]);
   const depPng = data.type === "weekly" ? chartDeployMix() : null; if(depPng) imgs.push([depPng, 620, Math.round(620*(250/880))]);
   if(imgs.length){
     kids.push(H1("Pipeline Overview"));
