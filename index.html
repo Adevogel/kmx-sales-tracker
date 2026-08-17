@@ -1402,7 +1402,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-b";
+const KMX_BUILD = "2026.08.12-c";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -2008,7 +2008,22 @@ function chartSectorGrowth(){
   x.fillStyle="#FFFFFF"; x.fillRect(0,0,W,H);
   x.font="600 22px Arial"; x.fillStyle="#0A1628";
   x.fillText("Pipeline Growth by Sector",24,36);
-  const padL=64,padR=24,padT=58,padB=44;
+  const padL=64,padR=24,padB=44;
+  // Horizontal legend under the title, wrapping as needed, clear of the bars
+  x.font="500 15px Arial";
+  const items=secs.map(s=>({k:s,label:secLbl(s),w:15+7+x.measureText(secLbl(s)).width+22}));
+  let lx=padL, lrow=0;
+  const pos=items.map(it=>{
+    if(lx+it.w>W-padR){ lx=padL; lrow++; }
+    const p={x:lx,row:lrow}; lx+=it.w; return p;
+  });
+  const legendTop=50, rowH=25;
+  pos.forEach((p,i)=>{
+    const yy=legendTop+p.row*rowH;
+    x.fillStyle=SEC_HEX[items[i].k]; x.fillRect(p.x, yy, 15, 15);
+    x.fillStyle="#0A1628"; x.fillText(items[i].label, p.x+22, yy+13);
+  });
+  const padT=legendTop+(lrow+1)*rowH+14;
   const plotW=W-padL-padR, plotH=H-padT-padB;
   // Gridlines and y ticks
   const steps=4;
@@ -2041,15 +2056,6 @@ function chartSectorGrowth(){
     });
     x.font="500 15px Arial"; x.fillStyle="#3A4A5E";
     x.fillText(mLabel(m), cxp, padT+plotH+28);
-  });
-  // Legend, top-left inside plot like the reference
-  x.textAlign="left";
-  let ly=padT+8;
-  secs.forEach(s=>{
-    x.fillStyle=SEC_HEX[s]; x.fillRect(padL+14, ly, 15, 15);
-    x.font="500 15px Arial"; x.fillStyle="#0A1628";
-    x.fillText(secLbl(s), padL+36, ly+13);
-    ly+=26;
   });
   return _chartPngBytes(cv);
 }
