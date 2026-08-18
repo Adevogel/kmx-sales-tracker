@@ -1407,7 +1407,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-e";
+const KMX_BUILD = "2026.08.12-f";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -4638,79 +4638,166 @@ function renderBoard(){
 // ── Board print & theme ──────────────────────────────────────────────────────
 // boardLightTheme declared in glue script
 
-async function doPrint(){
-  const btn   = document.getElementById("export-btn");
-  const icon  = document.getElementById("export-icon");
-  const label = document.getElementById("export-label");
+function buildBoardBriefHTML(){
+  const NAVY="#0A1628", GREY="#6A7A8E", AQUA="#0898A0", RED="#B83030", GREEN="#0A7A50", LINE="#D5E0EA", SOFT="#F2F7FB", AMBER="#8A5A00";
+  const money=v=>v?"$"+Math.round(v).toLocaleString("en-US"):"-";
+  const cap=s=>s?s.charAt(0).toUpperCase()+s.slice(1):"";
+  const esc=t=>String(t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const H1=t=>'<div class="pbb pbh" style="font-size:16px;font-weight:700;color:'+NAVY+';margin:26px 0 10px;padding-bottom:5px;border-bottom:1px solid '+LINE+'">'+t+'</div>';
 
-  btn.disabled = true;
-  icon.className = "ti ti-loader-2";
-  icon.style.animation = "rot 0.9s linear infinite";
-  label.textContent = "Generating PDF…";
+  const active=rows.filter(r=>r.stage!=="won"&&r.stage!=="lost");
+  const won=rows.filter(r=>r.stage==="won");
+  const lost=rows.filter(r=>r.stage==="lost");
+  const midOf=r=>r.tbd?((r.estLow||0)+(r.estHigh||0))/2:(r.value||0);
+  const pipe=active.filter(r=>!r.tbd&&r.value).reduce((s,r)=>s+r.value,0);
+  const estMid=active.filter(r=>r.tbd&&(r.estLow||r.estHigh)).reduce((s,r)=>s+((r.estLow||0)+(r.estHigh||0))/2,0);
+  const conf=pipe+estMid;
+  const weighted=active.reduce((s,r)=>s+midOf(r)*(STAGE_WEIGHTS[r.stage]||0),0);
+  const wonVal=won.filter(r=>r.value).reduce((s,r)=>s+r.value,0);
+  const wr=won.length+lost.length>0?Math.round(won.length/(won.length+lost.length)*100):null;
 
-  try {
-    const { jsPDF } = window.jspdf;
-    const boardEl = document.getElementById("board-content");
+  const _iso=d=>{const n=normaliseDate(d);return n||"";};
+  const _ms=k=>{const d=new Date();d.setMonth(d.getMonth()-k);return localISO(new Date(d.getFullYear(),d.getMonth(),1));};
+  const thisMonth=_ms(0), lastMonth=_ms(1);
+  const addedThis=rows.filter(r=>{const c=_iso(r.created);return c&&c>=thisMonth;});
+  const addedLast=rows.filter(r=>{const c=_iso(r.created);return c&&c>=lastMonth&&c<thisMonth;});
+  const delta=addedThis.length-addedLast.length;
+  const wonThis=won.filter(r=>{const s=_iso(r.stageChanged);return s&&s>=thisMonth;});
+  const advThis=active.filter(r=>{const s=_iso(r.stageChanged);return s&&s>=thisMonth&&s!==_iso(r.created);});
+  const activeLogos=new Set(active.map(r=>(r.name||"").trim().toLowerCase()).filter(Boolean)).size;
+  const allLogos=new Set(rows.map(r=>(r.name||"").trim().toLowerCase()).filter(Boolean)).size;
+  const secCount={};active.forEach(r=>{const k=r.infraType||"other";secCount[k]=(secCount[k]||0)+1;});
+  const topSec=Object.keys(secCount).sort((a,b)=>secCount[b]-secCount[a])[0];
+  const topSecShare=active.length?Math.round((secCount[topSec]||0)/active.length*100):0;
+  const topDeal=[...active].sort((a,b)=>midOf(b)-midOf(a))[0];
+  const topDealShare=topDeal&&conf>0?Math.round(midOf(topDeal)/conf*100):0;
+  const MN=["January","February","March","April","May","June","July","August","September","October","November","December"][new Date().getMonth()];
+  const YR=new Date().getFullYear();
 
-    // Expand body so html2canvas can see everything
-    const origOverflow = document.body.style.overflow;
-    document.body.style.overflow = "visible";
+  let h='<div style="font-family:Arial,Helvetica,sans-serif;color:#1A2430;background:#FFFFFF;width:816px;padding:34px 40px;box-sizing:border-box">';
 
-    // Hide the export buttons during capture
-    const exportRow = document.querySelector(".board-export-row");
-    if(exportRow) exportRow.style.visibility = "hidden";
+  // Masthead
+  h+='<table class="pbb" style="width:100%;border-collapse:collapse;background:'+NAVY+'"><tr>'
+    +'<td style="padding:16px 20px"><div style="font-size:20px;font-weight:700;color:#FFFFFF;letter-spacing:.02em">KMX TECHNOLOGIES</div>'
+    +'<div style="font-size:11px;font-weight:700;color:#38E8C8;letter-spacing:.06em;margin-top:3px">BOARD SUMMARY / PIPELINE GROWTH AND MOMENTUM</div></td>'
+    +'<td style="padding:16px 20px;text-align:right;vertical-align:top"><div style="font-size:13px;font-weight:700;color:#FFFFFF">'+MN+' '+YR+'</div>'
+    +'<div style="font-size:11px;color:#9FC4D8;margin-top:3px">'+new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})+'</div></td>'
+    +'</tr></table>';
+  h+='<div class="pbb" style="font-size:10px;color:'+GREY+';font-style:italic;margin:8px 0 14px">Confidential. For board use only.</div>';
 
-    // Capture the full element at 1.5x for a good quality/size balance
-    const canvas = await html2canvas(boardEl, {
-      scale: 1.5,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: boardLightTheme ? "#ffffff" : "#07090D",
-      scrollX: 0,
-      scrollY: 0,
-      x: 0,
-      y: 0,
-      width:  boardEl.scrollWidth,
-      height: boardEl.scrollHeight,
-      windowWidth:  boardEl.scrollWidth,
-      windowHeight: boardEl.scrollHeight,
-      logging: false
+  // Executive narrative
+  const parts=[];
+  if(addedThis.length) parts.push('<b>'+addedThis.length+' new opportunit'+(addedThis.length!==1?'ies':'y')+'</b> entered the pipeline this month'+(delta>0?' (up '+delta+' on last month)':delta<0?' (down '+Math.abs(delta)+' on last month)':''));
+  if(wonThis.length) parts.push('<b style="color:'+GREEN+'">'+wonThis.length+' closed won</b> in '+MN);
+  if(advThis.length) parts.push('<b>'+advThis.length+' deal'+(advThis.length!==1?'s':'')+' advanced stage</b>');
+  const narrative=parts.length
+    ? parts.join(", ")+'. Confirmed pipeline stands at <b>'+(fmtMoney(conf,true)||"-")+'</b> across <b>'+activeLogos+' active compan'+(activeLogos!==1?'ies':'y')+'</b>'+(topSec?', led by <b>'+esc(INFRA_LABELS[topSec]||topSec)+'</b> at '+topSecShare+'% of active deals':'')+'.'
+    : 'The pipeline holds <b>'+active.length+' active project'+(active.length!==1?'s':'')+'</b> worth <b>'+(fmtMoney(conf,true)||"-")+'</b> across <b>'+activeLogos+' compan'+(activeLogos!==1?'ies':'y')+'</b>.';
+  h+='<div class="pbb" style="background:'+SOFT+';border-left:3px solid '+AQUA+';padding:12px 16px;font-size:13px;line-height:1.6;margin-bottom:6px"><b style="color:'+NAVY+'">Pipeline momentum.</b> '+narrative
+    +(topDealShare>=40?' <span style="color:'+AMBER+'">One deal, '+esc(topDeal.name)+', represents '+topDealShare+'% of confirmed pipeline.</span>':'')+'</div>';
+
+  // KPI grid
+  const kc=(lbl,val,sub,col)=>'<td style="width:25%;background:'+SOFT+';padding:10px 12px;border:3px solid #FFFFFF;vertical-align:top">'
+    +'<div style="font-size:9px;font-weight:700;color:'+GREY+';letter-spacing:.05em">'+lbl+'</div>'
+    +'<div style="font-size:19px;font-weight:700;margin-top:3px;color:'+(col||NAVY)+'">'+val+'</div>'
+    +(sub?'<div style="font-size:9px;color:'+GREY+';margin-top:2px">'+sub+'</div>':'')+'</td>';
+  h+=H1("Where we stand");
+  h+='<table class="pbb" style="width:100%;border-collapse:collapse"><tr>'
+    +kc("CONFIRMED PIPELINE",fmtMoney(conf,true)||"-",allLogos+" companies incl. closed")
+    +kc("WEIGHTED",fmtMoney(weighted,true)||"-","probability-adjusted",AQUA)
+    +kc("ACTIVE PROJECTS",String(active.length),activeLogos+" active companies")
+    +kc("CLOSED WON",String(won.length),wonVal?money(wonVal):"",GREEN)
+    +'</tr></table>';
+
+  // Growth centerpiece
+  h+=H1("Growth over time");
+  const grw=chartSectorGrowth();
+  if(grw) h+='<img class="pbb" src="data:image/png;base64,'+grw+'" style="width:720px;display:block;margin:2px auto 10px">';
+  else h+='<div class="pbb" style="font-size:11px;color:'+GREY+';font-style:italic">Add deals with creation dates to build the growth chart.</div>';
+  h+='<table class="pbb" style="width:100%;border-collapse:collapse"><tr>'
+    +kc("ADDED THIS MONTH",String(addedThis.length),(delta>=0?"+"+delta:String(delta))+" vs last month",AQUA)
+    +kc("ADVANCED THIS MONTH",String(advThis.length),"deals moved forward")
+    +kc("COMPANIES ENGAGED",String(activeLogos),allLogos+" total incl. closed")
+    +kc("WIN RATE",wr!==null?wr+"%":"-",won.length+" won / "+lost.length+" lost",wr!==null&&wr>=50?GREEN:NAVY)
+    +'</tr></table>';
+
+  // Outcomes and momentum: stage value + health charts side by side
+  h+=H1("Outcomes and momentum");
+  const stg2=chartStageValue(), hth=chartHealthMix();
+  if(stg2) h+='<img class="pbb" src="data:image/png;base64,'+stg2+'" style="width:560px;display:block;margin:2px 0 8px">';
+  if(hth) h+='<img class="pbb" src="data:image/png;base64,'+hth+'" style="width:360px;display:block;margin:2px 0 8px">';
+
+  // Active deals table
+  h+=H1("What we are working now");
+  const top=[...active].sort((a,b)=>midOf(b)-midOf(a)).slice(0,10);
+  if(top.length){
+    h+='<table class="pbb" style="width:100%;border-collapse:collapse;font-size:11px">'
+      +'<tr style="border-bottom:2px solid '+LINE+'"><td style="padding:5px 6px;font-weight:700;color:'+GREY+';font-size:9px">COMPANY</td><td style="padding:5px 6px;font-weight:700;color:'+GREY+';font-size:9px">STAGE</td><td style="padding:5px 6px;font-weight:700;color:'+GREY+';font-size:9px;text-align:right">VALUE</td><td style="padding:5px 6px;font-weight:700;color:'+GREY+';font-size:9px;text-align:right">WEIGHTED</td></tr>';
+    top.forEach(r=>{
+      h+='<tr style="border-bottom:1px solid '+LINE+'"><td style="padding:5px 6px;font-weight:600">'+esc(r.name)+'</td>'
+        +'<td style="padding:5px 6px">'+esc(cap(stg(r.stage).l))+'</td>'
+        +'<td style="padding:5px 6px;text-align:right">'+(r.tbd?money(midOf(r))+" est":money(r.value))+'</td>'
+        +'<td style="padding:5px 6px;text-align:right;color:'+GREY+'">'+money(midOf(r)*(STAGE_WEIGHTS[r.stage]||0))+'</td></tr>';
     });
+    h+='</table>';
+  } else h+='<div class="pbb" style="font-size:11px;color:'+GREY+';font-style:italic">No active deals.</div>';
 
-    // Restore
-    document.body.style.overflow = origOverflow;
-    if(exportRow) exportRow.style.visibility = "visible";
-
-    // --- Single page sized exactly to the content ---
-    // Work in mm. Target width = 280mm (A4 landscape width minus margins).
-    const targetWidthMm  = 280;
-    const mmPerPx        = targetWidthMm / canvas.width;
-    const contentHeightMm = canvas.height * mmPerPx;
-
-    // Create a custom-sized single page PDF
-    const pdf = new jsPDF({
-      orientation: contentHeightMm > targetWidthMm ? "portrait" : "landscape",
-      unit: "mm",
-      format: [targetWidthMm, contentHeightMm]
+  // Lessons
+  const lostWithNotes=lost.filter(r=>r.lossNotes||r.lossReason);
+  if(lostWithNotes.length){
+    h+=H1("What we are learning");
+    lostWithNotes.slice(0,6).forEach(r=>{
+      h+='<div class="pbb" style="font-size:11px;margin:4px 0"><b>'+esc(r.name)+'</b>'+(r.lossReason?' <span style="color:'+RED+';font-size:9px;font-weight:700">'+esc(r.lossReason.toUpperCase())+'</span>':'')+(r.lossNotes?'<span style="color:'+GREY+'"> '+esc(r.lossNotes)+'</span>':'')+'</div>';
     });
-
-    // Place the full canvas image on the single page - no slicing, no pagination
-    const imgData = canvas.toDataURL("image/jpeg", 0.95);
-    pdf.addImage(imgData, "JPEG", 0, 0, targetWidthMm, contentHeightMm);
-
-    const date = new Date().toLocaleDateString("en-GB").replace(/\//g, "-");
-    pdf.save("KMX-Board-Pack-" + date + ".pdf");
-
-  } catch(err) {
-    console.error("PDF export error:", err);
-    alert("PDF export failed - please try again.");
   }
 
-  btn.disabled = false;
-  icon.className = "ti ti-file-type-pdf";
-  icon.style.animation = "";
-  label.textContent = "Download PDF";
+  h+='<div class="pbb" style="font-size:9px;color:'+GREY+';border-top:1px solid '+LINE+';margin-top:22px;padding-top:6px">KMX Technologies / Infrastructure Pipeline / Confidential / '+new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})+'</div>';
+  h+='</div>';
+  return h;
 }
+
+async function doPrint(){
+  const btn=document.getElementById("export-btn");
+  const icon=document.getElementById("export-icon");
+  const label=document.getElementById("export-label");
+  btn.disabled=true;
+  icon.className="ti ti-loader-2";
+  icon.style.animation="rot 0.9s linear infinite";
+  label.textContent="Generating PDF...";
+
+  const holder=document.createElement("div");
+  holder.style.cssText="position:fixed;left:-9999px;top:0;z-index:-1;background:#FFFFFF";
+  holder.innerHTML=buildBoardBriefHTML();
+  document.body.appendChild(holder);
+  try{
+    const target=holder.firstElementChild;
+    const imgEls=[].slice.call(holder.querySelectorAll("img"));
+    await Promise.all(imgEls.map(im=>im.decode?im.decode().catch(()=>{}):Promise.resolve()));
+    await new Promise(r=>setTimeout(r,40));
+    const pages=paginateBrief(target);
+    target.style.display="none";
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({unit:"pt",format:"letter"});
+    const pw=612, ph=792;
+    for(let i=0;i<pages.length;i++){
+      const canvas=await html2canvas(pages[i],{scale:2,backgroundColor:"#FFFFFF",logging:false});
+      if(i>0) pdf.addPage();
+      pdf.addImage(canvas.toDataURL("image/jpeg",0.92),"JPEG",0,0,pw,ph);
+    }
+    const date=new Date().toLocaleDateString("en-CA");
+    pdf.save("KMX-Board-Summary-"+date+".pdf");
+  }catch(err){
+    console.error("PDF export error:",err);
+    alert("PDF export failed, please try again.");
+  }finally{
+    document.body.removeChild(holder);
+    btn.disabled=false;
+    icon.className="ti ti-file-type-pdf";
+    icon.style.animation="";
+    label.textContent="Download PDF";
+  }
+}
+
 
 // ── Mobile card views ────────────────────────────────────────────────────────
 function renderMobileProjects(data){
