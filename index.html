@@ -1402,7 +1402,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-c";
+const KMX_BUILD = "2026.08.12-d";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -1963,12 +1963,23 @@ function _chartPngBytes(cv){
   }catch(e){ return null; }
 }
 function chartSectorGrowth(){
-  // Cumulative opportunities by creation month, stacked by sector
-  const dated=rows.map(r=>({r, cd:normaliseDate(r.created)})).filter(x=>x.cd).map(x=>Object.assign({}, x.r, {created:x.cd}));
-  if(!dated.length) return null;
+  // Cumulative unique companies (logos) by first-seen month, stacked by sector
   const SEC_HEX={oilgas:"#155E75",lithium:"#E97132",datacenter:"#14532D",foodbev:"#38BDF8",industrial:"#A21CAF",municipal:"#4CAF50",mining:"#8A5A00",minerals:"#5040B0",chipfab:"#0878A0",power:"#B83030",other:"#4A6280"};
   const secKey=r=>SEC_HEX[r.infraType]?r.infraType:"other";
   const secLbl=k=>k==="other"?"Other":(INFRA_LABELS[k]||k);
+  // Logo count: one entry per (company, sector), dated by that pair's earliest created date
+  const _norm=rows.map(r=>({r, cd:normaliseDate(r.created)})).filter(x=>x.cd);
+  if(!_norm.length) return null;
+  const _pairs={};
+  _norm.forEach(x=>{
+    const co=(x.r.name||"").trim().toLowerCase();
+    if(!co) return;
+    const sec=SEC_HEX[x.r.infraType]?x.r.infraType:"other";
+    const key=co+"|"+sec;
+    if(!_pairs[key]||x.cd<_pairs[key].created) _pairs[key]={created:x.cd, infraType:x.r.infraType, _co:co};
+  });
+  const dated=Object.keys(_pairs).map(k=>_pairs[k]);
+  if(!dated.length) return null;
   // Months from earliest creation to now, capped at 8
   const first=dated.map(r=>r.created).sort()[0];
   const months=[];
@@ -2008,6 +2019,7 @@ function chartSectorGrowth(){
   x.fillStyle="#FFFFFF"; x.fillRect(0,0,W,H);
   x.font="600 22px Arial"; x.fillStyle="#0A1628";
   x.fillText("Pipeline Growth by Sector",24,36);
+  x.font="500 13px Arial"; x.fillStyle="#6A7A8E"; x.fillText("Unique companies, cumulative",24,52);
   const padL=64,padR=24,padB=44;
   // Horizontal legend under the title, wrapping as needed, clear of the bars
   x.font="500 15px Arial";
@@ -2017,7 +2029,7 @@ function chartSectorGrowth(){
     if(lx+it.w>W-padR){ lx=padL; lrow++; }
     const p={x:lx,row:lrow}; lx+=it.w; return p;
   });
-  const legendTop=50, rowH=25;
+  const legendTop=66, rowH=25;
   pos.forEach((p,i)=>{
     const yy=legendTop+p.row*rowH;
     x.fillStyle=SEC_HEX[items[i].k]; x.fillRect(p.x, yy, 15, 15);
@@ -3163,6 +3175,8 @@ function renderDash(){
       <div class="chart-wrap bar" style="height:200px"><canvas id="chart-monthly"></canvas></div>
     </div>
   </div>
+
+  ${(()=>{ const g=chartSectorGrowth(); return g?`<div class="chcard gap"><div class="chtitle">Pipeline growth by sector</div><img src="data:image/png;base64,${g}" style="width:100%;max-width:760px;display:block;margin:4px auto 0"></div>`:""; })()}
 
   <!-- ROW 4: Deployment type -->
   ${totalTyped===0
