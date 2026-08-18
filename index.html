@@ -1407,7 +1407,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-f";
+const KMX_BUILD = "2026.08.12-g";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -4949,45 +4949,4 @@ function toggleBoardTheme() {
 }
 
 // PDF export
-async function doPrint() {
-  const btn = document.getElementById("export-btn");
-  const icon = document.getElementById("export-icon");
-  const lbl  = document.getElementById("export-label");
-  btn.disabled = true;
-  icon.className = "ti ti-loader-2";
-  icon.style.animation = "rot .9s linear infinite";
-  lbl.textContent = "Generating…";
-  try {
-    const {jsPDF} = window.jspdf;
-    const el = document.getElementById("board-content");
-    const origOv = document.body.style.overflow;
-    document.body.style.overflow = "visible";
-    const row = document.querySelector(".board-export-row");
-    if (row) row.style.visibility = "hidden";
-    const canvas = await html2canvas(el, {
-      scale:1.5, useCORS:true, allowTaint:true,
-      backgroundColor: boardLightTheme ? "#F2F5F8" : "#07090D",
-      scrollX:0, scrollY:0,
-      width:el.scrollWidth, height:el.scrollHeight,
-      windowWidth:el.scrollWidth, windowHeight:el.scrollHeight,
-      logging:false
-    });
-    document.body.style.overflow = origOv;
-    if (row) row.style.visibility = "visible";
-    const W = 280, mmPx = W / canvas.width, H = canvas.height * mmPx;
-    const pdf = new jsPDF({
-      orientation: H > W ? "portrait" : "landscape",
-      unit:"mm", format:[W, H]
-    });
-    pdf.addImage(canvas.toDataURL("image/jpeg",.95),"JPEG",0,0,W,H);
-    pdf.save("KMX-Board-Pack-" + new Date().toLocaleDateString("en-GB").replace(/\//g,"-") + ".pdf");
-  } catch(e) { console.error(e); alert("PDF export failed - try again."); }
-  btn.disabled = false;
-  icon.className = "ti ti-file-type-pdf";
-  icon.style.animation = "";
-  lbl.textContent = "Download PDF";
-}
-</script>
-
-</body>
-</html>
+async >
