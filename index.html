@@ -1077,6 +1077,11 @@ body.light-theme .st-item{background:var(--s2)}
 .dsec-r{flex:1;height:1px;background:var(--b1)}
 body.light-theme .dsec-r{background:var(--b1)}
 @media(max-width:680px){.dsec{margin-top:26px}}
+
+/* Board: story dividers inherit dashboard styling with print-safe spacing */
+#page-board .dsec{margin:30px 0 16px}
+#page-board .briefing-card{border-left:3px solid var(--lime)}
+@media print{ #page-board .dsec{break-inside:avoid} }
 </style>
 </head>
 <body>
@@ -1402,7 +1407,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-d";
+const KMX_BUILD = "2026.08.12-e";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -4344,6 +4349,39 @@ function renderBoard(){
 
   const wlWonPct = won.length+lost.length>0?Math.round(won.length/(won.length+lost.length)*100):0;
 
+  // ── Growth & momentum computations ──
+  const _bIso = d => { const n=normaliseDate(d); return n||""; };
+  const _monthStart = k => { const d=new Date(); d.setMonth(d.getMonth()-k); return localISO(new Date(d.getFullYear(),d.getMonth(),1)); };
+  const thisMonth = _monthStart(0), lastMonth = _monthStart(1);
+  const addedThisMonth = rows.filter(r=>{const cd=_bIso(r.created);return cd&&cd>=thisMonth;});
+  const addedLastMonth = rows.filter(r=>{const cd=_bIso(r.created);return cd&&cd>=lastMonth&&cd<thisMonth;});
+  const momoDelta = addedThisMonth.length - addedLastMonth.length;
+  const wonThisMonth = won.filter(r=>{const sc=_bIso(r.stageChanged);return sc&&sc>=thisMonth;});
+  const advancedThisMonth = active.filter(r=>{const sc=_bIso(r.stageChanged);return sc&&sc>=thisMonth&&sc!==_bIso(r.created);});
+  // Logo (unique company) count for the narrative
+  const logos = new Set(rows.map(r=>(r.name||"").trim().toLowerCase()).filter(Boolean)).size;
+  const activeLogos = new Set(active.map(r=>(r.name||"").trim().toLowerCase()).filter(Boolean)).size;
+  // Sector concentration
+  const secCount={};
+  active.forEach(r=>{const k=r.infraType||"other";secCount[k]=(secCount[k]||0)+1;});
+  const topSec = Object.keys(secCount).sort((a,b)=>secCount[b]-secCount[a])[0];
+  const topSecShare = active.length?Math.round((secCount[topSec]||0)/active.length*100):0;
+  const conf = pipe+estMid;
+  const midOf = r => r.tbd?((r.estLow||0)+(r.estHigh||0))/2:(r.value||0);
+  const topDealObj = [...active].sort((a,b)=>midOf(b)-midOf(a))[0];
+  const topDealShare = topDealObj&&conf>0?Math.round(midOf(topDealObj)/conf*100):0;
+
+  // ── Executive narrative headline ──
+  const _mn = ["January","February","March","April","May","June","July","August","September","October","November","December"][new Date().getMonth()];
+  const narrParts=[];
+  if(addedThisMonth.length) narrParts.push(`<b>${addedThisMonth.length} new opportunit${addedThisMonth.length!==1?"ies":"y"}</b> entered the pipeline this month${momoDelta>0?` <span class="hi-green">(up ${momoDelta} on last month)</span>`:momoDelta<0?` <span style="color:var(--amber)">(down ${Math.abs(momoDelta)} on last month)</span>`:``}`);
+  if(wonThisMonth.length) narrParts.push(`<b class="hi-green">${wonThisMonth.length} closed won</b> in ${_mn}`);
+  if(advancedThisMonth.length) narrParts.push(`<b>${advancedThisMonth.length} deal${advancedThisMonth.length!==1?"s":""} advanced stage</b>`);
+  const narrative = narrParts.length
+    ? narrParts.join(", ")+`. Confirmed pipeline stands at <b>${fmtMoney(conf,true)||"-"}</b> across <b>${activeLogos} active compan${activeLogos!==1?"ies":"y"}</b>${topSec?`, led by <b>${INFRA_LABELS[topSec]||topSec}</b> at ${topSecShare}% of active deals`:``}.`
+    : `The pipeline holds <b>${active.length} active project${active.length!==1?"s":""}</b> worth <b>${fmtMoney(conf,true)||"-"}</b> across <b>${activeLogos} compan${activeLogos!==1?"ies":"y"}</b>. Log activity to build the momentum story.`;
+  const concentrationFlag = topDealShare>=40 ? `<span style="color:var(--amber)"> One deal, ${topDealObj.name}, represents ${topDealShare}% of confirmed pipeline.</span>` : ``;
+
   document.getElementById("board-content").innerHTML = `
     <!-- Header -->
     <div class="board-header">
@@ -4366,8 +4404,18 @@ function renderBoard(){
 
     <!-- Hero KPIs -->
     <div class="board-section">
-      <div class="board-section-title"><i class="ti ti-chart-line"></i>Pipeline at a Glance</div>
-      <div class="board-hero">
+      <!-- Executive narrative -->
+    <div class="briefing-card" style="margin-bottom:22px">
+      <div class="briefing-icon"><i class="ti ti-trending-up"></i></div>
+      <div>
+        <div class="briefing-title">Pipeline momentum, ${_mn} ${new Date().getFullYear()}</div>
+        <div class="briefing-body">${narrative}${concentrationFlag}</div>
+      </div>
+    </div>
+
+    <div class="dsec" style="margin-top:0"><span class="dsec-l"><i class="ti ti-gauge"></i>Where we stand</span><span class="dsec-r"></span></div>
+
+    <div class="board-hero">
         <div class="bhc accent">
           <div class="bhc-label">Active Projects</div>
           <div class="bhc-val accent">${active.length}</div>
@@ -4419,6 +4467,20 @@ function renderBoard(){
     </div>
 
     <!-- Win/Loss bar -->
+    <div class="dsec"><span class="dsec-l"><i class="ti ti-chart-histogram"></i>Growth over time</span><span class="dsec-r"></span></div>
+
+    <div class="board-section">
+      <div class="board-section-title"><i class="ti ti-trending-up"></i>Pipeline Growth by Sector</div>
+      ${(()=>{ const g=chartSectorGrowth(); return g?`<img src="data:image/png;base64,${g}" style="width:100%;max-width:820px;display:block;margin:0 auto">`:`<div style="font-size:12px;color:var(--t2);font-style:italic">Add deals with creation dates to build the growth chart.</div>`; })()}
+      <div class="kgrid k3 gap" style="margin-top:16px">
+        <div class="kc tb"><div class="klbl"><i class="ti ti-calendar-plus"></i>Added this month</div><div class="kval accent sm">${addedThisMonth.length}</div><div class="ksub">${momoDelta>=0?"+"+momoDelta:momoDelta} vs last month</div></div>
+        <div class="kc tb"><div class="klbl"><i class="ti ti-arrow-up-right"></i>Advanced this month</div><div class="kval sm">${advancedThisMonth.length}</div><div class="ksub">deals moved forward</div></div>
+        <div class="kc tb"><div class="klbl"><i class="ti ti-building-community"></i>Companies engaged</div><div class="kval sm">${activeLogos}</div><div class="ksub">${logos} total incl. closed</div></div>
+      </div>
+    </div>
+
+    <div class="dsec"><span class="dsec-l"><i class="ti ti-trophy"></i>Outcomes and momentum</span><span class="dsec-r"></span></div>
+
     <div class="board-section">
       <div class="board-section-title"><i class="ti ti-trophy"></i>Deal Outcomes</div>
       <div class="bchcard">
@@ -4464,7 +4526,8 @@ function renderBoard(){
 
     <!-- Active projects table -->
     <div class="board-section">
-      <div class="board-section-title"><i class="ti ti-briefcase"></i>Active Projects${topDeals.length<active.length?` (Top ${topDeals.length} by value)`:""}</div>
+      <div class="dsec"><span class="dsec-l"><i class="ti ti-target"></i>What we are working now</span><span class="dsec-r"></span></div>
+    <div class="board-section-title-hidden"></div><div class="board-section-title"><i class="ti ti-briefcase"></i>Active Projects${topDeals.length<active.length?` (Top ${topDeals.length} by value)`:""}</div>
       <div class="bchcard" style="padding:0;overflow:hidden">
         <table class="board-table">
           <thead><tr>
@@ -4511,7 +4574,8 @@ function renderBoard(){
 
     ${lost.length>0?`
     <div class="board-section">
-      <div class="board-section-title"><i class="ti ti-school"></i>Lessons From Lost Deals</div>
+      <div class="dsec"><span class="dsec-l"><i class="ti ti-book"></i>What we are learning</span><span class="dsec-r"></span></div>
+    <div class="board-section-title"><i class="ti ti-school"></i>Lessons From Lost Deals</div>
       ${lost.slice().sort((a,b)=>(b.stageChanged||"").localeCompare(a.stageChanged||"")).slice(0,4).map(r=>`
         <div style="padding:9px 0;border-bottom:1px solid var(--b0)">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
