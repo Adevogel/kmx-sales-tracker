@@ -1407,7 +1407,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-g";
+const KMX_BUILD = "2026.08.12-h";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -2515,6 +2515,7 @@ function sheetWrite(action,rowData,rowIdx){
   const payload={action:action};
   if(rowData) payload.row=rowData;
   if(rowIdx!==undefined&&rowIdx!==null) payload.idx=rowIdx;
+  if(action==="update"&&rowData) payload.match=[[0,String(rowData[0]||"")],[12,String(rowData[12]||"")]];
   fetch(GAS_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)}).catch(()=>{});
   clearTimeout(_resyncT);
   _resyncT=setTimeout(syncNow,2500);
@@ -2845,22 +2846,22 @@ function buildOutreachSection(){
   const dead=o.filter(r=>r.status==="dead");
   const active=o.length-conv.length-dead.length;
   const engaged=o.filter(r=>["responded","meeting","qualified","converted"].includes(r.status)).length;
-  const reached=o.filter(r=>r.status!=="new").length;
-  const respRate=reached?Math.round(engaged/reached*100):0;
+  const respRate=o.length?Math.round(engaged/o.length*100):0;
   const convRate=o.length?Math.round(conv.length/o.length*100):0;
   const week=(()=>{const d=new Date();d.setDate(d.getDate()-7);return localISO(d);})();
   const month=(()=>{const d=new Date();d.setDate(d.getDate()-30);return localISO(d);})();
   const touches7=o.reduce((s,r)=>s+r.touches.filter(a=>a.d>=week).length,0);
   const conv30=conv.filter(r=>r.convertedDate&&r.convertedDate>=month);
   const convVal=conv.reduce((s,r)=>s+(r.estValue||0),0);
-  const OSTAT=[["new","New","#4A6280"],["contacted","Contacted","#1862B8"],["responded","Responded","#5040B0"],["meeting","Meeting","#8A5A00"],["qualified","Qualified","#0878A0"],["converted","Converted","#0A7A50"],["dead","Dead","#B83030"]];
+  const OSTAT=[["contacted","Contacted","#1862B8"],["responded","Responded","#5040B0"],["meeting","Meeting","#8A5A00"],["qualified","Qualified","#0878A0"],["converted","Converted","#0A7A50"],["dead","Dead","#B83030"]];
+  const oStatOf=r=>r.status==="new"?"contacted":r.status;
   const liveTotal=Math.max(o.length,1);
   const funnel=OSTAT.map(s=>{
-    const n=o.filter(r=>r.status===s[0]).length;
+    const n=o.filter(r=>oStatOf(r)===s[0]).length;
     return n?'<div title="'+s[1]+': '+n+'" style="flex:'+n+';background:'+s[2]+';min-width:'+(n?'14px':'0')+';display:flex;align-items:center;justify-content:center;color:#FFF;font-size:10px;font-family:var(--f-mono)">'+n+'</div>':'';
   }).join("");
   const legend=OSTAT.map(s=>{
-    const n=o.filter(r=>r.status===s[0]).length;
+    const n=o.filter(r=>oStatOf(r)===s[0]).length;
     return n?'<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--t2);margin-right:10px"><span style="width:8px;height:8px;border-radius:2px;background:'+s[2]+'"></span>'+s[1]+'</span>':'';
   }).join("");
   const recent=conv.slice().sort((a,b)=>(b.convertedDate||"").localeCompare(a.convertedDate||"")).slice(0,3);
@@ -2872,7 +2873,7 @@ function buildOutreachSection(){
     +'<div style="display:flex;gap:18px;flex-wrap:wrap;margin:10px 0 14px">'
       +mini("ACTIVE TARGETS", active, o.length+" total logged")
       +mini("TOUCHES 7D", touches7, "team activity", "var(--lime)")
-      +mini("RESPONSE RATE", respRate+"%", engaged+" engaged / "+reached+" reached", respRate>=25?"var(--green)":"var(--amber)")
+      +mini("RESPONSE RATE", respRate+"%", engaged+" engaged of "+o.length+" outreached", respRate>=25?"var(--green)":"var(--amber)")
       +mini("CONVERTED", conv.length, (conv30.length?conv30.length+" in last 30d":"")+(convVal?" / "+fmtMoney(convVal,true)+" est":""), "var(--green)")
       +mini("CONVERSION RATE", convRate+"%", topOwner?("top: "+topOwner+" ("+owners[topOwner].c+")"):"" )
     +'</div>'
@@ -3998,6 +3999,7 @@ function licSheetWrite(action, rowData, rowIdx){
   const payload={action:action, sheet:"licenses"};
   if(rowData) payload.row=rowData;
   if(rowIdx !== undefined && rowIdx !== null) payload.idx=rowIdx;
+  if(action==="update"&&rowData) payload.match=[[0,String(rowData[0]||"")]];
   fetch(GAS_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)}).catch(()=>{});
   setTimeout(syncLicenses, 2000);
 }
