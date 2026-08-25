@@ -1407,7 +1407,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-i";
+const KMX_BUILD = "2026.08.12-j";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -2847,12 +2847,14 @@ function buildOutreachSection(){
   const active=o.length-conv.length-dead.length;
   const engaged=o.filter(r=>["responded","meeting","qualified","converted"].includes(r.status)).length;
   const respRate=o.length?Math.round(engaged/o.length*100):0;
-  const convRate=o.length?Math.round(conv.length/o.length*100):0;
   const week=(()=>{const d=new Date();d.setDate(d.getDate()-7);return localISO(d);})();
   const month=(()=>{const d=new Date();d.setDate(d.getDate()-30);return localISO(d);})();
   const touches7=o.reduce((s,r)=>s+r.touches.filter(a=>a.d>=week).length,0);
   const conv30=conv.filter(r=>r.convertedDate&&r.convertedDate>=month);
   const convVal=conv.reduce((s,r)=>s+(r.estValue||0),0);
+  const liveO=o.filter(r=>r.status!=="converted"&&r.status!=="dead");
+  const needTouch=liveO.filter(r=>{const d=daysSince(r.last);return d===null||d>=14;}).length;
+  const avgTouches=conv.length?(conv.reduce((s,r)=>s+r.touches.length,0)/conv.length).toFixed(1):null;
   const OSTAT=[["contacted","Contacted","#1862B8"],["responded","Responded","#5040B0"],["meeting","Meeting","#8A5A00"],["qualified","Qualified","#0878A0"],["converted","Converted","#0A7A50"],["dead","Dead","#B83030"]];
   const oStatOf=r=>r.status==="new"?"contacted":r.status;
   const liveTotal=Math.max(o.length,1);
@@ -2874,8 +2876,8 @@ function buildOutreachSection(){
       +mini("ACTIVE TARGETS", active, o.length+" total logged")
       +mini("TOUCHES 7D", touches7, "team activity", "var(--lime)")
       +mini("RESPONSE RATE", respRate+"%", engaged+" engaged of "+o.length+" outreached", respRate>=25?"var(--green)":"var(--amber)")
-      +mini("CONVERTED", conv.length, (conv30.length?conv30.length+" in last 30d":"")+(convVal?" / "+fmtMoney(convVal,true)+" est":""), "var(--green)")
-      +mini("CONVERSION RATE", convRate+"%", topOwner?("top: "+topOwner+" ("+owners[topOwner].c+")"):"" )
+      +mini("CONVERTED", conv.length, (conv30.length?conv30.length+" in last 30d":"")+(convVal?" / "+fmtMoney(convVal,true)+" est":"")+(avgTouches?" / avg "+avgTouches+" touches":""), "var(--green)")
+      +mini("NEED A TOUCH", needTouch, "live targets, no touch in 14+ days"+(topOwner?" / top: "+topOwner:""), needTouch>0?"var(--amber)":"var(--green)")
     +'</div>'
     +'<div style="display:flex;height:26px;border-radius:6px;overflow:hidden;gap:2px">'+funnel+'</div>'
     +'<div style="margin-top:8px">'+legend+'</div>'
