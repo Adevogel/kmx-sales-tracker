@@ -1407,7 +1407,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-j";
+const KMX_BUILD = "2026.08.12-k";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -2461,6 +2461,7 @@ function syncOutreach(){
       })).filter(r=>r.company);
       _outreachLoaded=true;
       if(document.getElementById("page-dash").classList.contains("on")) renderDash();
+      if(document.getElementById("page-board")&&document.getElementById("page-board").classList.contains("on")) renderBoard();
     })
     .catch(()=>{ _outreachLoaded=false; });
 }
@@ -4320,6 +4321,24 @@ function renderLicDash(){
 // ══════════════════════════════════════════════
 //  BOARD VIEW
 // ══════════════════════════════════════════════
+
+// ── Top-of-funnel stats shared by the board view and board PDF ──
+function outreachStats(){
+  const o=outreachRows||[];
+  if(!_outreachLoaded||!o.length) return {loaded:_outreachLoaded,total:0};
+  const conv=o.filter(r=>r.status==="converted");
+  const dead=o.filter(r=>r.status==="dead");
+  const live=o.filter(r=>r.status!=="converted"&&r.status!=="dead");
+  const engaged=o.filter(r=>["responded","meeting","qualified","converted"].includes(r.status)).length;
+  const month=(function(){const d=new Date();d.setDate(d.getDate()-30);return localISO(d);})();
+  const conv30=conv.filter(r=>r.convertedDate&&r.convertedDate>=month).length;
+  const convVal=conv.reduce((s,r)=>s+(r.estValue||0),0);
+  const needTouch=live.filter(r=>{const d=daysSince(r.last);return d===null||d>=14;}).length;
+  const st=k=>o.filter(r=>(r.status==="new"?"contacted":r.status)===k).length;
+  const funnel=[["Contacted",st("contacted"),"#1862B8"],["Responded",st("responded"),"#5040B0"],["Meeting",st("meeting"),"#8A5A00"],["Qualified",st("qualified"),"#0878A0"],["Converted",conv.length,"#0A7A50"],["Dead",dead.length,"#B83030"]];
+  return {loaded:true,total:o.length,live:live.length,engaged,respRate:Math.round(engaged/o.length*100),conv:conv.length,conv30,convVal,needTouch,funnel};
+}
+
 function renderBoard(){
   const active      = rows.filter(r=>r.stage!=="won"&&r.stage!=="lost");
   const won         = rows.filter(r=>r.stage==="won");
@@ -4384,6 +4403,9 @@ function renderBoard(){
   const narrative = narrParts.length
     ? narrParts.join(", ")+`. Confirmed pipeline stands at <b>${fmtMoney(conf,true)||"-"}</b> across <b>${activeLogos} active compan${activeLogos!==1?"ies":"y"}</b>${topSec?`, led by <b>${INFRA_LABELS[topSec]||topSec}</b> at ${topSecShare}% of active deals`:``}.`
     : `The pipeline holds <b>${active.length} active project${active.length!==1?"s":""}</b> worth <b>${fmtMoney(conf,true)||"-"}</b> across <b>${activeLogos} compan${activeLogos!==1?"ies":"y"}</b>. Log activity to build the momentum story.`;
+  const os=outreachStats();
+  if(!os.loaded && typeof syncOutreach==="function") syncOutreach();
+  const funnelSentence = os.total ? ` Top of funnel: <b>${os.total} compan${os.total!==1?"ies":"y"} outreached</b>, ${os.respRate}% response, <b>${os.conv} converted to pipeline</b>${os.convVal?` (${fmtMoney(os.convVal,true)} est)`:``}.` : ``;
   const concentrationFlag = topDealShare>=40 ? `<span style="color:var(--amber)"> One deal, ${topDealObj.name}, represents ${topDealShare}% of confirmed pipeline.</span>` : ``;
 
   document.getElementById("board-content").innerHTML = `
@@ -4413,7 +4435,7 @@ function renderBoard(){
       <div class="briefing-icon"><i class="ti ti-trending-up"></i></div>
       <div>
         <div class="briefing-title">Pipeline momentum, ${_mn} ${new Date().getFullYear()}</div>
-        <div class="briefing-body">${narrative}${concentrationFlag}</div>
+        <div class="briefing-body">${narrative}${concentrationFlag}${funnelSentence}</div>
       </div>
     </div>
 
@@ -4481,6 +4503,21 @@ function renderBoard(){
         <div class="kc tb"><div class="klbl"><i class="ti ti-arrow-up-right"></i>Advanced this month</div><div class="kval sm">${advancedThisMonth.length}</div><div class="ksub">deals moved forward</div></div>
         <div class="kc tb"><div class="klbl"><i class="ti ti-building-community"></i>Companies engaged</div><div class="kval sm">${activeLogos}</div><div class="ksub">${logos} total incl. closed</div></div>
       </div>
+    </div>
+
+    <div class="dsec"><span class="dsec-l"><i class="ti ti-send"></i>What is feeding the pipeline</span><span class="dsec-r"></span></div>
+
+    <div class="board-section">
+      <div class="board-section-title"><i class="ti ti-filter"></i>Top of Funnel</div>
+      ${os.total ? `
+      <div style="display:flex;height:26px;border-radius:6px;overflow:hidden;margin:2px 0 8px;border:1px solid var(--b0)">${os.funnel.filter(f=>f[1]>0).map(f=>`<div title="${f[0]}: ${f[1]}" style="flex:${f[1]};background:${f[2]};display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;min-width:22px">${f[1]}</div>`).join("")}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:var(--t2);margin-bottom:14px">${os.funnel.map(f=>`<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${f[2]};margin-right:5px;vertical-align:middle"></span>${f[0]} ${f[1]}</span>`).join("")}</div>
+      <div class="kgrid k3 gap">
+        <div class="kc tb"><div class="klbl"><i class="ti ti-building"></i>Companies outreached</div><div class="kval sm">${os.total}</div><div class="ksub">${os.live} live targets in play</div></div>
+        <div class="kc tb"><div class="klbl"><i class="ti ti-message-2"></i>Response rate</div><div class="kval sm" style="color:${os.respRate>=25?"var(--green)":"var(--amber)"}">${os.respRate}%</div><div class="ksub">${os.engaged} engaged of ${os.total}</div></div>
+        <div class="kc tb"><div class="klbl"><i class="ti ti-rocket"></i>Converted to pipeline</div><div class="kval sm accent">${os.conv}</div><div class="ksub">${os.conv30?os.conv30+" in last 30d":""}${os.convVal?(os.conv30?" / ":"")+fmtMoney(os.convVal,true)+" est":""}${!os.conv30&&!os.convVal?"awaiting first conversion":""}</div></div>
+      </div>`
+      : `<div style="font-size:12px;color:var(--t2);font-style:italic">${os.loaded?"No outreach logged yet. Targets added in the Outreach Tracker appear here.":"Loading outreach data..."}</div>`}
     </div>
 
     <div class="dsec"><span class="dsec-l"><i class="ti ti-trophy"></i>Outcomes and momentum</span><span class="dsec-r"></span></div>
@@ -4697,8 +4734,10 @@ function buildBoardBriefHTML(){
   const narrative=parts.length
     ? parts.join(", ")+'. Confirmed pipeline stands at <b>'+(fmtMoney(conf,true)||"-")+'</b> across <b>'+activeLogos+' active compan'+(activeLogos!==1?'ies':'y')+'</b>'+(topSec?', led by <b>'+esc(INFRA_LABELS[topSec]||topSec)+'</b> at '+topSecShare+'% of active deals':'')+'.'
     : 'The pipeline holds <b>'+active.length+' active project'+(active.length!==1?'s':'')+'</b> worth <b>'+(fmtMoney(conf,true)||"-")+'</b> across <b>'+activeLogos+' compan'+(activeLogos!==1?'ies':'y')+'</b>.';
+  const _os=outreachStats();
+  const funnelSentence=_os.total?' Top of funnel: <b>'+_os.total+' compan'+(_os.total!==1?'ies':'y')+' outreached</b>, '+_os.respRate+'% response, <b>'+_os.conv+' converted to pipeline</b>'+(_os.convVal?' ('+(fmtMoney(_os.convVal,true))+' est)':'')+'.':'';
   h+='<div class="pbb" style="background:'+SOFT+';border-left:3px solid '+AQUA+';padding:12px 16px;font-size:13px;line-height:1.6;margin-bottom:6px"><b style="color:'+NAVY+'">Pipeline momentum.</b> '+narrative
-    +(topDealShare>=40?' <span style="color:'+AMBER+'">One deal, '+esc(topDeal.name)+', represents '+topDealShare+'% of confirmed pipeline.</span>':'')+'</div>';
+    +(topDealShare>=40?' <span style="color:'+AMBER+'">One deal, '+esc(topDeal.name)+', represents '+topDealShare+'% of confirmed pipeline.</span>':'')+funnelSentence+'</div>';
 
   // KPI grid
   const kc=(lbl,val,sub,col)=>'<td style="width:25%;background:'+SOFT+';padding:10px 12px;border:3px solid #FFFFFF;vertical-align:top">'
@@ -4724,6 +4763,28 @@ function buildBoardBriefHTML(){
     +kc("COMPANIES ENGAGED",String(activeLogos),allLogos+" total incl. closed")
     +kc("WIN RATE",wr!==null?wr+"%":"-",won.length+" won / "+lost.length+" lost",wr!==null&&wr>=50?GREEN:NAVY)
     +'</tr></table>';
+
+  // Top of funnel (from the Outreach Tracker)
+  const os=outreachStats();
+  h+=H1("What is feeding the pipeline");
+  if(os.total){
+    h+='<table class="pbb" style="width:100%;border-collapse:collapse"><tr>'
+      +kc("COMPANIES OUTREACHED",String(os.total),os.live+" live targets in play")
+      +kc("RESPONSE RATE",os.respRate+"%",os.engaged+" engaged of "+os.total,os.respRate>=25?GREEN:AMBER)
+      +kc("CONVERTED TO PIPELINE",String(os.conv),os.convVal?money(os.convVal)+" est":"",AQUA)
+      +kc("CONVERTED LAST 30D",String(os.conv30),"","")
+      +'</tr></table>';
+    h+='<table class="pbb" style="width:100%;border-collapse:collapse;font-size:11px;margin-top:8px">'
+      +'<tr style="border-bottom:2px solid '+LINE+'"><td style="padding:5px 6px;font-weight:700;color:'+GREY+';font-size:9px">FUNNEL STAGE</td><td style="padding:5px 6px;font-weight:700;color:'+GREY+';font-size:9px;text-align:right">COMPANIES</td><td style="padding:5px 6px;font-weight:700;color:'+GREY+';font-size:9px;text-align:right">SHARE OF OUTREACHED</td></tr>';
+    os.funnel.forEach(f=>{
+      h+='<tr style="border-bottom:1px solid '+LINE+'"><td style="padding:5px 6px"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+f[2]+';margin-right:6px;vertical-align:middle"></span>'+f[0]+'</td>'
+        +'<td style="padding:5px 6px;text-align:right;font-weight:600">'+f[1]+'</td>'
+        +'<td style="padding:5px 6px;text-align:right;color:'+GREY+'">'+Math.round(f[1]/os.total*100)+'%</td></tr>';
+    });
+    h+='</table>';
+  } else {
+    h+='<div class="pbb" style="font-size:11px;color:'+GREY+';font-style:italic">'+(os.loaded?"No outreach logged yet.":"Outreach data not available at export time.")+'</div>';
+  }
 
   // Outcomes and momentum: stage value + health charts side by side
   h+=H1("Outcomes and momentum");
