@@ -1082,6 +1082,14 @@ body.light-theme .dsec-r{background:var(--b1)}
 #page-board .dsec{margin:30px 0 16px}
 #page-board .briefing-card{border-left:3px solid var(--lime)}
 @media print{ #page-board .dsec{break-inside:avoid} }
+
+/* Print documents (brief + board PDF): neutralise dark-theme element rules */
+.print-doc, .print-doc *{ font-family:Arial,Helvetica,sans-serif; }
+.print-doc table, .print-doc thead, .print-doc tbody, .print-doc tr, .print-doc td, .print-doc th, .print-doc b, .print-doc strong, .print-doc span, .print-doc div{ color:inherit; background:transparent; }
+.print-doc thead, .print-doc tr{ background:transparent; border:0; }
+.print-doc td, .print-doc th{ white-space:normal; overflow:visible; text-overflow:clip; font-family:Arial,Helvetica,sans-serif; text-transform:none; letter-spacing:normal; border-bottom:0; }
+.print-doc b, .print-doc strong{ font-weight:700; }
+.print-doc .brief-page{ background:#FFFFFF; color:#1A2430; }
 </style>
 </head>
 <body>
@@ -1407,7 +1415,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-k";
+const KMX_BUILD = "2026.08.12-l";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -1812,6 +1820,7 @@ function paginateBrief(target){
 async function generateSummaryPDF(data, type){
   const el=document.createElement("div");
   el.style.cssText="position:fixed;left:-9999px;top:0;z-index:-1;background:#FFFFFF";
+  el.className="print-doc";
   el.innerHTML=buildBriefHTML(data);
   document.body.appendChild(el);
   try{
@@ -4832,6 +4841,7 @@ async function doPrint(){
 
   const holder=document.createElement("div");
   holder.style.cssText="position:fixed;left:-9999px;top:0;z-index:-1;background:#FFFFFF";
+  holder.className="print-doc";
   holder.innerHTML=buildBoardBriefHTML();
   document.body.appendChild(holder);
   try{
