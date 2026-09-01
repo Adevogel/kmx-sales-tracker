@@ -1415,7 +1415,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-l";
+const KMX_BUILD = "2026.08.12-m";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -2905,7 +2905,7 @@ function renderDash(){
   const yellows=active.filter(r=>r.health==="yellow").length;
   const reds=active.filter(r=>r.health==="red").length;
   const pipe=active.filter(r=>!r.tbd&&r.value).reduce((s,r)=>s+r.value,0);
-  const wonVal=won.filter(r=>!r.tbd&&r.value).reduce((s,r)=>s+r.value,0);
+  const wonVal=won.filter(r=>r.value).reduce((s,r)=>s+r.value,0);
   const estMid=active.filter(r=>r.tbd&&(r.estLow||r.estHigh)).reduce((s,r)=>s+((r.estLow||0)+(r.estHigh||0))/2,0);
   const wr=won.length+lost.length>0?Math.round(won.length/(won.length+lost.length)*100):null;
   const atRisk=active.filter(r=>r.health==="red");
@@ -2964,9 +2964,10 @@ function renderDash(){
   // ── Month-by-month data ────────────────────────────
   // Last 6 months
   const months=[];
+  const _base=new Date();
   for(let i=5;i>=0;i--){
-    const d=new Date();
-    d.setMonth(d.getMonth()-i);
+    // Anchor on day 1: stepping back from the 29th to 31st must never overflow into the wrong month
+    const d=new Date(_base.getFullYear(), _base.getMonth()-i, 1);
     months.push({
       label:d.toLocaleDateString("en-US",{month:"short",year:"2-digit"}),
       year:d.getFullYear(),
@@ -3114,7 +3115,7 @@ function renderDash(){
       <div class="ksub">Known contract value</div>
     </div>
     <div class="kc" style="border-top:2px solid var(--lime)">
-      <div class="klbl"><i class="ti ti-calculator"></i>Weighted pipeline</div>
+      <div class="klbl" title="${STAGES.filter(s=>s.k!=="won"&&s.k!=="lost").map(s=>s.l+" "+Math.round((STAGE_WEIGHTS[s.k]||0)*100)+"%").join("  /  ")}. Each active deal counts at its confirmed value, or the midpoint of its estimate range if TBD, multiplied by its stage probability."><i class="ti ti-calculator"></i>Weighted pipeline <i class="ti ti-info-circle" style="font-size:11px;opacity:.6"></i></div>
       <div class="kval sm" style="color:var(--lime)">${totalWeighted?fmtMoney(totalWeighted,true):"-"}</div>
       <div class="ksub">Probability-adjusted</div>
     </div>
@@ -4383,7 +4384,7 @@ function renderBoard(){
 
   // ── Growth & momentum computations ──
   const _bIso = d => { const n=normaliseDate(d); return n||""; };
-  const _monthStart = k => { const d=new Date(); d.setMonth(d.getMonth()-k); return localISO(new Date(d.getFullYear(),d.getMonth(),1)); };
+  const _monthStart = k => { const d=new Date(); return localISO(new Date(d.getFullYear(), d.getMonth()-k, 1)); };
   const thisMonth = _monthStart(0), lastMonth = _monthStart(1);
   const addedThisMonth = rows.filter(r=>{const cd=_bIso(r.created);return cd&&cd>=thisMonth;});
   const addedLastMonth = rows.filter(r=>{const cd=_bIso(r.created);return cd&&cd>=lastMonth&&cd<thisMonth;});
@@ -4707,7 +4708,7 @@ function buildBoardBriefHTML(){
   const wr=won.length+lost.length>0?Math.round(won.length/(won.length+lost.length)*100):null;
 
   const _iso=d=>{const n=normaliseDate(d);return n||"";};
-  const _ms=k=>{const d=new Date();d.setMonth(d.getMonth()-k);return localISO(new Date(d.getFullYear(),d.getMonth(),1));};
+  const _ms=k=>{const d=new Date();return localISO(new Date(d.getFullYear(), d.getMonth()-k, 1));};
   const thisMonth=_ms(0), lastMonth=_ms(1);
   const addedThis=rows.filter(r=>{const c=_iso(r.created);return c&&c>=thisMonth;});
   const addedLast=rows.filter(r=>{const c=_iso(r.created);return c&&c>=lastMonth&&c<thisMonth;});
