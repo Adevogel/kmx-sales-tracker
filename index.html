@@ -1105,6 +1105,8 @@ body.light-theme .dsec-r{background:var(--b1)}
 #page-board .tl-bar{position:absolute;top:5px;height:14px;border-radius:3px;min-width:8px}
 #page-board .tl-build{position:absolute;top:5px;height:14px;border-radius:3px;background:repeating-linear-gradient(45deg,var(--b2) 0 5px,var(--b1) 5px 10px);opacity:.9}
 #page-board .tl-dep{position:absolute;top:2px;width:10px;height:10px;transform:rotate(45deg) translateX(-4px);background:var(--lime);border:2px solid var(--s1);margin-top:5px}
+#page-board .tl-ms{position:absolute;top:3px;width:16px;height:16px;border-radius:50%;border:2px solid #38BDF8;background:var(--s1);color:#38BDF8;font-size:8px;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1;transform:translateX(-8px);z-index:2}
+#page-board .tl-ms.done{background:#38BDF8;color:#06202e}
 #page-board .tl-tag{font-size:9px;font-weight:700;color:var(--red);letter-spacing:.04em;margin-left:6px}
 #page-board .tl-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:10px;color:var(--t2);margin-top:10px}
 #page-board .tl-sum{font-size:11px;color:var(--t2);padding:7px 0 0;border-top:1px solid var(--b0);margin-top:8px}
@@ -1379,6 +1381,7 @@ body.light-theme .dsec-r{background:var(--b1)}
       <div class="field"><label>Commercial deployment</label><select id="fdeploy"></select></div>
       <div class="field"><label>Follow-up date</label><input id="ffollowup" type="date"></div>
       <div class="field full"><label>Next steps</label><div id="modal-steps"><div class="st-empty">Save the project first, then manage steps here or from the quick update panel.</div></div></div>
+      <div class="field full"><label>Milestones on the path to deployment</label><div id="modal-milestones"><div class="st-empty">Save the project first, then plan milestones here.</div></div></div>
       <div class="field full">
         <label>Contract value</label>
         <div class="vmrow">
@@ -1436,7 +1439,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-o";
+const KMX_BUILD = "2026.08.12-p";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -2511,7 +2514,7 @@ function syncNow(){
         last:normaliseDate(r[8]), note:r[9]||"",
         renewal:normaliseDate(r[10]), deadline:normaliseDate(r[11]),
         created:normaliseDate(r[12]), stageChanged:normaliseDate(r[13]),
-        infraType:normSector(r[14]), lossReason:r[15]||"", expectedClose:String(r[25]||"").trim(), deployQuarter:String(r[26]||"").trim(),
+        infraType:normSector(r[14]), lossReason:r[15]||"", expectedClose:String(r[25]||"").trim(), deployQuarter:String(r[26]||"").trim(),milestones:(function(){try{return JSON.parse(r[27]||"[]")||[];}catch(e){return [];}})(),
         nextAction:r[16]||"", followUpDate:normaliseDate(r[17]),
         deploymentType:r[18]||"", lossNotes:r[19]||"",
         contactName:r[20]||"", contactEmail:r[21]||"", contactPhone:r[22]||"",
@@ -2606,6 +2609,17 @@ const INFRA_LABELS={datacenter:"Data Center",foodbev:"Food and Beverage",municip
 function normSector(v){const s=String(v||"").trim().toLowerCase();return s==="space"?"aerospace":s;}
 
 // ── Quarter timeline utilities ──
+const MILESTONE_TYPES={lab:"Lab Test",pilot:"Pilot",demo:"Demonstration",site:"Site Visit",permit:"Permitting",custom:"Custom"};
+const MILESTONE_LETTER={lab:"L",pilot:"P",demo:"D",site:"V",permit:"PM"};
+function msLetter(m){return m.t==="custom"?String(m.label||"M").trim().charAt(0).toUpperCase()||"M":(MILESTONE_LETTER[m.t]||"M");}
+function msName(m){return m.t==="custom"?(m.label||"Custom"):(MILESTONE_TYPES[m.t]||m.t);}
+function qtrOptionsHtml(current){
+  const win=qtrList(8); let h='<option value="">Quarter</option>';
+  if(current&&current!=="beyond"&&win.indexOf(current)<0) h+='<option value="'+current+'">'+qtrShort(current)+'</option>';
+  win.forEach(t=>h+='<option value="'+t+'">'+qtrShort(t)+'</option>');
+  h+='<option value="beyond">Beyond</option>';
+  return h;
+}
 function escHtml(t){return String(t===null||t===undefined?"":t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function qtrNow(){const d=new Date();return {y:d.getFullYear(), q:Math.floor(d.getMonth()/3)+1};}
 function qtrToken(y,q){return y+"-Q"+q;}
@@ -2646,7 +2660,7 @@ function daysSince(d){
   return Math.round((today0 - then)/86400000);
 }
 function toRow(r){
-  return[r.name,r.owner,r.stage,r.health,r.tbd?"TRUE":"FALSE",r.value||"",r.estLow||"",r.estHigh||"",r.last,r.note,r.renewal||"",r.deadline||"",r.created||"",r.stageChanged||"",r.infraType||"",r.lossReason||"",r.nextAction||"",r.followUpDate||"",r.deploymentType||"",r.lossNotes||"",r.contactName||"",r.contactEmail||"",r.contactPhone||"",JSON.stringify(r.activity||[]),JSON.stringify(r.steps||[]),r.expectedClose||"",r.deployQuarter||""];
+  return[r.name,r.owner,r.stage,r.health,r.tbd?"TRUE":"FALSE",r.value||"",r.estLow||"",r.estHigh||"",r.last,r.note,r.renewal||"",r.deadline||"",r.created||"",r.stageChanged||"",r.infraType||"",r.lossReason||"",r.nextAction||"",r.followUpDate||"",r.deploymentType||"",r.lossNotes||"",r.contactName||"",r.contactEmail||"",r.contactPhone||"",JSON.stringify(r.activity||[]),JSON.stringify(r.steps||[]),r.expectedClose||"",r.deployQuarter||"",JSON.stringify(r.milestones||[])];
 }
 
 // Returns {label, cls} for a date: null=none, amber=60days, danger=30days, overdue=past
@@ -3593,7 +3607,7 @@ function openModal(id=null){
   document.getElementById("flossreason").value=r.lossReason||"";
   document.getElementById("flossnotes").value=r.lossNotes||"";
   document.getElementById("fcontact").value=r.contactName||"";
-  if(id!==null){ renderSteps("modal-steps", id); } else { document.getElementById("modal-steps").innerHTML='<div class="st-empty">Save the project first, then add steps from the quick update panel.</div>'; }
+  if(id!==null){ renderSteps("modal-steps", id);  renderMilestones(id); } else { document.getElementById("modal-steps").innerHTML='<div class="st-empty">Save the project first, then add steps from the quick update panel.</div>'; document.getElementById("modal-milestones").innerHTML='<div class="st-empty">Save the project first, then plan milestones here.</div>'; }
   document.getElementById("fcemail").value=r.contactEmail||"";
   document.getElementById("fcphone").value=r.contactPhone||"";
   const ahw=document.getElementById("activity-history-wrap");
@@ -3767,6 +3781,66 @@ function topStep(r){
   return s?s.t:"";
 }
 function _syncNext(r){ r.nextAction=topStep(r); }
+
+// ── Milestones: planned waypoints on the path to commercial deployment ──
+function renderMilestones(dealId){
+  const el=document.getElementById("modal-milestones");
+  const r=rows.find(x=>x.id===dealId);
+  if(!el||!r) return;
+  const ms=(r.milestones||[]).slice().sort((x,y)=>String(x.q||"z").localeCompare(String(y.q||"z")));
+  let h='<div class="st-addrow" style="gap:6px">'
+    +'<select class="sel" id="ms-type" style="min-width:120px">'+Object.keys(MILESTONE_TYPES).map(k=>'<option value="'+k+'">'+MILESTONE_TYPES[k]+'</option>').join('')+'</select>'
+    +'<input type="text" class="st-inp" id="ms-label" placeholder="Label (for Custom)" style="min-width:90px">'
+    +'<select class="sel" id="ms-q" style="min-width:96px">'+qtrOptionsHtml("")+'</select>'
+    +'<button class="st-addbtn" onclick="addMilestone('+dealId+')" title="Add milestone"><i class="ti ti-plus"></i></button>'
+    +'</div>';
+  if(ms.length){
+    h+=ms.map(m=>{
+      const idx=(r.milestones||[]).indexOf(m);
+      return '<div class="st-item">'
+        +'<button class="st-done'+(m.d?' on':'')+'" onclick="toggleMilestone('+dealId+','+idx+')" title="'+(m.d?'Completed':'Mark completed')+'"><i class="ti ti-'+(m.d?'circle-check-filled':'circle')+'"></i></button>'
+        +'<span style="flex:1;font-size:12px'+(m.d?';color:var(--t2)':'')+'"><b>'+escHtml(msName(m))+'</b>'+(m.q?' <span style="color:var(--t2)">'+qtrShort(m.q)+'</span>':'')+(m.d?' <span style="font-size:10px;color:var(--green)">done</span>':'')+'</span>'
+        +'<select class="sel" style="min-width:90px;font-size:11px" onchange="setMilestoneQ('+dealId+','+idx+',this.value)">'+qtrOptionsHtml(m.q||"")+'</select>'
+        +'<button class="st-del" onclick="delMilestone('+dealId+','+idx+')" title="Remove"><i class="ti ti-x"></i></button>'
+      +'</div>';
+    }).join('');
+  } else {
+    h+='<div class="st-empty">No milestones yet. Add estimated pilots, demonstrations, and other waypoints.</div>';
+  }
+  el.innerHTML=h;
+  const sorted=ms;
+  ms.forEach((m,si)=>{ const sel=el.querySelectorAll('.st-item select')[si]; if(sel) sel.value=m.q||""; });
+}
+function addMilestone(dealId){
+  const i=rows.findIndex(x=>x.id===dealId); if(i<0) return;
+  const t=document.getElementById("ms-type").value;
+  const label=document.getElementById("ms-label").value.trim();
+  const q=document.getElementById("ms-q").value;
+  if(t==="custom"&&!label) { alert("Give the custom milestone a short label."); return; }
+  if(!rows[i].milestones) rows[i].milestones=[];
+  rows[i].milestones.push({t:t, label:t==="custom"?label:"", q:q, d:false});
+  _stepWrite(i);
+  renderMilestones(dealId);
+}
+function toggleMilestone(dealId, idx){
+  const i=rows.findIndex(x=>x.id===dealId); if(i<0||!rows[i].milestones||!rows[i].milestones[idx]) return;
+  rows[i].milestones[idx].d=!rows[i].milestones[idx].d;
+  _stepWrite(i);
+  renderMilestones(dealId);
+}
+function setMilestoneQ(dealId, idx, q){
+  const i=rows.findIndex(x=>x.id===dealId); if(i<0||!rows[i].milestones||!rows[i].milestones[idx]) return;
+  rows[i].milestones[idx].q=q;
+  _stepWrite(i);
+  renderMilestones(dealId);
+}
+function delMilestone(dealId, idx){
+  const i=rows.findIndex(x=>x.id===dealId); if(i<0||!rows[i].milestones||!rows[i].milestones[idx]) return;
+  rows[i].milestones.splice(idx,1);
+  _stepWrite(i);
+  renderMilestones(dealId);
+}
+
 function _stepWrite(i){
   _syncNext(rows[i]);
   sheetWrite("update",toRow(rows[i]),i);
@@ -4650,10 +4724,19 @@ function renderBoard(){
           if(stageEnd!==null) track+='<div class="tl-bar" style="left:0;width:'+stageEnd+'%;background:'+(SC[r.stage]||"#4A6280")+'" title="'+esc(r.name)+' / '+esc(stg(r.stage).l)+(r.expectedClose?' / close '+qtrShort(r.expectedClose):'')+'"></div>';
           if(cEnd!==null&&dEnd!==null&&dEnd>cEnd) track+='<div class="tl-build" style="left:'+cEnd+'%;width:'+(dEnd-cEnd)+'%" title="Build and commission"></div>';
           if(dEnd!==null) track+='<div class="tl-dep" style="left:'+dEnd+'%" title="Commercial deployment '+qtrShort(r.deployQuarter)+'"></div>';
+          const perQ={};
+          ((r.milestones||[]).slice().sort((x,y)=>String(x.q||"z").localeCompare(String(y.q||"z")))).forEach(m=>{
+            const mi=qtrIdx(m.q); if(mi===null) return;
+            const ci2=Math.min(Math.max(mi,0),7);
+            perQ[ci2]=(perQ[ci2]||0);
+            const pos=(ci2+0.5)/8*100;
+            track+='<div class="tl-ms'+(m.d?' done':'')+'" style="left:calc('+pos+'% + '+(perQ[ci2]*13)+'px)" title="'+escHtml(msName(m))+' '+qtrShort(m.q)+(m.d?' (completed)':' (planned)')+'">'+escHtml(msLetter(m))+'</div>';
+            perQ[ci2]++;
+          });
           h+='<div class="tl-row"><div class="tl-name"><b>'+esc(r.name)+'</b>'+(overdue?'<span class="tl-tag">CLOSE OVERDUE</span>':'')+'<br><span class="v">'+(fmtMoney(mo(r),true)||"TBD")+' / '+esc(stg(r.stage).l)+(r.deployQuarter?' / deploys '+qtrShort(r.deployQuarter):(r.expectedClose?' / closes '+qtrShort(r.expectedClose):''))+'</span></div><div class="tl-track">'+track+'</div></div>';
         });
         h+='</div></div>';
-        h+='<div class="tl-legend"><span><span style="display:inline-block;width:18px;height:9px;border-radius:2px;background:#0878A0;margin-right:5px;vertical-align:middle"></span>Current stage to expected close</span><span><span style="display:inline-block;width:18px;height:9px;border-radius:2px;background:repeating-linear-gradient(45deg,var(--b2) 0 4px,var(--b1) 4px 8px);margin-right:5px;vertical-align:middle"></span>Build and commission</span><span><span style="display:inline-block;width:8px;height:8px;transform:rotate(45deg);background:var(--lime);margin-right:6px;vertical-align:middle"></span>Commercial deployment</span></div>';
+        h+='<div class="tl-legend"><span><span style="display:inline-block;width:18px;height:9px;border-radius:2px;background:#0878A0;margin-right:5px;vertical-align:middle"></span>Current stage to expected close</span><span><span style="display:inline-block;width:18px;height:9px;border-radius:2px;background:repeating-linear-gradient(45deg,var(--b2) 0 4px,var(--b1) 4px 8px);margin-right:5px;vertical-align:middle"></span>Build and commission</span><span><span style="display:inline-block;width:8px;height:8px;transform:rotate(45deg);background:var(--lime);margin-right:6px;vertical-align:middle"></span>Commercial deployment</span><span><span class="tl-ms" style="position:static;display:inline-flex;margin-right:5px;vertical-align:middle">P</span>Milestone planned</span><span><span class="tl-ms done" style="position:static;display:inline-flex;margin-right:5px;vertical-align:middle">P</span>Milestone completed</span></div>';
         if(rest.length) h+='<div class="tl-sum">+'+rest.length+' more scheduled opportunit'+(rest.length!==1?'ies':'y')+': '+(fmtMoney(rest.reduce((s,r)=>s+mo(r),0),true)||"$0")+' across '+qtrShort(Q[0])+' to '+qtrShort(Q[7])+' and beyond.</div>';
         if(unsched.length) h+='<div class="tl-unsched">'+unsched.length+' active opportunit'+(unsched.length!==1?'ies':'y')+' ('+(fmtMoney(unsched.reduce((s,r)=>s+mo(r),0),true)||"$0")+') have no timeline set.</div>';
         return h;
@@ -4901,18 +4984,20 @@ function buildBoardBriefHTML(){
       +'<tr><td style="padding:4px;text-align:left;color:'+GREY+'">Deals closing</td>'+clsCnt.map(n=>'<td style="padding:4px">'+(n||"-")+'</td>').join('')+'</tr></table>';
     const anchorIdx=r=>{const d=qtrIdx(r.deployQuarter),cl=qtrIdx(r.expectedClose);const v=(d===null?cl:d);return v===null?999:v;};
     const top=sched.slice().sort((a,b)=>anchorIdx(a)-anchorIdx(b)||mo(b)-mo(a)).slice(0,10);
-    h+='<table class="pbb" style="width:100%;border-collapse:collapse;font-size:11px;margin-top:8px">'
-      +'<tr style="border-bottom:2px solid '+LINE+'"><td style="padding:5px 6px;font-weight:700;color:'+GREY+';font-size:9px">COMPANY</td><td style="padding:5px 6px;font-weight:700;color:'+GREY+';font-size:9px">STAGE</td><td style="padding:5px 6px;font-weight:700;color:'+GREY+';font-size:9px;text-align:right">VALUE</td><td style="padding:5px 6px;font-weight:700;color:'+GREY+';font-size:9px;text-align:center">CLOSE</td><td style="padding:5px 6px;font-weight:700;color:'+GREY+';font-size:9px;text-align:center">DEPLOYMENT</td></tr>';
+    const clampQ=t=>{const i=qtrIdx(t);return i===null?null:Math.min(Math.max(i,0),7);};
+    h+='<table class="pbb" style="width:100%;border-collapse:collapse;font-size:10px;margin-top:8px;table-layout:fixed">'
+      +'<tr style="border-bottom:2px solid '+LINE+'"><td style="padding:5px 6px;font-weight:700;color:'+GREY+';font-size:9px;width:150px">COMPANY</td>'+Q.map(t=>'<td style="padding:5px 2px;font-weight:700;color:'+GREY+';font-size:9px;text-align:center">'+qtrShort(t)+'</td>').join('')+'</tr>';
     top.forEach(r=>{
-      const ci=qtrIdx(r.expectedClose);
-      const overdue=(ci!==null&&ci<0);
-      h+='<tr style="border-bottom:1px solid '+LINE+'"><td style="padding:5px 6px;font-weight:600">'+esc(r.name)+'</td>'
-        +'<td style="padding:5px 6px">'+esc(cap(stg(r.stage).l))+'</td>'
-        +'<td style="padding:5px 6px;text-align:right">'+(mo(r)?money(mo(r)):"TBD")+'</td>'
-        +'<td style="padding:5px 6px;text-align:center;'+(overdue?'color:'+RED+';font-weight:700':'')+'">'+(r.expectedClose?qtrShort(r.expectedClose)+(overdue?" OVERDUE":""):"-")+'</td>'
-        +'<td style="padding:5px 6px;text-align:center;font-weight:700;color:'+GREEN+'">'+(r.deployQuarter?qtrShort(r.deployQuarter):"-")+'</td></tr>';
+      const cells=Q.map(()=>[]);
+      (r.milestones||[]).forEach(m=>{const i=clampQ(m.q); if(i===null) return; cells[i].push('<span style="display:inline-block;min-width:13px;padding:0 2px;border:1.5px solid #156082;border-radius:8px;font-size:8px;font-weight:800;text-align:center;'+(m.d?'background:#156082;color:#FFFFFF':'color:#156082')+'" title="'+esc(msName(m))+'">'+esc(msLetter(m))+'</span>');});
+      const ci=qtrIdx(r.expectedClose), overdue=(ci!==null&&ci<0);
+      const cci=clampQ(r.expectedClose); if(cci!==null) cells[cci].push('<span style="font-size:8px;font-weight:800;color:'+(overdue?RED:NAVY)+'">C'+(overdue?'!':'')+'</span>');
+      const di=clampQ(r.deployQuarter); if(di!==null) cells[di].push('<span style="display:inline-block;width:8px;height:8px;background:'+GREEN+';transform:rotate(45deg)" title="Commercial deployment"></span>');
+      h+='<tr style="border-bottom:1px solid '+LINE+'"><td style="padding:5px 6px;overflow:hidden"><b>'+esc(r.name)+'</b><br><span style="font-size:8px;color:'+GREY+'">'+(mo(r)?money(mo(r)):"TBD")+' / '+esc(cap(stg(r.stage).l))+(overdue?' / <b style="color:'+RED+'">CLOSE OVERDUE</b>':'')+'</span></td>'
+        +cells.map(cl=>'<td style="padding:4px 1px;text-align:center;border-left:1px solid '+SOFT+'">'+(cl.length?cl.join(' '):'')+'</td>').join('')+'</tr>';
     });
     h+='</table>';
+    h+='<div class="pbb" style="font-size:8px;color:'+GREY+';margin-top:4px">L Lab Test / P Pilot / D Demonstration / V Site Visit / PM Permitting. Outlined = planned, filled = completed. C = expected close (C! overdue). Green diamond = commercial deployment.</div>';
     if(unsched.length) h+='<div class="pbb" style="font-size:10px;color:'+AMBER+';margin-top:6px">'+unsched.length+' active opportunit'+(unsched.length!==1?'ies':'y')+' ('+money(unsched.reduce((s,r)=>s+mo(r),0))+') have no timeline set.</div>';
   })();
 
