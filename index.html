@@ -1093,7 +1093,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 .print-doc .brief-page{ background:#FFFFFF; color:#1A2430; }
 
 /* Board: path-to-deployment timeline */
-#page-board .tl-wrap{overflow-x:auto}
+#page-board .tl-wrap{overflow-x:auto;padding-bottom:12px}
 #page-board .tl-grid{min-width:880px}
 #page-board .tl-row{display:grid;grid-template-columns:190px 1fr;gap:0;align-items:center}
 #page-board .tl-qhead{display:grid;grid-template-columns:repeat(8,1fr);font-size:10px;color:var(--t2);font-weight:700;letter-spacing:.04em;text-align:center;padding:4px 0;border-bottom:1px solid var(--b0)}
@@ -1120,7 +1120,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 #page-board .tl-close{position:absolute;top:12px;height:22px;width:2px;background:var(--t1);z-index:3}
 #page-board .tl-close::after{content:"C";position:absolute;top:-2px;left:4px;font-size:8px;font-weight:800;color:var(--t2)}
 #page-board .tl-buildov{position:absolute;top:16px;height:14px;background:repeating-linear-gradient(45deg,rgba(255,255,255,.16) 0 5px,transparent 5px 10px);z-index:1;border-radius:0 3px 3px 0}
-#page-board .tl-dep{position:absolute;box-sizing:border-box;top:17px;width:12px;height:12px;background:var(--lime);border:2px solid var(--s1);transform:rotate(45deg);z-index:4}
+#page-board .tl-dep{position:absolute;box-sizing:border-box;top:15px;width:16px;height:16px;background:var(--lime);border:2px solid var(--s1);box-shadow:0 0 0 2px rgba(56,232,200,.4);transform:rotate(45deg);z-index:6}
 #page-board .tl-beyond{position:absolute;right:-4px;top:12px;font-size:15px;font-weight:700;color:var(--t2)}
 #page-board .tl-ms.more{border-style:dashed;color:var(--t1);border-color:var(--t3);font-size:7px}
 #page-board .tl-totlbl{font-size:9px;color:var(--t2);text-align:right;padding-right:10px;line-height:1.5;letter-spacing:.03em}
@@ -1466,7 +1466,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-x";
+const KMX_BUILD = "2026.08.12-y";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -2641,8 +2641,8 @@ const INFRA_LABELS={datacenter:"Data Center",foodbev:"Food and Beverage",municip
 function normSector(v){const s=String(v||"").trim().toLowerCase();return s==="space"?"aerospace":s;}
 
 // ── Quarter timeline utilities ──
-const MILESTONE_TYPES={lab:"Lab Test",pilot:"Pilot",demo:"Demonstration",site:"Site Visit",permit:"Permitting",custom:"Custom"};
-const MILESTONE_LETTER={lab:"L",pilot:"P",demo:"D",site:"V",permit:"PM"};
+const MILESTONE_TYPES={site:"Site Visit",nda:"NDA",lab:"Lab Test",pilot:"Pilot",demo:"Demonstration",eng:"Engineering Design",permit:"Permitting",procure:"Procurement",install:"Installation",commission:"Commissioning",buildcomm:"Build & Commission",custom:"Custom"};
+const MILESTONE_LETTER={site:"V",nda:"N",lab:"L",pilot:"P",demo:"D",eng:"E",permit:"PM",procure:"PR",install:"I",commission:"CM",buildcomm:"BC"};
 function msLetter(m){return m.t==="custom"?String(m.label||"M").trim().charAt(0).toUpperCase()||"M":(MILESTONE_LETTER[m.t]||"M");}
 function msName(m){return m.t==="custom"?(m.label||"Custom"):(MILESTONE_TYPES[m.t]||m.t);}
 function qtrOptionsHtml(current){
@@ -4571,7 +4571,8 @@ function drawTimelineChart(){
         for(let s2=px(S.cEnd)-24;s2<px(S.dEnd)+24;s2+=13){ x.beginPath(); x.moveTo(s2,cy+15); x.lineTo(s2+15,cy-15); x.stroke(); }
         x.restore();
         const bw2=px(S.dEnd)-px(S.cEnd);
-        if(bw2>170){
+        const hasBC=(r.milestones||[]).some(m=>m.t==="buildcomm"&&qtrIdx(m.q)!==null);
+        if(bw2>170&&!hasBC){
           x.fillStyle="#6A7A8E"; x.font="700 13px Arial"; x.textAlign="center";
           const bx=px(S.cEnd)+bw2/2;
           x.fillText("BUILD & COMMISSION",bx,cy-19);
@@ -4583,7 +4584,7 @@ function drawTimelineChart(){
       let lastAboveEnd=-1e9, lastBelowEnd=-1e9;
       S.segs.forEach(s=>{
         if(!s.m) return;
-        let lbl=msName(s.m); if(lbl.length>16) lbl=lbl.slice(0,15)+"...";
+        let lbl=msName(s.m); if(lbl.length>20) lbl=lbl.slice(0,19)+"...";
         const tw=x.measureText(lbl).width, lx0=Math.min(Math.max(px(s.to)-tw/2,padL),padL+plotW-tw);
         const stCol=s.state==="active"?ORANGE:(s.state==="done"?BLUE:MIDGREY);
         if(lx0>lastAboveEnd+14){ x.fillStyle=stCol; x.fillText(lbl,lx0,cy-19); lastAboveEnd=lx0+tw; }
@@ -4596,9 +4597,9 @@ function drawTimelineChart(){
       }
       // Deployment diamond, clamped fully inside the plot
       if(S.dEnd!==null){
-        const dx=Math.min(px(S.dEnd), padL+plotW-13);
-        x.fillStyle=GREEN; x.save(); x.translate(dx,cy); x.rotate(Math.PI/4); x.fillRect(-9,-9,18,18); x.restore();
-        x.strokeStyle="#FFFFFF"; x.lineWidth=2; x.save(); x.translate(dx,cy); x.rotate(Math.PI/4); x.strokeRect(-9,-9,18,18); x.restore();
+        const dx=Math.min(px(S.dEnd), padL+plotW-16);
+        x.fillStyle=GREEN; x.save(); x.translate(dx,cy); x.rotate(Math.PI/4); x.fillRect(-11,-11,22,22); x.restore();
+        x.strokeStyle="#FFFFFF"; x.lineWidth=2.5; x.save(); x.translate(dx,cy); x.rotate(Math.PI/4); x.strokeRect(-11,-11,22,22); x.restore();
       }
       if(S.beyond){ x.fillStyle=MIDGREY; x.font="700 26px Arial"; x.fillText("\u00BB",padL+plotW+16,cy+9); }
     }
@@ -5072,10 +5073,11 @@ function renderBoard(){
             });
             if(S.cEnd!==null&&S.dEnd!==null&&S.dEnd>S.cEnd){
               track+='<div class="tl-buildov" style="left:'+S.cEnd+'%;width:'+(S.dEnd-S.cEnd)+'%" title="Build and commission"></div>';
-              track+='<div class="tl-mlbl above build" style="left:'+((S.cEnd+S.dEnd)/2)+'%">Build &amp; commission</div>';
+              const hasBC=(r.milestones||[]).some(m=>m.t==="buildcomm"&&qtrIdx(m.q)!==null);
+              if(!hasBC) track+='<div class="tl-mlbl above build" style="left:'+((S.cEnd+S.dEnd)/2)+'%">Build &amp; commission</div>';
             }
             if(S.cEnd!==null) track+='<div class="tl-close" style="left:'+S.cEnd+'%" title="Expected close '+qtrShort(r.expectedClose)+'"></div>';
-            if(S.dEnd!==null) track+='<div class="tl-dep" style="left:min(calc('+S.dEnd+'% - 6px), calc(100% - 14px))" title="Commercial deployment '+qtrShort(r.deployQuarter)+'"></div>';
+            if(S.dEnd!==null) track+='<div class="tl-dep" style="left:min(calc('+S.dEnd+'% - 8px), calc(100% - 20px))" title="Commercial deployment '+qtrShort(r.deployQuarter)+'"></div>';
             if(S.beyond) track+='<div class="tl-beyond" title="Continues beyond the 8-quarter window">&raquo;</div>';
           }
           h+='<div class="tl-row"><div class="tl-name"><b>'+escHtml(r.name)+'</b>'+(overdue?'<span class="tl-tag">CLOSE OVERDUE</span>':'')+'<br><span class="v">'+(fmtMoney(mo(r),true)||"TBD")+' / '+escHtml(stg(r.stage).l)+(r.deployQuarter?' / deploys '+qtrShort(r.deployQuarter):(r.expectedClose?' / closes '+qtrShort(r.expectedClose):''))+'</span></div><div class="tl-track">'+track+'</div></div>';
