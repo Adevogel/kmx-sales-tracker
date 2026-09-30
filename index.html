@@ -1466,7 +1466,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-z";
+const KMX_BUILD = "2026.08.13-a";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -4529,10 +4529,7 @@ function drawTimelineChart(){
   const colW=plotW/8;
   // Quarter header + totals
   x.font="700 20px Arial"; x.fillStyle=MIDGREY; x.textAlign="center";
-  T.Q.forEach((t,i)=>x.fillText(qtrShort(t),padL+colW*(i+0.5),topY-44));
-  x.font="700 22px Arial";
-  T.Q.forEach((t,i)=>{ if(T.depSum[i]){ x.fillStyle=BLUE; x.fillText(fmtMoney(T.depSum[i],true),padL+colW*(i+0.5),topY-14);} });
-  x.textAlign="right"; x.font="500 15px Arial"; x.fillStyle=MIDGREY; x.fillText("$ deploying",padL-16,topY-14);
+  T.Q.forEach((t,i)=>x.fillText(qtrShort(t),padL+colW*(i+0.5),topY-18));
   x.textAlign="left";
   // Column gridlines
   const lanesN=T.lanes.length, plotH=lanesN*laneH;
@@ -5047,7 +5044,6 @@ function renderBoard(){
         const clampEnd=t=>{const i=qtrIdx(t);if(i===null)return null;return Math.min(Math.max(i,0)+1,8)/8*100;};
         let h='<div class="tl-wrap"><div class="tl-grid">';
         h+='<div class="tl-row"><div></div><div class="tl-qhead">'+Q.map(qtrShort).map(q=>'<span>'+q+'</span>').join('')+'</div></div>';
-        h+='<div class="tl-row"><div class="tl-totlbl">$ deploying<br>deals closing</div><div class="tl-tots">'+Q.map((t,i)=>'<span><b>'+(depSum[i]?fmtMoney(depSum[i],true):"-")+'</b>'+(clsCnt[i]?clsCnt[i]+' close':'&nbsp;')+'</span>').join('')+'</div></div>';
         lanes.forEach(r=>{
           const ci=qtrIdx(r.expectedClose);
           const cEnd=clampEnd(r.expectedClose), dEnd=clampEnd(r.deployQuarter);
@@ -5327,7 +5323,6 @@ function buildBoardBriefHTML(){
     const clsCnt=Q.map(t=>sched.filter(r=>r.expectedClose===t).length);
     h+='<table class="pbb" style="width:100%;border-collapse:collapse;font-size:10px;text-align:center">'
       +'<tr style="border-bottom:2px solid '+LINE+'"><td style="padding:4px;font-weight:700;color:'+GREY+';font-size:9px;text-align:left">QUARTER</td>'+Q.map(t=>'<td style="padding:4px;font-weight:700;color:'+GREY+';font-size:9px">'+qtrShort(t)+'</td>').join('')+'</tr>'
-      +'<tr style="border-bottom:1px solid '+LINE+'"><td style="padding:4px;text-align:left;color:'+GREY+'">Deploying</td>'+depSum.map(v=>'<td style="padding:4px;font-weight:700;color:'+(v?AQUA:GREY)+'">'+(v?money(v):"-")+'</td>').join('')+'</tr>'
       +'<tr><td style="padding:4px;text-align:left;color:'+GREY+'">Deals closing</td>'+clsCnt.map(n=>'<td style="padding:4px">'+(n||"-")+'</td>').join('')+'</tr></table>';
     const anchorIdx=r=>{const d=qtrIdx(r.deployQuarter),cl=qtrIdx(r.expectedClose);const v=(d===null?cl:d);return v===null?999:v;};
     const top=sched.slice().sort((a,b)=>anchorIdx(a)-anchorIdx(b)||mo(b)-mo(a)).slice(0,10);
