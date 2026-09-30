@@ -219,6 +219,7 @@ td{padding:12px 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;c
 .dl-tag.overdue{background:rgba(224,82,82,.2);color:#ff8080;border:1px solid rgba(224,82,82,.4)}
 @keyframes flash{0%,100%{opacity:1}50%{opacity:.5}}
 .infra-pill{display:inline-block;font-size:10px;padding:2px 7px;border-radius:var(--r1);font-weight:500;letter-spacing:.03em;white-space:nowrap;font-family:var(--f-mono)}
+.infra-pill.aerospace{background:rgba(142,162,255,0.12);color:#8ea2ff}
 .infra-pill.datacenter{background:var(--blue-a12);color:var(--blue)}
 .infra-pill.foodbev{background:var(--amber-a12);color:var(--amber)}
 .infra-pill.municipal{background:var(--green-a12);color:var(--green)}
@@ -1333,7 +1334,7 @@ body.light-theme .dsec-r{background:var(--b1)}
           <option value="municipal">Municipal</option><option value="oilgas">Oil and Gas</option>
           <option value="lithium">Lithium</option><option value="minerals">Critical Minerals</option>
           <option value="mining">Mining</option><option value="industrial">Industrial</option>
-          <option value="chipfab">Chip Fabrication</option><option value="power">Power</option>
+          <option value="chipfab">Chip Fabrication</option><option value="power">Power</option><option value="aerospace">Aerospace and Defense</option>
         </select>
       </div>
       <div class="field"><label>Deployment type</label>
@@ -1415,7 +1416,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-m";
+const KMX_BUILD = "2026.08.12-n";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -1978,7 +1979,7 @@ function _chartPngBytes(cv){
 }
 function chartSectorGrowth(){
   // Cumulative unique companies (logos) by first-seen month, stacked by sector
-  const SEC_HEX={oilgas:"#155E75",lithium:"#E97132",datacenter:"#14532D",foodbev:"#38BDF8",industrial:"#A21CAF",municipal:"#4CAF50",mining:"#8A5A00",minerals:"#5040B0",chipfab:"#0878A0",power:"#B83030",other:"#4A6280"};
+  const SEC_HEX={oilgas:"#155E75",lithium:"#E97132",datacenter:"#14532D",foodbev:"#38BDF8",industrial:"#A21CAF",municipal:"#4CAF50",mining:"#8A5A00",minerals:"#5040B0",chipfab:"#0878A0",power:"#B83030",aerospace:"#1E3A8A",other:"#4A6280"};
   const secKey=r=>SEC_HEX[r.infraType]?r.infraType:"other";
   const secLbl=k=>k==="other"?"Other":(INFRA_LABELS[k]||k);
   // Logo count: one entry per (company, sector), dated by that pair's earliest created date
@@ -2490,7 +2491,7 @@ function syncNow(){
         last:normaliseDate(r[8]), note:r[9]||"",
         renewal:normaliseDate(r[10]), deadline:normaliseDate(r[11]),
         created:normaliseDate(r[12]), stageChanged:normaliseDate(r[13]),
-        infraType:r[14]||"", lossReason:r[15]||"",
+        infraType:normSector(r[14]), lossReason:r[15]||"",
         nextAction:r[16]||"", followUpDate:normaliseDate(r[17]),
         deploymentType:r[18]||"", lossNotes:r[19]||"",
         contactName:r[20]||"", contactEmail:r[21]||"", contactPhone:r[22]||"",
@@ -2580,7 +2581,9 @@ function fmtDate(d){
   return new Date(n+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"});
 }
 function stg(k){return STAGES.find(s=>s.k===k)||STAGES[0];}
-const INFRA_LABELS={datacenter:"Data Center",foodbev:"Food and Beverage",municipal:"Municipal",oilgas:"Oil and Gas",lithium:"Lithium Concentration",minerals:"Critical Minerals",mining:"Mining",industrial:"Industrial",chipfab:"Chip Fabrication",power:"Power"};
+const INFRA_LABELS={datacenter:"Data Center",foodbev:"Food and Beverage",municipal:"Municipal",oilgas:"Oil and Gas",lithium:"Lithium Concentration",minerals:"Critical Minerals",mining:"Mining",industrial:"Industrial",chipfab:"Chip Fabrication",power:"Power",aerospace:"Aerospace and Defense"};
+// Legacy sector keys typed directly into the sheet map onto first-class verticals
+function normSector(v){const s=String(v||"").trim().toLowerCase();return s==="space"?"aerospace":s;}
 function infraLabelShort(k){return k==="foodbev"?"F&B":infraLabel(k);}
 function infraLabel(k){return INFRA_LABELS[k]||k;}
 
@@ -2951,7 +2954,7 @@ function renderDash(){
 
   // ── Infrastructure type breakdown ──────────────────
   const infraCounts={};
-  const INFRA_COLORS={datacenter:"#5090ff",foodbev:"#f0b030",municipal:"#30d090",oilgas:"#f05060",lithium:"#a070f0",minerals:"#30d0d0",mining:"#c9952a",industrial:"#f070b0",chipfab:"#c8f060",power:"#ff8c42"};
+  const INFRA_COLORS={datacenter:"#5090ff",foodbev:"#f0b030",municipal:"#30d090",oilgas:"#f05060",lithium:"#a070f0",minerals:"#30d0d0",mining:"#c9952a",industrial:"#f070b0",chipfab:"#c8f060",power:"#ff8c42",aerospace:"#8ea2ff"};
   rows.forEach(r=>{if(r.infraType)infraCounts[r.infraType]=(infraCounts[r.infraType]||0)+1;});
   const maxInfra=Math.max(...Object.values(infraCounts),1);
 
