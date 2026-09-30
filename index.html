@@ -1107,6 +1107,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 #page-board .tl-dep{position:absolute;top:2px;width:10px;height:10px;transform:rotate(45deg) translateX(-4px);background:var(--lime);border:2px solid var(--s1);margin-top:5px}
 #page-board .tl-ms{position:absolute;top:3px;width:16px;height:16px;border-radius:50%;border:2px solid #38BDF8;background:var(--s1);color:#38BDF8;font-size:8px;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1;transform:translateX(-8px);z-index:2}
 #page-board .tl-ms.done{background:#38BDF8;color:#06202e}
+#page-board .tl-ms.wip{border-color:var(--amber);background:var(--amber);color:#241a05}
 #page-board .tl-tag{font-size:9px;font-weight:700;color:var(--red);letter-spacing:.04em;margin-left:6px}
 #page-board .tl-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:10px;color:var(--t2);margin-top:10px}
 #page-board .tl-sum{font-size:11px;color:var(--t2);padding:7px 0 0;border-top:1px solid var(--b0);margin-top:8px}
@@ -1439,7 +1440,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-p";
+const KMX_BUILD = "2026.08.12-q";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -2514,7 +2515,7 @@ function syncNow(){
         last:normaliseDate(r[8]), note:r[9]||"",
         renewal:normaliseDate(r[10]), deadline:normaliseDate(r[11]),
         created:normaliseDate(r[12]), stageChanged:normaliseDate(r[13]),
-        infraType:normSector(r[14]), lossReason:r[15]||"", expectedClose:String(r[25]||"").trim(), deployQuarter:String(r[26]||"").trim(),milestones:(function(){try{return JSON.parse(r[27]||"[]")||[];}catch(e){return [];}})(),
+        infraType:normSector(r[14]), lossReason:r[15]||"", expectedClose:String(r[25]||"").trim(), deployQuarter:String(r[26]||"").trim(),milestones:(function(){try{return (JSON.parse(r[27]||"[]")||[]).map(function(m){if(!m.s)m.s=m.d?"done":"planned";return m;});}catch(e){return [];}})(),
         nextAction:r[16]||"", followUpDate:normaliseDate(r[17]),
         deploymentType:r[18]||"", lossNotes:r[19]||"",
         contactName:r[20]||"", contactEmail:r[21]||"", contactPhone:r[22]||"",
@@ -3798,8 +3799,8 @@ function renderMilestones(dealId){
     h+=ms.map(m=>{
       const idx=(r.milestones||[]).indexOf(m);
       return '<div class="st-item">'
-        +'<button class="st-done'+(m.d?' on':'')+'" onclick="toggleMilestone('+dealId+','+idx+')" title="'+(m.d?'Completed':'Mark completed')+'"><i class="ti ti-'+(m.d?'circle-check-filled':'circle')+'"></i></button>'
-        +'<span style="flex:1;font-size:12px'+(m.d?';color:var(--t2)':'')+'"><b>'+escHtml(msName(m))+'</b>'+(m.q?' <span style="color:var(--t2)">'+qtrShort(m.q)+'</span>':'')+(m.d?' <span style="font-size:10px;color:var(--green)">done</span>':'')+'</span>'
+        +'<button class="st-done'+((m.s||"planned")==="done"?' on':'')+'" onclick="cycleMilestone('+dealId+','+idx+')" title="Planned, in progress, completed. Click to cycle."'+((m.s||"planned")==="active"?' style="color:var(--amber)"':'')+'><i class="ti ti-'+((m.s||"planned")==="done"?"circle-check-filled":((m.s||"planned")==="active"?"progress":"circle"))+'"></i></button>'
+        +'<span style="flex:1;font-size:12px'+((m.s||"planned")==="done"?';color:var(--t2)':'')+'"><b>'+escHtml(msName(m))+'</b>'+(m.q?' <span style="color:var(--t2)">'+qtrShort(m.q)+'</span>':'')+((m.s||"planned")==="done"?' <span style="font-size:10px;color:var(--green)">done</span>':((m.s||"planned")==="active"?' <span style="font-size:10px;color:var(--amber)">in progress</span>':''))+'</span>'
         +'<select class="sel" style="min-width:90px;font-size:11px" onchange="setMilestoneQ('+dealId+','+idx+',this.value)">'+qtrOptionsHtml(m.q||"")+'</select>'
         +'<button class="st-del" onclick="delMilestone('+dealId+','+idx+')" title="Remove"><i class="ti ti-x"></i></button>'
       +'</div>';
@@ -3818,13 +3819,15 @@ function addMilestone(dealId){
   const q=document.getElementById("ms-q").value;
   if(t==="custom"&&!label) { alert("Give the custom milestone a short label."); return; }
   if(!rows[i].milestones) rows[i].milestones=[];
-  rows[i].milestones.push({t:t, label:t==="custom"?label:"", q:q, d:false});
+  rows[i].milestones.push({t:t, label:t==="custom"?label:"", q:q, s:"planned", d:false});
   _stepWrite(i);
   renderMilestones(dealId);
 }
-function toggleMilestone(dealId, idx){
+function cycleMilestone(dealId, idx){
   const i=rows.findIndex(x=>x.id===dealId); if(i<0||!rows[i].milestones||!rows[i].milestones[idx]) return;
-  rows[i].milestones[idx].d=!rows[i].milestones[idx].d;
+  const m=rows[i].milestones[idx];
+  m.s = m.s==="planned"?"active":(m.s==="active"?"done":"planned");
+  m.d = (m.s==="done");
   _stepWrite(i);
   renderMilestones(dealId);
 }
@@ -4730,13 +4733,14 @@ function renderBoard(){
             const ci2=Math.min(Math.max(mi,0),7);
             perQ[ci2]=(perQ[ci2]||0);
             const pos=(ci2+0.5)/8*100;
-            track+='<div class="tl-ms'+(m.d?' done':'')+'" style="left:calc('+pos+'% + '+(perQ[ci2]*13)+'px)" title="'+escHtml(msName(m))+' '+qtrShort(m.q)+(m.d?' (completed)':' (planned)')+'">'+escHtml(msLetter(m))+'</div>';
+            const mst=m.s||(m.d?"done":"planned");
+            track+='<div class="tl-ms'+(mst==="done"?' done':(mst==="active"?' wip':''))+'" style="left:calc('+pos+'% + '+(perQ[ci2]*13)+'px)" title="'+escHtml(msName(m))+' '+qtrShort(m.q)+(mst==="done"?' (completed)':(mst==="active"?' (in progress)':' (planned)'))+'">'+escHtml(msLetter(m))+'</div>';
             perQ[ci2]++;
           });
           h+='<div class="tl-row"><div class="tl-name"><b>'+esc(r.name)+'</b>'+(overdue?'<span class="tl-tag">CLOSE OVERDUE</span>':'')+'<br><span class="v">'+(fmtMoney(mo(r),true)||"TBD")+' / '+esc(stg(r.stage).l)+(r.deployQuarter?' / deploys '+qtrShort(r.deployQuarter):(r.expectedClose?' / closes '+qtrShort(r.expectedClose):''))+'</span></div><div class="tl-track">'+track+'</div></div>';
         });
         h+='</div></div>';
-        h+='<div class="tl-legend"><span><span style="display:inline-block;width:18px;height:9px;border-radius:2px;background:#0878A0;margin-right:5px;vertical-align:middle"></span>Current stage to expected close</span><span><span style="display:inline-block;width:18px;height:9px;border-radius:2px;background:repeating-linear-gradient(45deg,var(--b2) 0 4px,var(--b1) 4px 8px);margin-right:5px;vertical-align:middle"></span>Build and commission</span><span><span style="display:inline-block;width:8px;height:8px;transform:rotate(45deg);background:var(--lime);margin-right:6px;vertical-align:middle"></span>Commercial deployment</span><span><span class="tl-ms" style="position:static;display:inline-flex;margin-right:5px;vertical-align:middle">P</span>Milestone planned</span><span><span class="tl-ms done" style="position:static;display:inline-flex;margin-right:5px;vertical-align:middle">P</span>Milestone completed</span></div>';
+        h+='<div class="tl-legend"><span><span style="display:inline-block;width:18px;height:9px;border-radius:2px;background:#0878A0;margin-right:5px;vertical-align:middle"></span>Current stage to expected close</span><span><span style="display:inline-block;width:18px;height:9px;border-radius:2px;background:repeating-linear-gradient(45deg,var(--b2) 0 4px,var(--b1) 4px 8px);margin-right:5px;vertical-align:middle"></span>Build and commission</span><span><span style="display:inline-block;width:8px;height:8px;transform:rotate(45deg);background:var(--lime);margin-right:6px;vertical-align:middle"></span>Commercial deployment</span><span><span class="tl-ms" style="position:static;display:inline-flex;margin-right:5px;vertical-align:middle">P</span>Planned</span><span><span class="tl-ms wip" style="position:static;display:inline-flex;margin-right:5px;vertical-align:middle">P</span>In progress</span><span><span class="tl-ms done" style="position:static;display:inline-flex;margin-right:5px;vertical-align:middle">P</span>Completed</span></div>';
         if(rest.length) h+='<div class="tl-sum">+'+rest.length+' more scheduled opportunit'+(rest.length!==1?'ies':'y')+': '+(fmtMoney(rest.reduce((s,r)=>s+mo(r),0),true)||"$0")+' across '+qtrShort(Q[0])+' to '+qtrShort(Q[7])+' and beyond.</div>';
         if(unsched.length) h+='<div class="tl-unsched">'+unsched.length+' active opportunit'+(unsched.length!==1?'ies':'y')+' ('+(fmtMoney(unsched.reduce((s,r)=>s+mo(r),0),true)||"$0")+') have no timeline set.</div>';
         return h;
@@ -4989,7 +4993,7 @@ function buildBoardBriefHTML(){
       +'<tr style="border-bottom:2px solid '+LINE+'"><td style="padding:5px 6px;font-weight:700;color:'+GREY+';font-size:9px;width:150px">COMPANY</td>'+Q.map(t=>'<td style="padding:5px 2px;font-weight:700;color:'+GREY+';font-size:9px;text-align:center">'+qtrShort(t)+'</td>').join('')+'</tr>';
     top.forEach(r=>{
       const cells=Q.map(()=>[]);
-      (r.milestones||[]).forEach(m=>{const i=clampQ(m.q); if(i===null) return; cells[i].push('<span style="display:inline-block;min-width:13px;padding:0 2px;border:1.5px solid #156082;border-radius:8px;font-size:8px;font-weight:800;text-align:center;'+(m.d?'background:#156082;color:#FFFFFF':'color:#156082')+'" title="'+esc(msName(m))+'">'+esc(msLetter(m))+'</span>');});
+      (r.milestones||[]).forEach(m=>{const i=clampQ(m.q); if(i===null) return; const mst=m.s||(m.d?"done":"planned");cells[i].push('<span style="display:inline-block;min-width:13px;padding:0 2px;border:1.5px solid '+(mst==="active"?'#E97132':'#156082')+';border-radius:8px;font-size:8px;font-weight:800;text-align:center;'+(mst==="done"?'background:#156082;color:#FFFFFF':(mst==="active"?'background:#E97132;color:#FFFFFF':'color:#156082'))+'" title="'+esc(msName(m))+'">'+esc(msLetter(m))+'</span>');});
       const ci=qtrIdx(r.expectedClose), overdue=(ci!==null&&ci<0);
       const cci=clampQ(r.expectedClose); if(cci!==null) cells[cci].push('<span style="font-size:8px;font-weight:800;color:'+(overdue?RED:NAVY)+'">C'+(overdue?'!':'')+'</span>');
       const di=clampQ(r.deployQuarter); if(di!==null) cells[di].push('<span style="display:inline-block;width:8px;height:8px;background:'+GREEN+';transform:rotate(45deg)" title="Commercial deployment"></span>');
@@ -4997,7 +5001,7 @@ function buildBoardBriefHTML(){
         +cells.map(cl=>'<td style="padding:4px 1px;text-align:center;border-left:1px solid '+SOFT+'">'+(cl.length?cl.join(' '):'')+'</td>').join('')+'</tr>';
     });
     h+='</table>';
-    h+='<div class="pbb" style="font-size:8px;color:'+GREY+';margin-top:4px">L Lab Test / P Pilot / D Demonstration / V Site Visit / PM Permitting. Outlined = planned, filled = completed. C = expected close (C! overdue). Green diamond = commercial deployment.</div>';
+    h+='<div class="pbb" style="font-size:8px;color:'+GREY+';margin-top:4px">L Lab Test / P Pilot / D Demonstration / V Site Visit / PM Permitting. Outlined = planned, orange = in progress, filled blue = completed. C = expected close (C! overdue). Green diamond = commercial deployment.</div>';
     if(unsched.length) h+='<div class="pbb" style="font-size:10px;color:'+AMBER+';margin-top:6px">'+unsched.length+' active opportunit'+(unsched.length!==1?'ies':'y')+' ('+money(unsched.reduce((s,r)=>s+mo(r),0))+') have no timeline set.</div>';
   })();
 
