@@ -1101,21 +1101,25 @@ body.light-theme .dsec-r{background:var(--b1)}
 #page-board .tl-tots b{display:block;font-size:12px;color:var(--t0);font-family:var(--f-mono)}
 #page-board .tl-name{font-size:12px;padding:5px 10px 5px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #page-board .tl-name .v{color:var(--t2);font-size:10px;font-family:var(--f-mono)}
-#page-board .tl-track{position:relative;height:24px;background-image:repeating-linear-gradient(90deg,var(--b0) 0 1px,transparent 1px 12.5%)}
+#page-board .tl-track{position:relative;height:36px;background-image:repeating-linear-gradient(90deg,var(--b0) 0 1px,transparent 1px 12.5%)}
 #page-board .tl-bar{position:absolute;top:5px;height:14px;border-radius:3px;min-width:8px}
 #page-board .tl-build{position:absolute;top:5px;height:14px;border-radius:3px;background:repeating-linear-gradient(45deg,var(--b2) 0 5px,var(--b1) 5px 10px);opacity:.9}
-#page-board .tl-stage{position:absolute;left:0;top:3px;height:18px;z-index:2;display:flex;align-items:center;padding:0 7px;border-radius:3px;font-size:8px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#FFFFFF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#page-board .tl-seg{position:absolute;top:5px;height:14px}
+#page-board .tl-ladder{position:absolute;left:0;top:1px;height:12px;display:flex;gap:3px;z-index:2;white-space:nowrap}
+#page-board .tl-lstep{display:inline-flex;align-items:center;padding:0 5px;border-radius:2px;font-size:7px;font-weight:800;letter-spacing:.04em;line-height:1}
+#page-board .tl-lstep.passed{background:var(--b2);color:var(--t2)}
+#page-board .tl-lstep.current{color:#FFFFFF}
+#page-board .tl-lstep.upcoming{background:transparent;border:1px solid var(--b2);color:var(--t3)}
+#page-board .tl-seg{position:absolute;top:17px;height:14px}
 #page-board .tl-seg:first-child,#page-board .tl-seg[style*="left:0%"]{border-radius:3px 0 0 3px}
 #page-board .seg-done{background:#38BDF8}
 #page-board .seg-active{background:var(--amber)}
 #page-board .seg-ahead{background:var(--b2)}
-#page-board .tl-notch{position:absolute;top:3px;height:18px;width:2px;background:var(--s1);z-index:2}
-#page-board .tl-close{position:absolute;top:0;height:24px;width:2px;background:var(--t1);z-index:3}
+#page-board .tl-notch{position:absolute;top:15px;height:18px;width:2px;background:var(--s1);z-index:2}
+#page-board .tl-close{position:absolute;top:13px;height:23px;width:2px;background:var(--t1);z-index:3}
 #page-board .tl-close::after{content:"C";position:absolute;top:-2px;left:4px;font-size:8px;font-weight:800;color:var(--t2)}
-#page-board .tl-buildov{position:absolute;top:5px;height:14px;background:repeating-linear-gradient(45deg,rgba(255,255,255,.16) 0 5px,transparent 5px 10px);z-index:1;border-radius:0 3px 3px 0}
-#page-board .tl-dep{position:absolute;top:5px;width:10px;height:10px;background:var(--lime);border:2px solid var(--s1);transform:rotate(45deg);z-index:4}
-#page-board .tl-beyond{position:absolute;right:-4px;top:1px;font-size:15px;font-weight:700;color:var(--t2)}
+#page-board .tl-buildov{position:absolute;top:17px;height:14px;background:repeating-linear-gradient(45deg,rgba(255,255,255,.16) 0 5px,transparent 5px 10px);z-index:1;border-radius:0 3px 3px 0}
+#page-board .tl-dep{position:absolute;top:17px;width:10px;height:10px;background:var(--lime);border:2px solid var(--s1);transform:rotate(45deg);z-index:4}
+#page-board .tl-beyond{position:absolute;right:-4px;top:13px;font-size:15px;font-weight:700;color:var(--t2)}
 #page-board .tl-ms.more{border-style:dashed;color:var(--t1);border-color:var(--t3);font-size:7px}
 #page-board .tl-totlbl{font-size:9px;color:var(--t2);text-align:right;padding-right:10px;line-height:1.5;letter-spacing:.03em}
 .tlx-btn{font-size:10px;font-weight:700;letter-spacing:.04em;padding:5px 10px;border-radius:6px;border:1px solid var(--b2);background:var(--s2);color:var(--t1);cursor:pointer;font-family:var(--f-ui)}
@@ -1460,7 +1464,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-u";
+const KMX_BUILD = "2026.08.12-v";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -4517,7 +4521,7 @@ function drawTimelineChart(){
   x.fillText("Where Others Stop. KMX Starts.",W-70,110);
   x.textAlign="left";
   const padL=360,padR=90;
-  const laneH=Math.min(104,Math.max(76,Math.floor(580/T.lanes.length)));
+  const laneH=Math.min(112,Math.max(92,Math.floor(600/T.lanes.length)));
   const topY=200+Math.max(0,Math.floor((620-laneH*T.lanes.length)/2));
   const plotW=W-padL-padR;
   const colW=plotW/8;
@@ -4555,17 +4559,23 @@ function drawTimelineChart(){
       // Crisp outline so light segments read on white
       x.strokeStyle="#B8C4CE"; x.lineWidth=1.5;
       x.strokeRect(px(0),cy-11,px(S.endPct)-px(0),22);
-      // Stage cap: the deal's current stage named on the bar itself
+      // Stage ladder: every sales stage labeled, passed / current / upcoming
       (function(){
         const SCk={prospect:"#4A6280",scoping:"#1862B8",proposal:"#5040B0",lab:"#8A5A00",demo:"#A04878",negotiation:"#0878A0"};
-        let lbl=stg(r.stage).l.toUpperCase();
-        x.font="800 13px Arial";
-        const maxW=px(S.endPct)-px(0)-20;
-        while(x.measureText(lbl).width+18>maxW&&lbl.length>3) lbl=lbl.slice(0,-2);
-        const cw2=x.measureText(lbl).width+18;
-        x.fillStyle=SCk[r.stage]||"#4A6280";
-        x.beginPath(); x.roundRect(px(0),cy-13,cw2,26,4); x.fill();
-        x.fillStyle="#FFFFFF"; x.fillText(lbl,px(0)+9,cy+5);
+        const steps=stageLadder(r.stage);
+        x.font="800 12px Arial";
+        let widths=steps.map(st=>x.measureText(st.code).width+14);
+        let total=widths.reduce((a,b)=>a+b,0)+(steps.length-1)*5;
+        let lx2=px(0);
+        const ly2=cy-36, lh=18;
+        steps.forEach((st,si)=>{
+          const cw2=widths[si];
+          if(st.state==="passed"){ x.fillStyle="#B8C4CE"; x.beginPath(); x.roundRect(lx2,ly2,cw2,lh,3); x.fill(); x.fillStyle="#FFFFFF"; }
+          else if(st.state==="current"){ x.fillStyle=SCk[st.k]||"#4A6280"; x.beginPath(); x.roundRect(lx2,ly2-2,cw2,lh+4,3); x.fill(); x.fillStyle="#FFFFFF"; }
+          else { x.fillStyle="#FFFFFF"; x.beginPath(); x.roundRect(lx2,ly2,cw2,lh,3); x.fill(); x.strokeStyle="#9AA8B5"; x.lineWidth=1.5; x.stroke(); x.fillStyle="#6A7A8E"; }
+          x.fillText(st.code,lx2+7,ly2+13+(st.state==="current"?1:0));
+          lx2+=cw2+5;
+        });
       })();
       // Rounded bar silhouette via end caps
       x.strokeStyle="#FFFFFF"; x.lineWidth=2;
@@ -4585,7 +4595,8 @@ function drawTimelineChart(){
         let lbl=msName(s.m); if(lbl.length>16) lbl=lbl.slice(0,15)+"...";
         const tw=x.measureText(lbl).width, lx0=Math.min(Math.max(px(s.to)-tw/2,padL),padL+plotW-tw);
         const stCol=s.state==="active"?ORANGE:(s.state==="done"?BLUE:MIDGREY);
-        if(lx0>lastAboveEnd+14){ x.fillStyle=stCol; x.fillText(lbl,lx0,cy-19); lastAboveEnd=lx0+tw; }
+        const aboveY=(lx0<px(0)+360)?cy+31:cy-19;
+        if(aboveY===cy-19&&lx0>lastAboveEnd+14){ x.fillStyle=stCol; x.fillText(lbl,lx0,cy-19); lastAboveEnd=lx0+tw; }
         else if(lx0>lastBelowEnd+14){ x.fillStyle=stCol; x.fillText(lbl,lx0,cy+31); lastBelowEnd=lx0+tw; }
       });
       // Expected close notch
@@ -4768,6 +4779,12 @@ function exportVelocityPDF(){ exportSlidePDF(drawVelocitySlide(),"KMX-Pipeline-V
 
 function slideChromeEnd(){}
 
+const STAGE_SHORT={prospect:"PROS",scoping:"SCOPE",proposal:"PROP",lab:"LAB",demo:"DEMO",negotiation:"NEGOT"};
+function stageLadder(stageKey){
+  const ks=STAGES.filter(s=>s.k!=="won"&&s.k!=="lost").map(s=>s.k);
+  const cur=ks.indexOf(stageKey);
+  return ks.map((k,i)=>({k, code:STAGE_SHORT[k]||k, full:stg(k).l, state:i<cur?"passed":(i===cur?"current":"upcoming")}));
+}
 function timelineSegments(r){
   const cEnd0=qtrIdx(r.expectedClose), dEnd0=qtrIdx(r.deployQuarter);
   const pct=t=>{const i=qtrIdx(t);if(i===null)return null;return Math.min(Math.max(i,0)+1,8)/8*100;};
@@ -5054,7 +5071,7 @@ function renderBoard(){
           let track='';
           const S=timelineSegments(r);
           if(S){
-            track+='<div class="tl-stage" style="background:'+(SC[r.stage]||"#4A6280")+';max-width:calc('+S.endPct+'% - 16px)" title="Current stage: '+escHtml(stg(r.stage).l)+'">'+escHtml(stg(r.stage).l)+'</div>';
+            track+='<div class="tl-ladder">'+stageLadder(r.stage).map(st=>'<span class="tl-lstep '+st.state+'"'+(st.state==="current"?' style="background:'+(SC[st.k]||"#4A6280")+'"':'')+' title="'+escHtml(st.full)+(st.state==="current"?" (current)":st.state==="passed"?" (passed)":" (ahead)")+'">'+st.code+'</span>').join('')+'</div>';
             S.segs.forEach(s=>{
               const cls=s.state==="done"?"seg-done":(s.state==="active"?"seg-active":"seg-ahead");
               const tip=s.m?escHtml(msName(s.m))+' '+qtrShort(s.m.q)+(s.state==="done"?" (completed)":s.state==="active"?" (in progress)":" (planned)"):"Ahead";
