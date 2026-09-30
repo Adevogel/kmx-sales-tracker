@@ -1091,6 +1091,24 @@ body.light-theme .dsec-r{background:var(--b1)}
 .print-doc td, .print-doc th{ white-space:normal; overflow:visible; text-overflow:clip; font-family:Arial,Helvetica,sans-serif; text-transform:none; letter-spacing:normal; border-bottom:0; }
 .print-doc b, .print-doc strong{ font-weight:700; }
 .print-doc .brief-page{ background:#FFFFFF; color:#1A2430; }
+
+/* Board: path-to-deployment timeline */
+#page-board .tl-wrap{overflow-x:auto}
+#page-board .tl-grid{min-width:880px}
+#page-board .tl-row{display:grid;grid-template-columns:190px 1fr;gap:0;align-items:center}
+#page-board .tl-qhead{display:grid;grid-template-columns:repeat(8,1fr);font-size:10px;color:var(--t2);font-weight:700;letter-spacing:.04em;text-align:center;padding:4px 0;border-bottom:1px solid var(--b0)}
+#page-board .tl-tots{display:grid;grid-template-columns:repeat(8,1fr);text-align:center;font-size:10px;color:var(--t2);padding:3px 0 8px}
+#page-board .tl-tots b{display:block;font-size:11px;color:var(--t0);font-family:var(--f-mono)}
+#page-board .tl-name{font-size:12px;padding:5px 10px 5px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#page-board .tl-name .v{color:var(--t2);font-size:10px;font-family:var(--f-mono)}
+#page-board .tl-track{position:relative;height:24px;background-image:repeating-linear-gradient(90deg,var(--b0) 0 1px,transparent 1px 12.5%)}
+#page-board .tl-bar{position:absolute;top:5px;height:14px;border-radius:3px;min-width:8px}
+#page-board .tl-build{position:absolute;top:5px;height:14px;border-radius:3px;background:repeating-linear-gradient(45deg,var(--b2) 0 5px,var(--b1) 5px 10px);opacity:.9}
+#page-board .tl-dep{position:absolute;top:2px;width:10px;height:10px;transform:rotate(45deg) translateX(-4px);background:var(--lime);border:2px solid var(--s1);margin-top:5px}
+#page-board .tl-tag{font-size:9px;font-weight:700;color:var(--red);letter-spacing:.04em;margin-left:6px}
+#page-board .tl-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:10px;color:var(--t2);margin-top:10px}
+#page-board .tl-sum{font-size:11px;color:var(--t2);padding:7px 0 0;border-top:1px solid var(--b0);margin-top:8px}
+#page-board .tl-unsched{font-size:11px;color:var(--amber);margin-top:6px}
 </style>
 </head>
 <body>
@@ -1357,6 +1375,8 @@ body.light-theme .dsec-r{background:var(--b1)}
       <div class="field"><label>Last contact</label><input id="fl" type="date"></div>
       <div class="field"><label>Renewal date</label><input id="frenewal" type="date"></div>
       <div class="field"><label>Project deadline</label><input id="fdeadline" type="date"></div>
+      <div class="field"><label>Expected close</label><select id="fclose"></select></div>
+      <div class="field"><label>Commercial deployment</label><select id="fdeploy"></select></div>
       <div class="field"><label>Follow-up date</label><input id="ffollowup" type="date"></div>
       <div class="field full"><label>Next steps</label><div id="modal-steps"><div class="st-empty">Save the project first, then manage steps here or from the quick update panel.</div></div></div>
       <div class="field full">
@@ -1416,7 +1436,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-n";
+const KMX_BUILD = "2026.08.12-o";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -2491,7 +2511,7 @@ function syncNow(){
         last:normaliseDate(r[8]), note:r[9]||"",
         renewal:normaliseDate(r[10]), deadline:normaliseDate(r[11]),
         created:normaliseDate(r[12]), stageChanged:normaliseDate(r[13]),
-        infraType:normSector(r[14]), lossReason:r[15]||"",
+        infraType:normSector(r[14]), lossReason:r[15]||"", expectedClose:String(r[25]||"").trim(), deployQuarter:String(r[26]||"").trim(),
         nextAction:r[16]||"", followUpDate:normaliseDate(r[17]),
         deploymentType:r[18]||"", lossNotes:r[19]||"",
         contactName:r[20]||"", contactEmail:r[21]||"", contactPhone:r[22]||"",
@@ -2584,6 +2604,24 @@ function stg(k){return STAGES.find(s=>s.k===k)||STAGES[0];}
 const INFRA_LABELS={datacenter:"Data Center",foodbev:"Food and Beverage",municipal:"Municipal",oilgas:"Oil and Gas",lithium:"Lithium Concentration",minerals:"Critical Minerals",mining:"Mining",industrial:"Industrial",chipfab:"Chip Fabrication",power:"Power",aerospace:"Aerospace and Defense"};
 // Legacy sector keys typed directly into the sheet map onto first-class verticals
 function normSector(v){const s=String(v||"").trim().toLowerCase();return s==="space"?"aerospace":s;}
+
+// ── Quarter timeline utilities ──
+function escHtml(t){return String(t===null||t===undefined?"":t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function qtrNow(){const d=new Date();return {y:d.getFullYear(), q:Math.floor(d.getMonth()/3)+1};}
+function qtrToken(y,q){return y+"-Q"+q;}
+function qtrList(n){const nq=qtrNow();const out=[];for(let i=0;i<n;i++){const qi=nq.q-1+i;out.push(qtrToken(nq.y+Math.floor(qi/4), qi%4+1));}return out;}
+function qtrShort(t){if(!t)return "";if(t==="beyond")return "Beyond";const m=String(t).match(/^(\d{4})-Q([1-4])$/);return m?("Q"+m[2]+" "+m[1].slice(2)):String(t);}
+function qtrIdx(t){if(t==="beyond")return 99;const m=String(t||"").match(/^(\d{4})-Q([1-4])$/);if(!m)return null;const nq=qtrNow();return (parseInt(m[1])-nq.y)*4+(parseInt(m[2])-nq.q);}
+function fillQuarterSelect(id, current){
+  const sel=document.getElementById(id); if(!sel) return;
+  const win=qtrList(8);
+  const opts=['<option value="">Not set</option>'];
+  if(current && current!=="beyond" && win.indexOf(current)<0) opts.push('<option value="'+current+'">'+qtrShort(current)+' (outside window)</option>');
+  win.forEach(t=>opts.push('<option value="'+t+'">'+qtrShort(t)+'</option>'));
+  opts.push('<option value="beyond">Beyond 8 quarters</option>');
+  sel.innerHTML=opts.join("");
+  sel.value=current||"";
+}
 function infraLabelShort(k){return k==="foodbev"?"F&B":infraLabel(k);}
 function infraLabel(k){return INFRA_LABELS[k]||k;}
 
@@ -2608,7 +2646,7 @@ function daysSince(d){
   return Math.round((today0 - then)/86400000);
 }
 function toRow(r){
-  return[r.name,r.owner,r.stage,r.health,r.tbd?"TRUE":"FALSE",r.value||"",r.estLow||"",r.estHigh||"",r.last,r.note,r.renewal||"",r.deadline||"",r.created||"",r.stageChanged||"",r.infraType||"",r.lossReason||"",r.nextAction||"",r.followUpDate||"",r.deploymentType||"",r.lossNotes||"",r.contactName||"",r.contactEmail||"",r.contactPhone||"",JSON.stringify(r.activity||[]),JSON.stringify(r.steps||[])];
+  return[r.name,r.owner,r.stage,r.health,r.tbd?"TRUE":"FALSE",r.value||"",r.estLow||"",r.estHigh||"",r.last,r.note,r.renewal||"",r.deadline||"",r.created||"",r.stageChanged||"",r.infraType||"",r.lossReason||"",r.nextAction||"",r.followUpDate||"",r.deploymentType||"",r.lossNotes||"",r.contactName||"",r.contactEmail||"",r.contactPhone||"",JSON.stringify(r.activity||[]),JSON.stringify(r.steps||[]),r.expectedClose||"",r.deployQuarter||""];
 }
 
 // Returns {label, cls} for a date: null=none, amber=60days, danger=30days, overdue=past
@@ -3550,6 +3588,8 @@ function openModal(id=null){
   document.getElementById("fdeadline").value=r.deadline||"";
   document.getElementById("finfra").value=r.infraType||"";
   document.getElementById("fdeploytype").value=r.deploymentType||"";
+  fillQuarterSelect("fclose", r.expectedClose||"");
+  fillQuarterSelect("fdeploy", r.deployQuarter||"");
   document.getElementById("flossreason").value=r.lossReason||"";
   document.getElementById("flossnotes").value=r.lossNotes||"";
   document.getElementById("fcontact").value=r.contactName||"";
@@ -3582,7 +3622,7 @@ function saveProject(){
   const existingRow = editId!==null ? rows.find(r=>r.id===editId) : null;
   const newStage = document.getElementById("fst").value;
   const stageChanged = existingRow && existingRow.stage !== newStage ? today : (existingRow?.stageChanged||today);
-  const data={name,owner:document.getElementById("fo").value.trim(),stage:newStage,health:document.getElementById("fh2").value,last:document.getElementById("fl").value,note:document.getElementById("fnote").value.trim(),tbd,value:tbd?null:(parseFloat(document.getElementById("fv").value)||null),estLow:tbd?(parseFloat(document.getElementById("fel").value)||null):null,estHigh:tbd?(parseFloat(document.getElementById("feh").value)||null):null,renewal:document.getElementById("frenewal").value,deadline:document.getElementById("fdeadline").value,created:existingRow?.created||today,stageChanged,infraType:document.getElementById("finfra").value,deploymentType:document.getElementById("fdeploytype").value,lossReason:document.getElementById("flossreason").value,lossNotes:document.getElementById("flossnotes").value.trim(),contactName:document.getElementById("fcontact").value.trim(),contactEmail:document.getElementById("fcemail").value.trim(),contactPhone:document.getElementById("fcphone").value.trim(),activity:existingRow?.activity||[],steps:existingRow?.steps||[],nextAction:existingRow?topStep(existingRow):"",followUpDate:document.getElementById("ffollowup").value};
+  const data={name,owner:document.getElementById("fo").value.trim(),stage:newStage,health:document.getElementById("fh2").value,last:document.getElementById("fl").value,note:document.getElementById("fnote").value.trim(),tbd,value:tbd?null:(parseFloat(document.getElementById("fv").value)||null),estLow:tbd?(parseFloat(document.getElementById("fel").value)||null):null,estHigh:tbd?(parseFloat(document.getElementById("feh").value)||null):null,renewal:document.getElementById("frenewal").value,deadline:document.getElementById("fdeadline").value,created:existingRow?.created||today,stageChanged,infraType:document.getElementById("finfra").value,deploymentType:document.getElementById("fdeploytype").value,expectedClose:document.getElementById("fclose").value,deployQuarter:document.getElementById("fdeploy").value,lossReason:document.getElementById("flossreason").value,lossNotes:document.getElementById("flossnotes").value.trim(),contactName:document.getElementById("fcontact").value.trim(),contactEmail:document.getElementById("fcemail").value.trim(),contactPhone:document.getElementById("fcphone").value.trim(),activity:existingRow?.activity||[],steps:existingRow?.steps||[],nextAction:existingRow?topStep(existingRow):"",followUpDate:document.getElementById("ffollowup").value};
   if(editId!==null){
     const i=rows.findIndex(r=>r.id===editId);
     rows[i]={...rows[i],...data};
@@ -4353,6 +4393,7 @@ function outreachStats(){
 }
 
 function renderBoard(){
+  const esc=escHtml;
   const active      = rows.filter(r=>r.stage!=="won"&&r.stage!=="lost");
   const won         = rows.filter(r=>r.stage==="won");
   const lost        = rows.filter(r=>r.stage==="lost");
@@ -4580,7 +4621,46 @@ function renderBoard(){
 
     <!-- Active projects table -->
     <div class="board-section">
-      <div class="dsec"><span class="dsec-l"><i class="ti ti-target"></i>What we are working now</span><span class="dsec-r"></span></div>
+      <div class="dsec"><span class="dsec-l"><i class="ti ti-route"></i>Where it is heading</span><span class="dsec-r"></span></div>
+
+    <div class="board-section">
+      <div class="board-section-title"><i class="ti ti-flag-3"></i>Path to Commercial Deployment, Next 8 Quarters</div>
+      ${(()=>{
+        const Q=qtrList(8);
+        const SC={prospect:"#4A6280",scoping:"#1862B8",proposal:"#5040B0",lab:"#8A5A00",demo:"#A04878",negotiation:"#0878A0"};
+        const mo=r=>r.tbd?((r.estLow||0)+(r.estHigh||0))/2:(r.value||0);
+        const sched=active.filter(r=>r.expectedClose||r.deployQuarter);
+        const unsched=active.filter(r=>!r.expectedClose&&!r.deployQuarter);
+        if(!sched.length) return '<div style="font-size:12px;color:var(--t2);font-style:italic">No opportunities have a timeline yet. Open a deal and set Expected close and Commercial deployment.</div>'+(unsched.length?'<div class="tl-unsched">'+unsched.length+' active opportunit'+(unsched.length!==1?'ies':'y')+' ('+(fmtMoney(unsched.reduce((s,r)=>s+mo(r),0),true)||"$0")+') awaiting a timeline.</div>':'');
+        const clampEnd=t=>{const i=qtrIdx(t);if(i===null)return null;return Math.min(Math.max(i,0)+1,8)/8*100;};
+        const anchorIdx=r=>{const d=qtrIdx(r.deployQuarter),cl=qtrIdx(r.expectedClose);const v=(d===null?cl:d);return v===null?999:v;};
+        const sorted=sched.slice().sort((a,b)=>anchorIdx(a)-anchorIdx(b)||mo(b)-mo(a));
+        const lanes=sorted.slice(0,10), rest=sorted.slice(10);
+        const depSum=Q.map(t=>sched.filter(r=>r.deployQuarter===t).reduce((s,r)=>s+mo(r),0));
+        const clsCnt=Q.map(t=>sched.filter(r=>r.expectedClose===t).length);
+        let h='<div class="tl-wrap"><div class="tl-grid">';
+        h+='<div class="tl-row"><div></div><div class="tl-qhead">'+Q.map(qtrShort).map(q=>'<span>'+q+'</span>').join('')+'</div></div>';
+        h+='<div class="tl-row"><div style="font-size:10px;color:var(--t2);text-align:right;padding-right:10px">deploying / closing</div><div class="tl-tots">'+Q.map((t,i)=>'<span><b>'+(depSum[i]?fmtMoney(depSum[i],true):"-")+'</b>'+(clsCnt[i]?clsCnt[i]+' close':'&nbsp;')+'</span>').join('')+'</div></div>';
+        lanes.forEach(r=>{
+          const ci=qtrIdx(r.expectedClose), di=qtrIdx(r.deployQuarter);
+          const cEnd=clampEnd(r.expectedClose), dEnd=clampEnd(r.deployQuarter);
+          const overdue=(ci!==null&&ci<0);
+          let track='';
+          const stageEnd=(cEnd!==null?cEnd:dEnd);
+          if(stageEnd!==null) track+='<div class="tl-bar" style="left:0;width:'+stageEnd+'%;background:'+(SC[r.stage]||"#4A6280")+'" title="'+esc(r.name)+' / '+esc(stg(r.stage).l)+(r.expectedClose?' / close '+qtrShort(r.expectedClose):'')+'"></div>';
+          if(cEnd!==null&&dEnd!==null&&dEnd>cEnd) track+='<div class="tl-build" style="left:'+cEnd+'%;width:'+(dEnd-cEnd)+'%" title="Build and commission"></div>';
+          if(dEnd!==null) track+='<div class="tl-dep" style="left:'+dEnd+'%" title="Commercial deployment '+qtrShort(r.deployQuarter)+'"></div>';
+          h+='<div class="tl-row"><div class="tl-name"><b>'+esc(r.name)+'</b>'+(overdue?'<span class="tl-tag">CLOSE OVERDUE</span>':'')+'<br><span class="v">'+(fmtMoney(mo(r),true)||"TBD")+' / '+esc(stg(r.stage).l)+(r.deployQuarter?' / deploys '+qtrShort(r.deployQuarter):(r.expectedClose?' / closes '+qtrShort(r.expectedClose):''))+'</span></div><div class="tl-track">'+track+'</div></div>';
+        });
+        h+='</div></div>';
+        h+='<div class="tl-legend"><span><span style="display:inline-block;width:18px;height:9px;border-radius:2px;background:#0878A0;margin-right:5px;vertical-align:middle"></span>Current stage to expected close</span><span><span style="display:inline-block;width:18px;height:9px;border-radius:2px;background:repeating-linear-gradient(45deg,var(--b2) 0 4px,var(--b1) 4px 8px);margin-right:5px;vertical-align:middle"></span>Build and commission</span><span><span style="display:inline-block;width:8px;height:8px;transform:rotate(45deg);background:var(--lime);margin-right:6px;vertical-align:middle"></span>Commercial deployment</span></div>';
+        if(rest.length) h+='<div class="tl-sum">+'+rest.length+' more scheduled opportunit'+(rest.length!==1?'ies':'y')+': '+(fmtMoney(rest.reduce((s,r)=>s+mo(r),0),true)||"$0")+' across '+qtrShort(Q[0])+' to '+qtrShort(Q[7])+' and beyond.</div>';
+        if(unsched.length) h+='<div class="tl-unsched">'+unsched.length+' active opportunit'+(unsched.length!==1?'ies':'y')+' ('+(fmtMoney(unsched.reduce((s,r)=>s+mo(r),0),true)||"$0")+') have no timeline set.</div>';
+        return h;
+      })()}
+    </div>
+
+    <div class="dsec"><span class="dsec-l"><i class="ti ti-target"></i>What we are working now</span><span class="dsec-r"></span></div>
     <div class="board-section-title-hidden"></div><div class="board-section-title"><i class="ti ti-briefcase"></i>Active Projects${topDeals.length<active.length?` (Top ${topDeals.length} by value)`:""}</div>
       <div class="bchcard" style="padding:0;overflow:hidden">
         <table class="board-table">
@@ -4804,6 +4884,37 @@ function buildBoardBriefHTML(){
   const stg2=chartStageValue(), hth=chartHealthMix();
   if(stg2) h+='<img class="pbb" src="data:image/png;base64,'+stg2+'" style="width:560px;display:block;margin:2px 0 8px">';
   if(hth) h+='<img class="pbb" src="data:image/png;base64,'+hth+'" style="width:360px;display:block;margin:2px 0 8px">';
+
+  // Path to commercial deployment
+  h+=H1("Path to commercial deployment, next 8 quarters");
+  (function(){
+    const Q=qtrList(8);
+    const mo=r=>r.tbd?((r.estLow||0)+(r.estHigh||0))/2:(r.value||0);
+    const sched=active.filter(r=>r.expectedClose||r.deployQuarter);
+    const unsched=active.filter(r=>!r.expectedClose&&!r.deployQuarter);
+    if(!sched.length){ h+='<div class="pbb" style="font-size:11px;color:'+GREY+';font-style:italic">No opportunities have a timeline set yet.</div>'; return; }
+    const depSum=Q.map(t=>sched.filter(r=>r.deployQuarter===t).reduce((s,r)=>s+mo(r),0));
+    const clsCnt=Q.map(t=>sched.filter(r=>r.expectedClose===t).length);
+    h+='<table class="pbb" style="width:100%;border-collapse:collapse;font-size:10px;text-align:center">'
+      +'<tr style="border-bottom:2px solid '+LINE+'"><td style="padding:4px;font-weight:700;color:'+GREY+';font-size:9px;text-align:left">QUARTER</td>'+Q.map(t=>'<td style="padding:4px;font-weight:700;color:'+GREY+';font-size:9px">'+qtrShort(t)+'</td>').join('')+'</tr>'
+      +'<tr style="border-bottom:1px solid '+LINE+'"><td style="padding:4px;text-align:left;color:'+GREY+'">Deploying</td>'+depSum.map(v=>'<td style="padding:4px;font-weight:700;color:'+(v?AQUA:GREY)+'">'+(v?money(v):"-")+'</td>').join('')+'</tr>'
+      +'<tr><td style="padding:4px;text-align:left;color:'+GREY+'">Deals closing</td>'+clsCnt.map(n=>'<td style="padding:4px">'+(n||"-")+'</td>').join('')+'</tr></table>';
+    const anchorIdx=r=>{const d=qtrIdx(r.deployQuarter),cl=qtrIdx(r.expectedClose);const v=(d===null?cl:d);return v===null?999:v;};
+    const top=sched.slice().sort((a,b)=>anchorIdx(a)-anchorIdx(b)||mo(b)-mo(a)).slice(0,10);
+    h+='<table class="pbb" style="width:100%;border-collapse:collapse;font-size:11px;margin-top:8px">'
+      +'<tr style="border-bottom:2px solid '+LINE+'"><td style="padding:5px 6px;font-weight:700;color:'+GREY+';font-size:9px">COMPANY</td><td style="padding:5px 6px;font-weight:700;color:'+GREY+';font-size:9px">STAGE</td><td style="padding:5px 6px;font-weight:700;color:'+GREY+';font-size:9px;text-align:right">VALUE</td><td style="padding:5px 6px;font-weight:700;color:'+GREY+';font-size:9px;text-align:center">CLOSE</td><td style="padding:5px 6px;font-weight:700;color:'+GREY+';font-size:9px;text-align:center">DEPLOYMENT</td></tr>';
+    top.forEach(r=>{
+      const ci=qtrIdx(r.expectedClose);
+      const overdue=(ci!==null&&ci<0);
+      h+='<tr style="border-bottom:1px solid '+LINE+'"><td style="padding:5px 6px;font-weight:600">'+esc(r.name)+'</td>'
+        +'<td style="padding:5px 6px">'+esc(cap(stg(r.stage).l))+'</td>'
+        +'<td style="padding:5px 6px;text-align:right">'+(mo(r)?money(mo(r)):"TBD")+'</td>'
+        +'<td style="padding:5px 6px;text-align:center;'+(overdue?'color:'+RED+';font-weight:700':'')+'">'+(r.expectedClose?qtrShort(r.expectedClose)+(overdue?" OVERDUE":""):"-")+'</td>'
+        +'<td style="padding:5px 6px;text-align:center;font-weight:700;color:'+GREEN+'">'+(r.deployQuarter?qtrShort(r.deployQuarter):"-")+'</td></tr>';
+    });
+    h+='</table>';
+    if(unsched.length) h+='<div class="pbb" style="font-size:10px;color:'+AMBER+';margin-top:6px">'+unsched.length+' active opportunit'+(unsched.length!==1?'ies':'y')+' ('+money(unsched.reduce((s,r)=>s+mo(r),0))+') have no timeline set.</div>';
+  })();
 
   // Active deals table
   h+=H1("What we are working now");
