@@ -1109,7 +1109,12 @@ body.light-theme .dsec-r{background:var(--b1)}
 #page-board .tl-lstep.passed{background:var(--b2);color:var(--t2)}
 #page-board .tl-lstep.current{color:#FFFFFF}
 #page-board .tl-lstep.upcoming{background:transparent;border:1px solid var(--b2);color:var(--t3)}
-#page-board .tl-seg{position:absolute;top:17px;height:14px}
+#page-board .tl-seg{position:absolute;top:17px;height:14px;display:flex;align-items:center;overflow:hidden}
+#page-board .tl-seglbl{font-size:8px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;padding:0 6px}
+#page-board .seg-done .tl-seglbl{color:#06202e}
+#page-board .seg-active .tl-seglbl{color:#241a05}
+#page-board .seg-ahead .tl-seglbl{color:var(--t1)}
+#page-board .tl-seglbl.bv{color:var(--t1);text-align:center;padding:0 4px}
 #page-board .tl-seg:first-child,#page-board .tl-seg[style*="left:0%"]{border-radius:3px 0 0 3px}
 #page-board .seg-done{background:#38BDF8}
 #page-board .seg-active{background:var(--amber)}
@@ -1117,8 +1122,8 @@ body.light-theme .dsec-r{background:var(--b1)}
 #page-board .tl-notch{position:absolute;top:15px;height:18px;width:2px;background:var(--s1);z-index:2}
 #page-board .tl-close{position:absolute;top:13px;height:23px;width:2px;background:var(--t1);z-index:3}
 #page-board .tl-close::after{content:"C";position:absolute;top:-2px;left:4px;font-size:8px;font-weight:800;color:var(--t2)}
-#page-board .tl-buildov{position:absolute;top:17px;height:14px;background:repeating-linear-gradient(45deg,rgba(255,255,255,.16) 0 5px,transparent 5px 10px);z-index:1;border-radius:0 3px 3px 0}
-#page-board .tl-dep{position:absolute;top:17px;width:10px;height:10px;background:var(--lime);border:2px solid var(--s1);transform:rotate(45deg);z-index:4}
+#page-board .tl-buildov{position:absolute;top:17px;height:14px;display:flex;align-items:center;overflow:hidden;background:repeating-linear-gradient(45deg,rgba(255,255,255,.16) 0 5px,transparent 5px 10px);z-index:1;border-radius:0 3px 3px 0}
+#page-board .tl-dep{position:absolute;box-sizing:border-box;top:18px;width:12px;height:12px;background:var(--lime);border:2px solid var(--s1);transform:rotate(45deg);z-index:4}
 #page-board .tl-beyond{position:absolute;right:-4px;top:13px;font-size:15px;font-weight:700;color:var(--t2)}
 #page-board .tl-ms.more{border-style:dashed;color:var(--t1);border-color:var(--t3);font-size:7px}
 #page-board .tl-totlbl{font-size:9px;color:var(--t2);text-align:right;padding-right:10px;line-height:1.5;letter-spacing:.03em}
@@ -1464,7 +1469,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-v";
+const KMX_BUILD = "2026.08.12-w";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -4586,6 +4591,13 @@ function drawTimelineChart(){
         x.strokeStyle="rgba(255,255,255,0.55)"; x.lineWidth=3;
         for(let s2=px(S.cEnd)-24;s2<px(S.dEnd)+24;s2+=13){ x.beginPath(); x.moveTo(s2,cy+15); x.lineTo(s2+15,cy-15); x.stroke(); }
         x.restore();
+        const bw2=px(S.dEnd)-px(S.cEnd);
+        if(bw2>170){
+          x.fillStyle="#6A7A8E"; x.font="700 13px Arial"; x.textAlign="center";
+          const bx=px(S.cEnd)+bw2/2;
+          x.fillText("BUILD & COMMISSION",bx,cy-19);
+          x.textAlign="left";
+        }
       }
       // Milestone labels along the bar, alternating above and below when crowded
       x.font="600 14px Arial";
@@ -5075,12 +5087,13 @@ function renderBoard(){
             S.segs.forEach(s=>{
               const cls=s.state==="done"?"seg-done":(s.state==="active"?"seg-active":"seg-ahead");
               const tip=s.m?escHtml(msName(s.m))+' '+qtrShort(s.m.q)+(s.state==="done"?" (completed)":s.state==="active"?" (in progress)":" (planned)"):"Ahead";
-              track+='<div class="tl-seg '+cls+'" style="left:'+s.from+'%;width:'+(s.to-s.from)+'%" title="'+tip+'"></div>';
+              const lbl=s.m?'<span class="tl-seglbl">'+escHtml(msName(s.m))+'</span>':'';
+              track+='<div class="tl-seg '+cls+'" style="left:'+s.from+'%;width:'+(s.to-s.from)+'%" title="'+tip+'">'+lbl+'</div>';
               if(s.m) track+='<div class="tl-notch" style="left:'+s.to+'%"></div>';
             });
-            if(S.cEnd!==null&&S.dEnd!==null&&S.dEnd>S.cEnd) track+='<div class="tl-buildov" style="left:'+S.cEnd+'%;width:'+(S.dEnd-S.cEnd)+'%" title="Build and commission"></div>';
+            if(S.cEnd!==null&&S.dEnd!==null&&S.dEnd>S.cEnd) track+='<div class="tl-buildov" style="left:'+S.cEnd+'%;width:'+(S.dEnd-S.cEnd)+'%" title="Build and commission"><span class="tl-seglbl bv">Build &amp; commission</span></div>';
             if(S.cEnd!==null) track+='<div class="tl-close" style="left:'+S.cEnd+'%" title="Expected close '+qtrShort(r.expectedClose)+'"></div>';
-            if(S.dEnd!==null) track+='<div class="tl-dep" style="left:min(calc('+S.dEnd+'% - 7px), calc(100% - 16px))" title="Commercial deployment '+qtrShort(r.deployQuarter)+'"></div>';
+            if(S.dEnd!==null) track+='<div class="tl-dep" style="left:min(calc('+S.dEnd+'% - 6px), calc(100% - 14px))" title="Commercial deployment '+qtrShort(r.deployQuarter)+'"></div>';
             if(S.beyond) track+='<div class="tl-beyond" title="Continues beyond the 8-quarter window">&raquo;</div>';
           }
           h+='<div class="tl-row"><div class="tl-name"><b>'+escHtml(r.name)+'</b>'+(overdue?'<span class="tl-tag">CLOSE OVERDUE</span>':'')+'<br><span class="v">'+(fmtMoney(mo(r),true)||"TBD")+' / '+escHtml(stg(r.stage).l)+(r.deployQuarter?' / deploys '+qtrShort(r.deployQuarter):(r.expectedClose?' / closes '+qtrShort(r.expectedClose):''))+'</span></div><div class="tl-track">'+track+'</div></div>';
