@@ -1459,7 +1459,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-s";
+const KMX_BUILD = "2026.08.12-t";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -2020,7 +2020,8 @@ function _chartPngBytes(cv){
     return cv.toDataURL("image/png").split(",")[1] || null;
   }catch(e){ return null; }
 }
-function chartSectorGrowth(){
+function chartSectorGrowth(opts){
+  opts=opts||{};
   // Cumulative unique companies (logos) by first-seen month, stacked by sector
   const SEC_HEX={oilgas:"#155E75",lithium:"#E97132",datacenter:"#14532D",foodbev:"#38BDF8",industrial:"#A21CAF",municipal:"#4CAF50",mining:"#8A5A00",minerals:"#5040B0",chipfab:"#0878A0",power:"#B83030",aerospace:"#1E3A8A",other:"#4A6280"};
   const secKey=r=>SEC_HEX[r.infraType]?r.infraType:"other";
@@ -2071,13 +2072,17 @@ function chartSectorGrowth(){
   if(!maxTot) return null;
   const yMax=Math.max(4, Math.ceil(maxTot/4)*4);
   const W=880,H=430;
-  const cv=_chartCanvas(W,H);
+  const k=opts.k||1;
+  const cv=_chartCanvas(W*k,H*k);
   const x=cv.getContext&&cv.getContext("2d");
   if(!x) return null;
+  if(k!==1) x.scale(k,k);
   x.fillStyle="#FFFFFF"; x.fillRect(0,0,W,H);
-  x.font="600 22px Arial"; x.fillStyle="#0A1628";
-  x.fillText("Pipeline Growth by Sector",24,36);
-  x.font="500 13px Arial"; x.fillStyle="#6A7A8E"; x.fillText("Unique companies, cumulative",24,52);
+  if(!opts.noTitle){
+    x.font="600 22px Arial"; x.fillStyle="#0A1628";
+    x.fillText("Pipeline Growth by Sector",24,36);
+    x.font="500 13px Arial"; x.fillStyle="#6A7A8E"; x.fillText("Unique companies, cumulative",24,52);
+  }
   const padL=64,padR=24,padB=44;
   // Horizontal legend under the title, wrapping as needed, clear of the bars
   x.font="500 15px Arial";
@@ -2087,7 +2092,7 @@ function chartSectorGrowth(){
     if(lx+it.w>W-padR){ lx=padL; lrow++; }
     const p={x:lx,row:lrow}; lx+=it.w; return p;
   });
-  const legendTop=66, rowH=25;
+  const legendTop=opts.noTitle?16:66, rowH=25;
   pos.forEach((p,i)=>{
     const yy=legendTop+p.row*rowH;
     x.fillStyle=SEC_HEX[items[i].k]; x.fillRect(p.x, yy, 15, 15);
@@ -2127,7 +2132,7 @@ function chartSectorGrowth(){
     x.font="500 15px Arial"; x.fillStyle="#3A4A5E";
     x.fillText(mLabel(m), cxp, padT+plotH+28);
   });
-  return _chartPngBytes(cv);
+  return opts.canvas?cv:_chartPngBytes(cv);
 }
 
 function chartStageValue(){
@@ -3270,7 +3275,7 @@ function renderDash(){
     </div>
   </div>
 
-  ${(()=>{ const g=chartSectorGrowth(); return g?`<div class="chcard gap"><div class="chtitle">Pipeline growth by sector</div><img src="data:image/png;base64,${g}" style="width:100%;max-width:760px;display:block;margin:4px auto 0"></div>`:""; })()}
+  ${(()=>{ const g=chartSectorGrowth(); return g?`<div class="chcard gap"><div class="chtitle" style="display:flex;align-items:center;gap:10px"><span style="flex:1">Pipeline growth by sector</span><button class="tlx-btn" onclick="exportSectorPNG()" title="Download as image for presentations"><i class="ti ti-photo-down"></i> PNG</button><button class="tlx-btn" onclick="exportSectorPDF()" title="Download as landscape PDF"><i class="ti ti-file-type-pdf"></i> PDF</button></div><img src="data:image/png;base64,${g}" style="width:100%;max-width:760px;display:block;margin:4px auto 0"></div>`:""; })()}
 
   <!-- ROW 4: Deployment type -->
   ${totalTyped===0
@@ -3313,7 +3318,7 @@ function renderDash(){
 
   <!-- ROW 5: Pipeline velocity -->
   <div class="chcard gap">
-    <div class="chtitle">Pipeline velocity</div>
+    <div class="chtitle" style="display:flex;align-items:center;gap:10px"><span style="flex:1">Pipeline velocity</span><button class="tlx-btn" onclick="exportVelocityPNG()" title="Download as image for presentations"><i class="ti ti-photo-down"></i> PNG</button><button class="tlx-btn" onclick="exportVelocityPDF()" title="Download as landscape PDF"><i class="ti ti-file-type-pdf"></i> PDF</button></div>
     <div class="funnel-wrap" id="funnel-chart"></div>
   </div>
 
@@ -4630,6 +4635,126 @@ function exportTimelinePDF(){
 
 // Segments of a deal's bar, colored by milestone state. Durable by construction:
 // any milestone count, unsorted input, positions clamped inside the bar, monotonic.
+// ── Presentation slide chrome shared by chart exports (matches the timeline export) ──
+function slideChrome(x,W,H,title,subtitle){
+  const CHAR="#171717", ORANGE="#E97132", MIDGREY="#6A7A8E";
+  x.fillStyle="#FFFFFF"; x.fillRect(0,0,W,H);
+  x.fillStyle=CHAR; x.font="700 46px Arial"; x.textAlign="left";
+  x.fillText(title,70,86);
+  x.font="500 22px Arial"; x.fillStyle=MIDGREY;
+  x.fillText(subtitle,70,122);
+  x.textAlign="right"; x.font="700 24px Arial"; x.fillStyle=CHAR;
+  x.fillText("KMX TECHNOLOGIES",W-70,80);
+  x.font="italic 500 18px Arial"; x.fillStyle=ORANGE;
+  x.fillText("Where Others Stop. KMX Starts.",W-70,110);
+  x.font="500 13px Arial"; x.fillStyle=MIDGREY;
+  x.fillText("Confidential",W-70,H-40);
+  x.textAlign="left";
+}
+function exportSlidePNG(cv,basename){
+  if(!cv){ alert("Not enough data to draw this chart yet."); return; }
+  const a=document.createElement("a");
+  a.href=cv.toDataURL("image/png");
+  a.download=basename+"-"+new Date().toLocaleDateString("en-CA")+".png";
+  a.click();
+}
+function exportSlidePDF(cv,basename){
+  if(!cv){ alert("Not enough data to draw this chart yet."); return; }
+  if(!window.jspdf){ alert("The PDF library has not loaded yet. Check your connection and try again."); return; }
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF({unit:"pt",format:"letter",orientation:"landscape"});
+  const pw=792, ph=612, m=24;
+  const w=pw-m*2, h=w*(1080/1920);
+  pdf.addImage(cv.toDataURL("image/jpeg",0.94),"JPEG",m,(ph-h)/2,w,h);
+  pdf.save(basename+"-"+new Date().toLocaleDateString("en-CA")+".pdf");
+}
+
+// ── Sector growth as a presentation slide ──
+function drawSectorSlide(){
+  const chart=chartSectorGrowth({k:2, noTitle:true, canvas:true});
+  if(!chart) return null;
+  const W=1920,H=1080;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const x=cv.getContext("2d");
+  slideChrome(x,W,H,"PIPELINE GROWTH BY SECTOR","Unique companies engaged, cumulative / "+new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}));
+  const cw=1700, ch=cw*(430/880);
+  x.drawImage(chart,(W-cw)/2,190,cw,ch);
+  return cv;
+}
+function exportSectorPNG(){ exportSlidePNG(drawSectorSlide(),"KMX-Sector-Growth"); }
+function exportSectorPDF(){ exportSlidePDF(drawSectorSlide(),"KMX-Sector-Growth"); }
+
+// ── Pipeline velocity funnel as a presentation slide ──
+function drawVelocitySlide(){
+  const stages=STAGES.filter(s=>s.k!=="won"&&s.k!=="lost");
+  const counts=stages.map(s=>rows.filter(r=>r.stage===s.k).length);
+  if(!rows.length) return null;
+  const maxC=Math.max.apply(null,counts.concat([1]));
+  const totalActive=counts.reduce((a,b)=>a+b,0);
+  const won=rows.filter(r=>r.stage==="won").length, lost=rows.filter(r=>r.stage==="lost").length;
+  const winRate=(won+lost)>0?Math.round(won/(won+lost)*100):null;
+  const W=1920,H=1080;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const x=cv.getContext("2d");
+  const CHAR="#171717", ORANGE="#E97132", BLUE="#156082", GREEN="#196B24", GRAY="#E8E8E8", MIDGREY="#6A7A8E", RED="#B83030";
+  slideChrome(x,W,H,"PIPELINE VELOCITY","Active projects by stage, flow between stages / "+new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}));
+  const padL=420, padR=260, topY=210;
+  const barMax=W-padL-padR;
+  const rowH=66, gapH=42;
+  let y=topY;
+  stages.forEach((s,i)=>{
+    if(i>0){
+      const prev=counts[i-1], cur=counts[i];
+      let col=MIDGREY, msg="no projects at prev. stage";
+      if(prev>0){
+        const ratio=cur/prev;
+        if(ratio>=0.5){ col=GREEN; msg="flowing well"; }
+        else if(ratio>=0.2){ col=ORANGE; msg="flow slowing"; }
+        else { col=RED; msg=cur===0?"pipeline stalled here":"low flow"; }
+      }
+      x.strokeStyle=col; x.lineWidth=3;
+      x.beginPath(); x.moveTo(padL+28,y+4); x.lineTo(padL+28,y+gapH-8); x.stroke();
+      x.beginPath(); x.moveTo(padL+22,y+gapH-16); x.lineTo(padL+28,y+gapH-6); x.lineTo(padL+34,y+gapH-16); x.stroke();
+      x.fillStyle=col; x.font="500 17px Arial";
+      x.fillText(msg,padL+48,y+gapH/2+6);
+      y+=gapH;
+    }
+    const cnt=counts[i];
+    x.fillStyle=CHAR; x.font="700 24px Arial"; x.textAlign="right";
+    x.fillText(s.l,padL-30,y+rowH/2+8); x.textAlign="left";
+    const bw=Math.max(cnt/maxC*barMax, cnt>0?28:0);
+    x.fillStyle=GRAY; x.fillRect(padL,y+rowH/2-17,barMax,34);
+    x.strokeStyle="#B8C4CE"; x.lineWidth=1.5; x.strokeRect(padL,y+rowH/2-17,barMax,34);
+    if(cnt>0){
+      x.fillStyle=BLUE; x.fillRect(padL,y+rowH/2-17,bw,34);
+      x.fillStyle=bw>90?"#FFFFFF":BLUE; x.font="700 19px Arial";
+      x.fillText(cnt+(cnt===1?" project":" projects"), bw>90?padL+14:padL+bw+12, y+rowH/2+7);
+    }
+    x.fillStyle=MIDGREY; x.font="700 20px Arial"; x.textAlign="right";
+    x.fillText(totalActive>0?Math.round(cnt/totalActive*100)+"%":"-",W-100,y+rowH/2+8);
+    x.textAlign="left";
+    y+=rowH;
+  });
+  x.fillStyle=MIDGREY; x.font="500 15px Arial"; x.textAlign="right";
+  x.fillText("% of active pipeline",W-100,topY-16); x.textAlign="left";
+  y+=36;
+  x.strokeStyle=GRAY; x.lineWidth=1.5;
+  x.beginPath(); x.moveTo(70,y); x.lineTo(W-70,y); x.stroke();
+  y+=40;
+  x.font="500 20px Arial"; x.fillStyle=CHAR;
+  let line="Outcomes to date: ";
+  x.fillText(line,70,y); let lx=70+x.measureText(line).width;
+  x.fillStyle=GREEN; x.font="700 20px Arial"; x.fillText(won+" won",lx,y); lx+=x.measureText(won+" won").width;
+  x.fillStyle=CHAR; x.font="500 20px Arial"; x.fillText("  /  ",lx,y); lx+=x.measureText("  /  ").width;
+  x.fillStyle=RED; x.font="700 20px Arial"; x.fillText(lost+" lost",lx,y); lx+=x.measureText(lost+" lost").width;
+  if(winRate!==null){ x.fillStyle=CHAR; x.font="500 20px Arial"; x.fillText("  /  "+winRate+"% win rate on closed deals",lx,y); }
+  return cv;
+}
+function exportVelocityPNG(){ exportSlidePNG(drawVelocitySlide(),"KMX-Pipeline-Velocity"); }
+function exportVelocityPDF(){ exportSlidePDF(drawVelocitySlide(),"KMX-Pipeline-Velocity"); }
+
+function slideChromeEnd(){}
+
 function timelineSegments(r){
   const cEnd0=qtrIdx(r.expectedClose), dEnd0=qtrIdx(r.deployQuarter);
   const pct=t=>{const i=qtrIdx(t);if(i===null)return null;return Math.min(Math.max(i,0)+1,8)/8*100;};
