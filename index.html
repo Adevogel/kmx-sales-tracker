@@ -1097,14 +1097,24 @@ body.light-theme .dsec-r{background:var(--b1)}
 #page-board .tl-grid{min-width:880px}
 #page-board .tl-row{display:grid;grid-template-columns:190px 1fr;gap:0;align-items:center}
 #page-board .tl-qhead{display:grid;grid-template-columns:repeat(8,1fr);font-size:10px;color:var(--t2);font-weight:700;letter-spacing:.04em;text-align:center;padding:4px 0;border-bottom:1px solid var(--b0)}
-#page-board .tl-tots{display:grid;grid-template-columns:repeat(8,1fr);text-align:center;font-size:10px;color:var(--t2);padding:3px 0 8px}
-#page-board .tl-tots b{display:block;font-size:11px;color:var(--t0);font-family:var(--f-mono)}
+#page-board .tl-tots{display:grid;grid-template-columns:repeat(8,1fr);text-align:center;font-size:10px;color:var(--t2);padding:5px 0 10px}
+#page-board .tl-tots b{display:block;font-size:12px;color:var(--t0);font-family:var(--f-mono)}
 #page-board .tl-name{font-size:12px;padding:5px 10px 5px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #page-board .tl-name .v{color:var(--t2);font-size:10px;font-family:var(--f-mono)}
 #page-board .tl-track{position:relative;height:24px;background-image:repeating-linear-gradient(90deg,var(--b0) 0 1px,transparent 1px 12.5%)}
 #page-board .tl-bar{position:absolute;top:5px;height:14px;border-radius:3px;min-width:8px}
 #page-board .tl-build{position:absolute;top:5px;height:14px;border-radius:3px;background:repeating-linear-gradient(45deg,var(--b2) 0 5px,var(--b1) 5px 10px);opacity:.9}
-#page-board .tl-dep{position:absolute;top:2px;width:10px;height:10px;transform:rotate(45deg) translateX(-4px);background:var(--lime);border:2px solid var(--s1);margin-top:5px}
+#page-board .tl-dep{position:absolute;top:5px;width:10px;height:10px;background:var(--lime);border:2px solid var(--s1);transform:translateX(-7px) rotate(45deg);z-index:3}
+#page-board .tl-beyond{position:absolute;right:-4px;top:1px;font-size:15px;font-weight:700;color:var(--t2)}
+#page-board .tl-ms.more{border-style:dashed;color:var(--t1);border-color:var(--t3);font-size:7px}
+#page-board .tl-totlbl{font-size:9px;color:var(--t2);text-align:right;padding-right:10px;line-height:1.5;letter-spacing:.03em}
+.tlx-btn{font-size:10px;font-weight:700;letter-spacing:.04em;padding:5px 10px;border-radius:6px;border:1px solid var(--b2);background:var(--s2);color:var(--t1);cursor:pointer;font-family:var(--f-ui)}
+.tlx-btn:hover{border-color:var(--lime);color:var(--lime)}
+.ms-chip{font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;border:1px solid var(--b2);cursor:pointer;background:transparent;letter-spacing:.03em;min-width:80px;text-align:center;font-family:var(--f-ui)}
+.ms-chip.planned{color:#38BDF8;border-color:rgba(56,189,248,.5)}
+.ms-chip.active{color:var(--amber);border-color:var(--amber);background:rgba(232,160,48,.12)}
+.ms-chip.done{color:var(--green);border-color:var(--green);background:rgba(46,163,107,.12)}
+@media(max-width:700px){#page-board .tl-row{grid-template-columns:132px 1fr}#page-board .tl-grid{min-width:740px}}
 #page-board .tl-ms{position:absolute;top:3px;width:16px;height:16px;border-radius:50%;border:2px solid #38BDF8;background:var(--s1);color:#38BDF8;font-size:8px;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1;transform:translateX(-8px);z-index:2}
 #page-board .tl-ms.done{background:#38BDF8;color:#06202e}
 #page-board .tl-ms.wip{border-color:var(--amber);background:var(--amber);color:#241a05}
@@ -1440,7 +1450,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.12-q";
+const KMX_BUILD = "2026.08.12-r";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -3790,8 +3800,8 @@ function renderMilestones(dealId){
   if(!el||!r) return;
   const ms=(r.milestones||[]).slice().sort((x,y)=>String(x.q||"z").localeCompare(String(y.q||"z")));
   let h='<div class="st-addrow" style="gap:6px">'
-    +'<select class="sel" id="ms-type" style="min-width:120px">'+Object.keys(MILESTONE_TYPES).map(k=>'<option value="'+k+'">'+MILESTONE_TYPES[k]+'</option>').join('')+'</select>'
-    +'<input type="text" class="st-inp" id="ms-label" placeholder="Label (for Custom)" style="min-width:90px">'
+    +'<select class="sel" id="ms-type" style="min-width:120px" onchange="document.getElementById(\'ms-label\').style.display=this.value===\'custom\'?\'\':\'none\'">'+Object.keys(MILESTONE_TYPES).map(k=>'<option value="'+k+'">'+MILESTONE_TYPES[k]+'</option>').join('')+'</select>'
+    +'<input type="text" class="st-inp" id="ms-label" placeholder="Milestone label" style="min-width:90px;display:none">'
     +'<select class="sel" id="ms-q" style="min-width:96px">'+qtrOptionsHtml("")+'</select>'
     +'<button class="st-addbtn" onclick="addMilestone('+dealId+')" title="Add milestone"><i class="ti ti-plus"></i></button>'
     +'</div>';
@@ -3799,7 +3809,7 @@ function renderMilestones(dealId){
     h+=ms.map(m=>{
       const idx=(r.milestones||[]).indexOf(m);
       return '<div class="st-item">'
-        +'<button class="st-done'+((m.s||"planned")==="done"?' on':'')+'" onclick="cycleMilestone('+dealId+','+idx+')" title="Planned, in progress, completed. Click to cycle."'+((m.s||"planned")==="active"?' style="color:var(--amber)"':'')+'><i class="ti ti-'+((m.s||"planned")==="done"?"circle-check-filled":((m.s||"planned")==="active"?"progress":"circle"))+'"></i></button>'
+        +(function(){const st2=m.s||"planned";const lbl=st2==="done"?"Done":(st2==="active"?"In progress":"Planned");const cls=st2==="done"?"done":(st2==="active"?"active":"planned");return '<button class="ms-chip '+cls+'" onclick="cycleMilestone('+dealId+','+idx+')" title="Tap to change status">'+lbl+'</button>';})()
         +'<span style="flex:1;font-size:12px'+((m.s||"planned")==="done"?';color:var(--t2)':'')+'"><b>'+escHtml(msName(m))+'</b>'+(m.q?' <span style="color:var(--t2)">'+qtrShort(m.q)+'</span>':'')+((m.s||"planned")==="done"?' <span style="font-size:10px;color:var(--green)">done</span>':((m.s||"planned")==="active"?' <span style="font-size:10px;color:var(--amber)">in progress</span>':''))+'</span>'
         +'<select class="sel" style="min-width:90px;font-size:11px" onchange="setMilestoneQ('+dealId+','+idx+',this.value)">'+qtrOptionsHtml(m.q||"")+'</select>'
         +'<button class="st-del" onclick="delMilestone('+dealId+','+idx+')" title="Remove"><i class="ti ti-x"></i></button>'
@@ -4469,6 +4479,139 @@ function outreachStats(){
   return {loaded:true,total:o.length,live:live.length,engaged,respRate:Math.round(engaged/o.length*100),conv:conv.length,conv30,convVal,needTouch,funnel};
 }
 
+
+// ── Shared timeline dataset for the board section and standalone exports ──
+
+// ── Standalone timeline chart for presentations (KMX brand light) ──
+function drawTimelineChart(){
+  const T=computeTimeline();
+  if(!T.sched.length) return null;
+  const W=1920,H=1080;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const x=cv.getContext("2d");
+  const CHAR="#171717", ORANGE="#E97132", BLUE="#156082", GREEN="#196B24", GRAY="#E8E8E8", MIDGREY="#6A7A8E", RED="#B83030";
+  x.fillStyle="#FFFFFF"; x.fillRect(0,0,W,H);
+  // Header
+  x.fillStyle=CHAR; x.font="700 46px Arial"; x.textAlign="left";
+  x.fillText("PATH TO COMMERCIAL DEPLOYMENT",70,86);
+  x.font="500 22px Arial"; x.fillStyle=MIDGREY;
+  x.fillText("KMX pipeline, next 8 quarters / "+new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}),70,122);
+  x.textAlign="right"; x.font="700 24px Arial"; x.fillStyle=CHAR;
+  x.fillText("KMX TECHNOLOGIES",W-70,80);
+  x.font="italic 500 18px Arial"; x.fillStyle=ORANGE;
+  x.fillText("Where Others Stop. KMX Starts.",W-70,110);
+  x.textAlign="left";
+  const padL=360,padR=90;
+  const laneH=Math.min(92,Math.max(60,Math.floor(560/T.lanes.length)));
+  const topY=200+Math.max(0,Math.floor((620-laneH*T.lanes.length)/2));
+  const plotW=W-padL-padR;
+  const colW=plotW/8;
+  // Quarter header + totals
+  x.font="700 20px Arial"; x.fillStyle=MIDGREY; x.textAlign="center";
+  T.Q.forEach((t,i)=>x.fillText(qtrShort(t),padL+colW*(i+0.5),topY-44));
+  x.font="700 22px Arial";
+  T.Q.forEach((t,i)=>{ if(T.depSum[i]){ x.fillStyle=BLUE; x.fillText(fmtMoney(T.depSum[i],true),padL+colW*(i+0.5),topY-14);} });
+  x.textAlign="right"; x.font="500 15px Arial"; x.fillStyle=MIDGREY; x.fillText("$ deploying",padL-16,topY-14);
+  x.textAlign="left";
+  // Column gridlines
+  const lanesN=T.lanes.length, plotH=lanesN*laneH;
+  x.strokeStyle=GRAY; x.lineWidth=1;
+  for(let i=0;i<=8;i++){ x.beginPath(); x.moveTo(padL+colW*i,topY); x.lineTo(padL+colW*i,topY+plotH); x.stroke(); }
+  const clampEnd=t=>{const i=qtrIdx(t);if(i===null)return null;return Math.min(Math.max(i,0)+1,8)*colW;};
+  T.lanes.forEach((r,li)=>{
+    const y=topY+li*laneH, cy=y+laneH/2;
+    if(li%2===1){ x.fillStyle="#F7FAFC"; x.fillRect(padL,y,plotW,laneH); }
+    // Name + meta
+    x.fillStyle=CHAR; x.font="700 21px Arial";
+    let nm=r.name; while(x.measureText(nm).width>padL-110&&nm.length>4) nm=nm.slice(0,-2);
+    x.fillText(nm+(nm!==r.name?"...":""),70,cy-4);
+    const ci=qtrIdx(r.expectedClose), overdue=(ci!==null&&ci<0);
+    x.font="500 15px Arial"; x.fillStyle=MIDGREY;
+    x.fillText((fmtMoney(T.mo(r),true)||"TBD")+" / "+stg(r.stage).l+(r.deployQuarter?" / deploys "+qtrShort(r.deployQuarter):""),70,cy+18);
+    if(overdue){ x.fillStyle=RED; x.font="700 13px Arial"; x.fillText("CLOSE OVERDUE",padL-110-x.measureText("CLOSE OVERDUE").width+100,cy-4); }
+    const cEnd=clampEnd(r.expectedClose), dEnd=clampEnd(r.deployQuarter);
+    const stageEnd=(cEnd!==null?cEnd:dEnd);
+    if(stageEnd!==null){ x.fillStyle=BLUE; x.beginPath(); x.roundRect(padL,cy-9,stageEnd,18,4); x.fill(); }
+    if(cEnd!==null&&dEnd!==null&&dEnd>cEnd){
+      x.save(); x.beginPath(); x.roundRect(padL+cEnd,cy-9,dEnd-cEnd,18,4); x.clip();
+      x.fillStyle=GRAY; x.fillRect(padL+cEnd,cy-9,dEnd-cEnd,18);
+      x.strokeStyle="#FFFFFF"; x.lineWidth=3;
+      for(let s=padL+cEnd-20;s<padL+dEnd+20;s+=12){ x.beginPath(); x.moveTo(s,cy+12); x.lineTo(s+12,cy-12); x.stroke(); }
+      x.restore();
+    }
+    if(dEnd!==null){ x.fillStyle=GREEN; x.save(); x.translate(padL+dEnd,cy); x.rotate(Math.PI/4); x.fillRect(-8,-8,16,16); x.restore(); }
+    if(r.deployQuarter==="beyond"||(!r.deployQuarter&&r.expectedClose==="beyond")){ x.fillStyle=MIDGREY; x.font="700 26px Arial"; x.fillText("\u00BB",padL+plotW+14,cy+9); }
+    // Milestones clustered per quarter
+    const byQ={};
+    (r.milestones||[]).forEach(m=>{const mi=qtrIdx(m.q); if(mi===null) return; const q2=Math.min(Math.max(mi,0),7); (byQ[q2]=byQ[q2]||[]).push(m);});
+    Object.keys(byQ).forEach(qi=>{
+      const arr=byQ[qi]; const cx0=padL+colW*(parseInt(qi)+0.5);
+      arr.slice(0,2).forEach((m,k)=>{
+        const mst=m.s||(m.d?"done":"planned");
+        const cx=cx0+k*30;
+        x.beginPath(); x.arc(cx,cy,13,0,Math.PI*2);
+        if(mst==="done"){ x.fillStyle=BLUE; x.fill(); x.strokeStyle="#FFFFFF"; x.lineWidth=2.5; x.stroke(); }
+        else if(mst==="active"){ x.fillStyle=ORANGE; x.fill(); x.strokeStyle="#FFFFFF"; x.lineWidth=2.5; x.stroke(); }
+        else { x.fillStyle="#FFFFFF"; x.fill(); x.strokeStyle=BLUE; x.lineWidth=2.5; x.stroke(); }
+        x.fillStyle=mst==="planned"?BLUE:"#FFFFFF"; x.font="800 12px Arial"; x.textAlign="center";
+        x.fillText(msLetter(m),cx,cy+4); x.textAlign="left";
+      });
+      if(arr.length>2){ x.fillStyle=MIDGREY; x.font="700 13px Arial"; x.fillText("+"+(arr.length-2),cx0+52,cy+5); }
+    });
+  });
+  // Legend + footnotes
+  let ly=topY+plotH+56; x.font="500 17px Arial";
+  const leg=(draw,label,w)=>{draw(); x.fillStyle=CHAR; x.fillText(label,lx+w,ly+6); lx+=w+x.measureText(label).width+44;};
+  let lx=70;
+  x.fillStyle=BLUE; x.beginPath(); x.roundRect(lx,ly-4,34,14,3); x.fill(); x.fillStyle=CHAR; x.fillText("Stage to expected close",lx+44,ly+8); lx+=44+x.measureText("Stage to expected close").width+44;
+  x.fillStyle=GRAY; x.fillRect(lx,ly-4,34,14); x.fillStyle=CHAR; x.fillText("Build and commission",lx+44,ly+8); lx+=44+x.measureText("Build and commission").width+44;
+  x.fillStyle=GREEN; x.save(); x.translate(lx+8,ly+3); x.rotate(Math.PI/4); x.fillRect(-6,-6,12,12); x.restore(); x.fillStyle=CHAR; x.fillText("Commercial deployment",lx+26,ly+8); lx+=26+x.measureText("Commercial deployment").width+44;
+  x.beginPath(); x.arc(lx+8,ly+3,10,0,Math.PI*2); x.fillStyle="#FFFFFF"; x.fill(); x.strokeStyle=BLUE; x.lineWidth=2.5; x.stroke(); x.fillStyle=CHAR; x.fillText("Planned",lx+26,ly+8); lx+=26+x.measureText("Planned").width+44;
+  x.beginPath(); x.arc(lx+8,ly+3,10,0,Math.PI*2); x.fillStyle=ORANGE; x.fill(); x.fillStyle=CHAR; x.fillText("In progress",lx+26,ly+8); lx+=26+x.measureText("In progress").width+44;
+  x.beginPath(); x.arc(lx+8,ly+3,10,0,Math.PI*2); x.fillStyle=BLUE; x.fill(); x.fillStyle=CHAR; x.fillText("Completed",lx+26,ly+8);
+  ly+=44; x.font="500 15px Arial"; x.fillStyle=MIDGREY;
+  const notes=[];
+  if(T.rest.length) notes.push("+"+T.rest.length+" more scheduled ("+(fmtMoney(T.rest.reduce((s,r)=>s+T.mo(r),0),true)||"$0")+")");
+  if(T.unsched.length) notes.push(T.unsched.length+" without a timeline ("+(fmtMoney(T.unsched.reduce((s,r)=>s+T.mo(r),0),true)||"$0")+")");
+  if(notes.length) x.fillText(notes.join("  /  "),70,ly);
+  x.fillStyle=MIDGREY; x.font="500 13px Arial"; x.textAlign="right";
+  x.fillText("Confidential",W-70,H-40); x.textAlign="left";
+  return cv;
+}
+function exportTimelinePNG(){
+  const cv=drawTimelineChart();
+  if(!cv){ alert("Set Expected close or Commercial deployment on at least one deal first."); return; }
+  const a=document.createElement("a");
+  a.href=cv.toDataURL("image/png");
+  a.download="KMX-Deployment-Timeline-"+new Date().toLocaleDateString("en-CA")+".png";
+  a.click();
+}
+function exportTimelinePDF(){
+  const cv=drawTimelineChart();
+  if(!cv){ alert("Set Expected close or Commercial deployment on at least one deal first."); return; }
+  if(!window.jspdf){ alert("The PDF library has not loaded yet. Check your connection and try again."); return; }
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF({unit:"pt",format:"letter",orientation:"landscape"});
+  const pw=792, ph=612, m=24;
+  const w=pw-m*2, h=w*(1080/1920);
+  pdf.addImage(cv.toDataURL("image/jpeg",0.94),"JPEG",m,(ph-h)/2,w,h);
+  pdf.save("KMX-Deployment-Timeline-"+new Date().toLocaleDateString("en-CA")+".pdf");
+}
+
+function computeTimeline(){
+  const Q=qtrList(8);
+  const activeT=rows.filter(r=>r.stage!=="won"&&r.stage!=="lost");
+  const mo=r=>r.tbd?((r.estLow||0)+(r.estHigh||0))/2:(r.value||0);
+  const sched=activeT.filter(r=>r.expectedClose||r.deployQuarter);
+  const unsched=activeT.filter(r=>!r.expectedClose&&!r.deployQuarter);
+  const anchorIdx=r=>{const d=qtrIdx(r.deployQuarter),cl=qtrIdx(r.expectedClose);const v=(d===null?cl:d);return v===null?999:v;};
+  const sorted=sched.slice().sort((a,b)=>anchorIdx(a)-anchorIdx(b)||mo(b)-mo(a));
+  return {Q, mo, sched, unsched, lanes:sorted.slice(0,10), rest:sorted.slice(10),
+    depSum:Q.map(t=>sched.filter(r=>r.deployQuarter===t).reduce((s,r)=>s+mo(r),0)),
+    clsCnt:Q.map(t=>sched.filter(r=>r.expectedClose===t).length),
+    SC:{prospect:"#4A6280",scoping:"#1862B8",proposal:"#5040B0",lab:"#8A5A00",demo:"#A04878",negotiation:"#0878A0"}};
+}
+
 function renderBoard(){
   const esc=escHtml;
   const active      = rows.filter(r=>r.stage!=="won"&&r.stage!=="lost");
@@ -4701,43 +4844,41 @@ function renderBoard(){
       <div class="dsec"><span class="dsec-l"><i class="ti ti-route"></i>Where it is heading</span><span class="dsec-r"></span></div>
 
     <div class="board-section">
-      <div class="board-section-title"><i class="ti ti-flag-3"></i>Path to Commercial Deployment, Next 8 Quarters</div>
+      <div class="board-section-title" style="display:flex;align-items:center;gap:10px"><i class="ti ti-flag-3"></i><span style="flex:1">Path to Commercial Deployment, Next 8 Quarters</span><button class="tlx-btn" onclick="exportTimelinePNG()" title="Download as image for presentations"><i class="ti ti-photo-down"></i> PNG</button><button class="tlx-btn" onclick="exportTimelinePDF()" title="Download as landscape PDF"><i class="ti ti-file-type-pdf"></i> PDF</button></div>
       ${(()=>{
-        const Q=qtrList(8);
-        const SC={prospect:"#4A6280",scoping:"#1862B8",proposal:"#5040B0",lab:"#8A5A00",demo:"#A04878",negotiation:"#0878A0"};
-        const mo=r=>r.tbd?((r.estLow||0)+(r.estHigh||0))/2:(r.value||0);
-        const sched=active.filter(r=>r.expectedClose||r.deployQuarter);
-        const unsched=active.filter(r=>!r.expectedClose&&!r.deployQuarter);
+        const T=computeTimeline();
+        const Q=T.Q, mo=T.mo, sched=T.sched, unsched=T.unsched, lanes=T.lanes, rest=T.rest, depSum=T.depSum, clsCnt=T.clsCnt, SC=T.SC;
         if(!sched.length) return '<div style="font-size:12px;color:var(--t2);font-style:italic">No opportunities have a timeline yet. Open a deal and set Expected close and Commercial deployment.</div>'+(unsched.length?'<div class="tl-unsched">'+unsched.length+' active opportunit'+(unsched.length!==1?'ies':'y')+' ('+(fmtMoney(unsched.reduce((s,r)=>s+mo(r),0),true)||"$0")+') awaiting a timeline.</div>':'');
         const clampEnd=t=>{const i=qtrIdx(t);if(i===null)return null;return Math.min(Math.max(i,0)+1,8)/8*100;};
-        const anchorIdx=r=>{const d=qtrIdx(r.deployQuarter),cl=qtrIdx(r.expectedClose);const v=(d===null?cl:d);return v===null?999:v;};
-        const sorted=sched.slice().sort((a,b)=>anchorIdx(a)-anchorIdx(b)||mo(b)-mo(a));
-        const lanes=sorted.slice(0,10), rest=sorted.slice(10);
-        const depSum=Q.map(t=>sched.filter(r=>r.deployQuarter===t).reduce((s,r)=>s+mo(r),0));
-        const clsCnt=Q.map(t=>sched.filter(r=>r.expectedClose===t).length);
         let h='<div class="tl-wrap"><div class="tl-grid">';
         h+='<div class="tl-row"><div></div><div class="tl-qhead">'+Q.map(qtrShort).map(q=>'<span>'+q+'</span>').join('')+'</div></div>';
-        h+='<div class="tl-row"><div style="font-size:10px;color:var(--t2);text-align:right;padding-right:10px">deploying / closing</div><div class="tl-tots">'+Q.map((t,i)=>'<span><b>'+(depSum[i]?fmtMoney(depSum[i],true):"-")+'</b>'+(clsCnt[i]?clsCnt[i]+' close':'&nbsp;')+'</span>').join('')+'</div></div>';
+        h+='<div class="tl-row"><div class="tl-totlbl">$ deploying<br>deals closing</div><div class="tl-tots">'+Q.map((t,i)=>'<span><b>'+(depSum[i]?fmtMoney(depSum[i],true):"-")+'</b>'+(clsCnt[i]?clsCnt[i]+' close':'&nbsp;')+'</span>').join('')+'</div></div>';
         lanes.forEach(r=>{
-          const ci=qtrIdx(r.expectedClose), di=qtrIdx(r.deployQuarter);
+          const ci=qtrIdx(r.expectedClose);
           const cEnd=clampEnd(r.expectedClose), dEnd=clampEnd(r.deployQuarter);
           const overdue=(ci!==null&&ci<0);
+          const beyond=(r.deployQuarter==="beyond"||(!r.deployQuarter&&r.expectedClose==="beyond"));
           let track='';
           const stageEnd=(cEnd!==null?cEnd:dEnd);
-          if(stageEnd!==null) track+='<div class="tl-bar" style="left:0;width:'+stageEnd+'%;background:'+(SC[r.stage]||"#4A6280")+'" title="'+esc(r.name)+' / '+esc(stg(r.stage).l)+(r.expectedClose?' / close '+qtrShort(r.expectedClose):'')+'"></div>';
+          if(stageEnd!==null) track+='<div class="tl-bar" style="left:0;width:'+stageEnd+'%;background:'+(SC[r.stage]||"#4A6280")+'" title="'+escHtml(r.name)+' / '+escHtml(stg(r.stage).l)+(r.expectedClose?' / close '+qtrShort(r.expectedClose):'')+'"></div>';
           if(cEnd!==null&&dEnd!==null&&dEnd>cEnd) track+='<div class="tl-build" style="left:'+cEnd+'%;width:'+(dEnd-cEnd)+'%" title="Build and commission"></div>';
           if(dEnd!==null) track+='<div class="tl-dep" style="left:'+dEnd+'%" title="Commercial deployment '+qtrShort(r.deployQuarter)+'"></div>';
-          const perQ={};
+          if(beyond) track+='<div class="tl-beyond" title="Continues beyond the 8-quarter window">&raquo;</div>';
+          const byQ={};
           ((r.milestones||[]).slice().sort((x,y)=>String(x.q||"z").localeCompare(String(y.q||"z")))).forEach(m=>{
             const mi=qtrIdx(m.q); if(mi===null) return;
             const ci2=Math.min(Math.max(mi,0),7);
-            perQ[ci2]=(perQ[ci2]||0);
-            const pos=(ci2+0.5)/8*100;
-            const mst=m.s||(m.d?"done":"planned");
-            track+='<div class="tl-ms'+(mst==="done"?' done':(mst==="active"?' wip':''))+'" style="left:calc('+pos+'% + '+(perQ[ci2]*13)+'px)" title="'+escHtml(msName(m))+' '+qtrShort(m.q)+(mst==="done"?' (completed)':(mst==="active"?' (in progress)':' (planned)'))+'">'+escHtml(msLetter(m))+'</div>';
-            perQ[ci2]++;
+            (byQ[ci2]=byQ[ci2]||[]).push(m);
           });
-          h+='<div class="tl-row"><div class="tl-name"><b>'+esc(r.name)+'</b>'+(overdue?'<span class="tl-tag">CLOSE OVERDUE</span>':'')+'<br><span class="v">'+(fmtMoney(mo(r),true)||"TBD")+' / '+esc(stg(r.stage).l)+(r.deployQuarter?' / deploys '+qtrShort(r.deployQuarter):(r.expectedClose?' / closes '+qtrShort(r.expectedClose):''))+'</span></div><div class="tl-track">'+track+'</div></div>';
+          Object.keys(byQ).forEach(qi=>{
+            const arr=byQ[qi]; const pos=(parseInt(qi)+0.5)/8*100;
+            arr.slice(0,2).forEach((m,k)=>{
+              const mst=m.s||(m.d?"done":"planned");
+              track+='<div class="tl-ms'+(mst==="done"?' done':(mst==="active"?' wip':''))+'" style="left:calc('+pos+'% + '+(k*13)+'px)" title="'+escHtml(msName(m))+' '+qtrShort(m.q)+(mst==="done"?' (completed)':(mst==="active"?' (in progress)':' (planned)'))+'">'+escHtml(msLetter(m))+'</div>';
+            });
+            if(arr.length>2) track+='<div class="tl-ms more" style="left:calc('+pos+'% + 26px)" title="'+arr.slice(2).map(m=>msName(m)+' '+qtrShort(m.q)).join(', ')+'">+'+(arr.length-2)+'</div>';
+          });
+          h+='<div class="tl-row"><div class="tl-name"><b>'+escHtml(r.name)+'</b>'+(overdue?'<span class="tl-tag">CLOSE OVERDUE</span>':'')+'<br><span class="v">'+(fmtMoney(mo(r),true)||"TBD")+' / '+escHtml(stg(r.stage).l)+(r.deployQuarter?' / deploys '+qtrShort(r.deployQuarter):(r.expectedClose?' / closes '+qtrShort(r.expectedClose):''))+'</span></div><div class="tl-track">'+track+'</div></div>';
         });
         h+='</div></div>';
         h+='<div class="tl-legend"><span><span style="display:inline-block;width:18px;height:9px;border-radius:2px;background:#0878A0;margin-right:5px;vertical-align:middle"></span>Current stage to expected close</span><span><span style="display:inline-block;width:18px;height:9px;border-radius:2px;background:repeating-linear-gradient(45deg,var(--b2) 0 4px,var(--b1) 4px 8px);margin-right:5px;vertical-align:middle"></span>Build and commission</span><span><span style="display:inline-block;width:8px;height:8px;transform:rotate(45deg);background:var(--lime);margin-right:6px;vertical-align:middle"></span>Commercial deployment</span><span><span class="tl-ms" style="position:static;display:inline-flex;margin-right:5px;vertical-align:middle">P</span>Planned</span><span><span class="tl-ms wip" style="position:static;display:inline-flex;margin-right:5px;vertical-align:middle">P</span>In progress</span><span><span class="tl-ms done" style="position:static;display:inline-flex;margin-right:5px;vertical-align:middle">P</span>Completed</span></div>';
