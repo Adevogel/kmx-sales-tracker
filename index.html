@@ -1466,7 +1466,7 @@ body.light-theme .dsec-r{background:var(--b1)}
 
 <script>
 
-const KMX_BUILD = "2026.08.13-a";
+const KMX_BUILD = "2026.08.13-b";
 const GAS_URL_DEFAULT = "https://script.google.com/macros/s/AKfycbzrXQ_LeZEYCuG2deFo31gub80BO1p1FTR9tDehmYbHkquCSxJkPSSISN--BtKcO55BRg/exec";
 const GAS_URL = (function(){
   try{
@@ -4773,17 +4773,21 @@ function timelineSegments(r){
   const cEnd=pct(r.expectedClose), dEnd=pct(r.deployQuarter);
   const endPct=(dEnd!==null?dEnd:cEnd);
   if(endPct===null) return null;
+  // One time convention everywhere: a quarter's work ends at that quarter's END,
+  // the boundary with the following quarter, matching the close and deployment marks.
   const pts=(r.milestones||[])
-    .map(m=>{const i=qtrIdx(m.q); if(i===null) return null; return {m, pos:Math.min((Math.min(Math.max(i,0),7)+0.5)/8*100, endPct-1)};})
+    .map(m=>{const i=qtrIdx(m.q); if(i===null) return null; return {m, pos:Math.min((Math.min(Math.max(i,0),7)+1)/8*100, endPct)};})
     .filter(Boolean)
     .sort((a,b)=>a.pos-b.pos);
   let prev=0;
   const segs=[];
   pts.forEach(p=>{
-    p.pos=Math.max(p.pos, prev+0.6);
+    let pos=Math.max(p.pos, prev+0.6);
+    if(pos>endPct) pos=endPct;
+    if(pos<=prev+0.001) return;
     const st=p.m.s||(p.m.d?"done":"planned");
-    segs.push({from:prev, to:p.pos, state:st, m:p.m});
-    prev=p.pos;
+    segs.push({from:prev, to:pos, state:st, m:p.m});
+    prev=pos;
   });
   if(prev<endPct) segs.push({from:prev, to:endPct, state:"ahead", m:null});
   return {segs, cEnd, dEnd, endPct, overdue:(cEnd0!==null&&cEnd0<0),
